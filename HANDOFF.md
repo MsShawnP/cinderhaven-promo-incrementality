@@ -47,3 +47,25 @@ winner. Then the repo skeleton, then CI with the truth gate proven to fail
 before any estimator exists.
 
 ---
+
+## 2026-08-17 15:52
+
+**What changed:** `/clarify` run on the stack decision; requirements appended
+to PLAN.md as `## Goal — clarified 2026-08-17`.
+
+**Why:** DECISIONS.md framed the stack question around scrollytelling and a
+1.34M-row browser payload. Both turned out to be assumptions, not requirements,
+and the real deciding constraint — persistent cross-view filter state — wasn't
+recorded at all.
+
+**State:** Requirements settled: client-facing flagship, no landing page in
+this repo, build-time precomputed artifacts only (DuckDB-WASM out), 30-second
+verdict on first paint, cross-view filters with deep-linkable URLs, open-ended
+timeline. Dash eliminated. Stack still unchosen — DECISIONS.md entry remains
+open and untouched, correctly. No code, no manifest, no CI.
+
+**Next:** Run `/office-hours` to stress-test the concept, carrying two items:
+the recommendation now points at SvelteKit (cross-view state, not narrative),
+and mobile is still undecided — the 375px cannibalization matrix is unresolved.
+
+---

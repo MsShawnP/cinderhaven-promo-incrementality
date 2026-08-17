@@ -31,6 +31,80 @@ honest. A stack chosen on paper and never exercised is still an unknown.
 How wrong is a trade-promotion incrementality estimate, and can that error be
 shown rather than claimed?
 
+## Goal — clarified 2026-08-17
+
+Output of `/clarify`. Refines the arc goal above; does not replace it. These
+are requirements for the stack decision, not the decision itself — that runs
+through `/office-hours`, `/plan-ceo-review` and `/plan-eng-review`.
+
+**Audience and framing**
+
+- Primary audience is **prospective clients** — specialty food brands, trade
+  marketing leads. This is a portfolio flagship, not an internal tool.
+- **The tool is the product.** No landing page, no narrative wrapper in this
+  repo. A case study on `lailarallc.com/work` carries the story separately.
+- The front door is **the money, not the method**. Open on the ROI Scorecard;
+  the accuracy view sits one click deeper as the proof behind the numbers. It
+  closes the sale rather than opening it.
+
+**The 30-second rule — governs arrival**
+
+The ROI Scorecard's first paint must be readable by a CEO or CFO in 30 seconds
+or less: **verdict line, one chart, three numbers** (the Question Engine
+pattern). Exploration is opt-in depth *after* the verdict, never a prerequisite
+for it. The zero-state — before any filter is touched — is a deliverable in its
+own right, not a placeholder. "Genuine exploration" must not become "requires
+exploration."
+
+**Data shape**
+
+- Python computes at **build time** and writes small precomputed artifacts.
+- The 1,340,462 scan rows **do not ship to the browser**. DuckDB-WASM is out.
+- Anything a view needs is precomputed; a view that wasn't precomputed needs a
+  rebuild, and that is an accepted cost.
+
+**Interaction**
+
+Genuine exploration: filters that **persist across views**, deep-linkable URLs,
+comparison mode. This is shared client state across routes — an application,
+not a set of pages with widgets.
+
+**Constraints**
+
+- Python engine — fixed, see DECISIONS.md. Not revisitable.
+- `cinderhaven-promo-response` pinned at v0.1.0, public API only.
+- Static hosting. Lailara design system governs all visual output.
+- Timeline **open-ended** — done when it's good. The only budget risk is
+  stalling out, not overrunning a date.
+
+**Two assumptions surfaced and revised**
+
+1. *Scrollytelling is required.* — **False.** It appears twice in DECISIONS.md
+   as a reason to reject Dash and favor SvelteKit, but nothing in CLAUDE.md or
+   PLAN.md requires it. Dropped from the stack rationale entirely. This
+   **weakens** the SvelteKit case.
+2. *All 1.34M rows ship to the browser via DuckDB-WASM.* — **False.** Build-time
+   precomputation makes the payload a few hundred KB. This removes the payload
+   risk that partly justified Observable Framework's data-loader model.
+
+**What this does to the stack question**
+
+The deciding axis moved from *narrative ambition* to *cross-view state*.
+Persistent filters, deep-linkable URLs and comparison mode are the one
+requirement set where SvelteKit earns its extra week over Observable Framework —
+whose per-page reactive model is least suited to shared cross-route state.
+**Unverified:** Framework's actual cross-route state story. Check it at
+`/plan-eng-review` rather than assuming.
+
+Dash is now clearly out: an always-on server for data that never changes, and
+Plotly defaults fighting the design system.
+
+**Still open**
+
+- **Mobile.** The global deployed-UI gate requires checking at 1440px *and*
+  375px. A cannibalization matrix at 375px is a hard design problem. Working
+  assumption is graceful reduction on phones, not full parity. Not confirmed.
+
 ## Tasks
 
 Work in vertical slices — for this tool a slice is one view end-to-end
