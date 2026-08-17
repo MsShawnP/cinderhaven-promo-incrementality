@@ -6,9 +6,15 @@ without the promotion — is unobservable in real scan data. This tool runs on
 a dataset where the counterfactual is known and quarantined, so every estimate
 it produces is scored against the truth it was blind to.
 
-Five linked views on one promo-event spine — Baseline Builder, Lift Split,
-Net Lift, Portfolio, ROI Scorecard — plus an accuracy view that reports how
-wrong the estimator actually was.
+Three linked views on one promo-event spine. **ROI Scorecard** is the
+verdict — portfolio spend, net incremental margin, ROI, and how many of 131
+promotions lost money. **Event Anatomy** is the explanation — the full
+decomposition of any single event, gross through subsidized baseline, dip
+and transfer, to net. **Accuracy** is the proof — how wrong the estimator
+actually was, by regime, including where the error is large.
+
+Measured error describes this estimator under a realistic, fully-known
+world. It is not a prediction of error on any other dataset.
 
 **Status:** scaffold. No stack chosen, no code written. See PLAN.md.
 

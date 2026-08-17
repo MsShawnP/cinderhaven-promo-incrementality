@@ -98,6 +98,136 @@ choice accordingly — it is reversible; the engine language is not.
 **Do not** close this entry by picking an option in passing. Strike it
 through and write a dated replacement naming the rejected alternatives.
 
+**Requirements changed after this entry was written (2026-08-17, `/clarify`
+and `/office-hours`).** The candidate analysis above assumed six views,
+scrollytelling, and 1.34M rows in the browser. All three are now false. The
+comparison must be re-run against the current requirements — three views,
+precomputed artifacts, persistent cross-view filters and deep-linkable
+events. Candidate 1 (Dash) is eliminated: an always-on server for data that
+never changes. Candidates 2 and 3 are both still live, and the margin
+between them narrowed when the scope dropped to three views. `/plan-eng-review`
+tests them fresh and inherits nothing from the six-view framing.
+
+### 2026-08-17 — Three views, not six. Scope halved.
+
+- **Decision:** Build **ROI Scorecard**, **Event Anatomy**, **Accuracy**.
+  Nothing else.
+- **Why:** Baseline Builder, Lift Split, Net Lift and Portfolio were five
+  separate tools in the original brainstorm that got inherited as views
+  without re-justification. They are the same decomposition at four zoom
+  levels. Collapsed into Event Anatomy as segments of one waterfall rather
+  than four navigations. Every persuasive job stays assigned: the Scorecard
+  is the verdict, Event Anatomy is the explanation, Accuracy is the proof.
+- **What Event Anatomy has to answer, and why Accuracy cannot:** the
+  objection that actually happens in the room is per-event — *"that August
+  BOGO was my call, I know it worked, your tool says it lost money."* The
+  trade lead is defending a promo, not auditing an estimator.
+  Accuracy-in-general does not defuse that; anatomy-of-this-number does.
+  The full chain, for that event: gross → subsidized baseline → dip →
+  transfer → net, with the baseline-method toggle and the transfer panel
+  inside the view.
+- **Scope:** global; supersedes the five-view framing in CLAUDE.md.
+- **Do not:** solve "the tool looks thin" by adding views. Depth per view
+  beats view count — one anatomy view with a working method toggle is
+  deeper than four shallow pages.
+
+### 2026-08-17 — Slice 1 ships Method 0, the naive baseline, labeled as such.
+
+- **Decision:** Baseline estimation is on the critical path of **every**
+  downstream number, including ROI. Slice 1 uses **Method 0 (pre-period
+  average)** explicitly and says so on screen. Comparable-store matching and
+  seasonal adjustment arrive as their own later slices. Each method added
+  re-scores the Scorecard as a logged re-run.
+- **Why:** PLAN justified the ROI Scorecard as the first slice by calling it
+  "the shallowest estimator." ROI is incremental profit over spend, and
+  incremental units require a baseline — so the hardest statistical problem
+  in the project is an input to slice 1, not a later one. Naming Method 0
+  makes that honest, and it puts the anti-rigging exhibit first instead of
+  last.
+- **Deploy gate:** the tool does not go public until **at least two baseline
+  methods exist**. A scorecard scored only by the naive method is the
+  anti-rigging exhibit without the rigor exhibit.
+- **Scope:** PLAN sequencing; every published figure.
+- **Do not:** present a Method 0 number without the label. Do not change an
+  estimator after first scoring without a DECISIONS entry recording
+  before/after.
+
+---
+
+## Positioning & Claims
+
+Added 2026-08-17 during `/office-hours`. These entries govern what this
+tool is allowed to claim and how the claim is worded.
+
+### 2026-08-17 — Synthetic data is the only publishable option, not a fallback.
+
+- **Decision:** Frame synthetic data as a strength, not an apology. Inherit
+  the fleet disclosure verbatim: *"Data is synthetic; methodology and
+  deliverables are real."*
+- **Why:** Client promo data can never be shown publicly — by any consultant
+  or vendor, at any client count. Synthetic is simultaneously the only world
+  where truth is **knowable** and the only world that can be **published**.
+  The two constraints coincide, which is what makes the accuracy view
+  possible at all.
+- **The competitive line, which belongs in the accuracy view's copy:**
+  anyone claiming to demonstrate accuracy on real client data is either
+  breaching confidentiality or making it up.
+- **Scope:** README, accuracy view copy, any case study.
+- **Do not:** hedge or apologize for synthetic data. Do not bury the
+  disclosure.
+
+### 2026-08-17 — External validity: what the accuracy number is allowed to claim.
+
+The objection this answers: *you built the world and you built the
+estimator.* The AST gate is airtight against machine leakage and porous
+against human leakage — no gate catches the author knowing the shape of her
+own generator. Three defenses, at different strengths, against two different
+attacks.
+
+**(a) True today — the world is literature-grounded, not invented.** Every
+generator coefficient carries CITE/DIRECTION/JUDGMENT; the dip schedule sits
+in vHLW00's published band; the loss rate calibrates to Nielsen's US 71%; a
+plausibility audit gates the release. **Cite the package for this, never
+this repo.**
+
+**(b) True by commitment — enforced structurally, since nothing automated
+catches human leakage.**
+
+1. **Estimators are textbook / vendor-standard methods only** — pre-period
+   average, comparable-store matching, seasonal adjustment — each cited to
+   methodology literature that **predates the generator**. No method may be
+   justified by reference to how the generator works. *This is the defense
+   against design-time leakage.*
+2. **Pre-registration in git.** The estimator spec and implementation are
+   committed and tagged **before** any code in this repo loads truth. The
+   accuracy slice comes later in PLAN. Estimator changes after first scoring
+   are re-runs, logged here with before/after — never silent. Git history is
+   the blindness evidence. *This is the defense against post-hoc tuning. It
+   does not cover design-time leakage — the generator predates this repo, so
+   ordering here cannot speak to it. (b)(1) covers that. State them as
+   covering different attacks; they are not redundant.*
+3. **Ship the naive estimator alongside the good ones.** If the exercise
+   were rigged, naive wouldn't lose. Its worse error is the anti-rigging
+   exhibit — same logic as forecast value-add.
+
+**(c) True by reporting rule.** Headline error is the **full event
+population**. The four seeded stories — `pantry_trap`, `hero_cannibal`,
+`pure_subsidy`, `clean_winner` — are marked and reported separately, never
+as the headline. The mediocre middle is the honest denominator.
+
+**Claim language, exactly:**
+
+- *"Provably blind"* applies to **the code** — AST gate plus the `config`
+  ban. It is precise there and overclaims if stretched further.
+- The **method-level** claim is: *"this is the error a standard method makes
+  under a realistic, fully-known world — measured, by regime, including
+  where it is large."*
+
+- **Scope:** global; every published accuracy figure and all surrounding copy.
+- **Do not:** claim or imply that measured error on Cinderhaven predicts
+  error on a client's data. That is a different claim and this tool does not
+  support it.
+
 ---
 
 ## Data & Schema
@@ -110,6 +240,24 @@ through and write a dated replacement naming the rejected alternatives.
 - **Scope:** dependency manifest; any published accuracy figure.
 - **Do not:** report an accuracy number without recording the
   `cinderhaven-promo-response` version and seed alongside it.
+
+### 2026-08-17 — The portfolio roll-up is a pipeline artifact with a reconciliation test.
+
+- **Decision:** The Scorecard is a portfolio header plus a ranked list. The
+  header's three numbers are the CFO answer: **total accrued trade spend,
+  portfolio net incremental margin, portfolio ROI** — plus N of 131 events
+  that lost money. All of it computed in the pipeline, never in the front end.
+- **The test:** the portfolio total must tie to **both** the sum of event
+  nets **and** the row-level grain sum. This is the package's reconciliation
+  discipline crossing the repo boundary — the same move as the identity
+  `observed_units ≡ baseline + lift − dip ± transfer + noise`, applied to
+  this tool's own arithmetic.
+- **Why it gets an assertion rather than an assumption:** transfer is
+  zero-sum, which makes naive summation *look* safe. That is exactly the
+  property that hides a double-count or a dropped sign until someone checks.
+- **Scope:** pipeline; ROI Scorecard header.
+- **Do not:** compute any portfolio figure in the front end. Do not treat
+  transfer's zero-sum property as self-evidently safe.
 
 ---
 

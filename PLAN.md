@@ -125,21 +125,47 @@ layer.
       `src/`. It must be proven to *fail*: commit a deliberate violation
       fixture, watch CI go red, then remove it. A gate never shown to fail
       is not evidence.
-- [ ] **Slice 1 — ROI Scorecard end-to-end.** Chosen deliberately as the
-      first slice rather than Baseline Builder: it is the shallowest
-      estimator (event-level, 131 rows, `accrued_cost` already supplied) and
-      the deepest exercise of the stack — a ranked table, a per-event
-      waterfall, and an accuracy panel. It answers "is this stack right?"
-      at the lowest modelling cost.
+- [ ] **Slice 1 — ROI Scorecard end-to-end, on Method 0.** Baseline
+      estimation is on the critical path of every downstream number,
+      including ROI — incremental profit over spend requires incremental
+      units, which requires a baseline. Slice 1 therefore uses **Method 0,
+      the naive pre-period average, labeled as such on screen.** That is
+      not a shortcut; it puts the anti-rigging exhibit first. Deliverable:
+      portfolio header (spend, net incremental margin, ROI, N of 131 that
+      lost money), ranked event list, filters. First paint must satisfy the
+      30-second rule before any filter is touched.
 - [ ] **Accuracy view, first pass** — score slice 1's estimates against
       `truth.load_truth()`, guarded by `assert_aligned_with_observed`. The
       one module that imports truth; exempt it by name in the CI gate.
+      Headline error is the full event population; the four seeded stories
+      are marked and reported separately.
+
+### Ordering constraints — the pre-registration rule
+
+These are sequencing requirements, not preferences. They are what turns
+"trust me" into "check the git log," and they only work if the order is
+actually honored. Full reasoning in DECISIONS.md, external-validity entry.
+
+- [ ] The estimator spec and implementation are **committed and tagged
+      before any code in this repo loads truth.** The accuracy slice comes
+      after, never alongside.
+- [ ] Any estimator change after first scoring is a **logged re-run** — a
+      DECISIONS.md entry with before/after error. Never a silent edit.
+- [ ] Each new baseline method re-scores the Scorecard as its own logged
+      re-run.
+- [ ] **Public deploy gate: at least two baseline methods must exist.** A
+      scorecard scored only by Method 0 is the anti-rigging exhibit without
+      the rigor exhibit. Nothing goes to a lailarallc.com subdomain before
+      then.
 
 ## Out of scope for this arc
 
-- **The other four views** — Baseline Builder, Lift Split, Net Lift,
-  Portfolio. They are the next arc. Sequencing them now would be planning
-  against a stack that isn't chosen yet.
+- **Event Anatomy and the second/third baseline methods.** The scope is now
+  three views — ROI Scorecard, Event Anatomy, Accuracy — not six. Baseline
+  Builder, Lift Split, Net Lift and Portfolio were collapsed into Event
+  Anatomy as segments of one waterfall; see DECISIONS.md. Event Anatomy is
+  the next arc. Comparable-store matching is real statistical work and gets
+  its own slice.
 - **Editing `cinderhaven-promo-response`.** It is released at v0.1.0 and is
   a separate repo. A data gap found here is logged here and released there.
 - **Deployment and the public subdomain.** Nothing deploys until a view is
@@ -163,6 +189,12 @@ layer.
       finding `clean_winner` is not a result on its own
 - [ ] Same package version + same seed reproduces the same numbers
 - [ ] Tests run with a single documented command, and none are skipped
+- [ ] Every figure on screen from Method 0 is **labeled** as the naive
+      pre-period average — no unlabeled naive numbers
+- [ ] The portfolio roll-up ties to both the sum of event nets and the
+      row-level grain sum, asserted by a test rather than assumed
+- [ ] Scorecard first paint satisfies the 30-second rule — verdict line, one
+      chart, three numbers — with no filter interaction required
 
 ---
 

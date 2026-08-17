@@ -4,17 +4,45 @@ Tier: Heavy
 
 ## What this project is
 
-A trade-promotion incrementality tool for the Cinderhaven universe: five
-linked views on one promo-event spine — Baseline Builder, Lift Split, Net
-Lift, Portfolio, ROI Scorecard — plus a sixth view no comparable tool can
-show, an **estimate-vs-truth accuracy view** scored against quarantined
-ground truth. It consumes `cinderhaven-promo-response` v0.1.0 and adds no
-data of its own.
+A trade-promotion incrementality tool for the Cinderhaven universe: **three
+linked views** on one promo-event spine, each with a distinct persuasive job.
+
+1. **ROI Scorecard** — the verdict. Portfolio header (total accrued trade
+   spend, net incremental margin, portfolio ROI, N of 131 events that lost
+   money) over a ranked event list. First paint must be readable by a CEO or
+   CFO in 30 seconds: verdict line, one chart, three numbers. Exploration is
+   opt-in depth after the verdict, never a prerequisite for it.
+2. **Event Anatomy** — the explanation. Click any event for the full
+   decomposition: gross → subsidized baseline → dip → transfer → net, with
+   the baseline-method toggle and the transfer panel inside the view. This
+   answers the objection that actually happens in the room — *"that August
+   BOGO was my call, I know it worked, your tool says it lost money"* — which
+   accuracy-in-general cannot.
+3. **Accuracy** — the proof, and the view no comparable tool can show. An
+   **estimate-vs-truth** view scored against quarantined ground truth, error
+   reported by regime, seeded stories marked and separated, naive estimator
+   shown losing.
+
+It consumes `cinderhaven-promo-response` v0.1.0 and adds no data of its own.
+
+Scope was six views until 2026-08-17. Baseline Builder, Lift Split, Net Lift
+and Portfolio were the same decomposition at four zoom levels and collapsed
+into Event Anatomy. See DECISIONS.md for the reasoning. **Do not solve "the
+tool looks thin" by adding views back** — depth per view beats view count.
 
 The differentiator is not the estimator. It is that the estimator is
 **blind and provably so**, and its error is then measured against known
 truth. Every real-world incrementality tool asserts accuracy; this one
 demonstrates it.
+
+Precision about that claim, because it is load-bearing and easy to
+overstate: **"provably blind" applies to the code** — the AST gate plus the
+`config` ban. The method-level claim is *"this is the error a standard
+method makes under a realistic, fully-known world — measured, by regime,
+including where it is large."* It is **not** a claim that measured error on
+Cinderhaven predicts error on a client's data. Full reasoning, and the three
+structural defenses against human leakage, in the external-validity entry in
+DECISIONS.md.
 
 **Business question this project answers:** How wrong is a trade-promotion
 incrementality estimate, and can that error be shown rather than claimed?
@@ -177,7 +205,17 @@ FAILURES.md as relevant.
 - Work in vertical slices, not horizontal phases. For this tool a
   vertical slice is **one view end-to-end** — estimator, its accuracy
   measurement, the rendered view, and its test — before starting the
-  next. Do not build all five estimators and then all five views.
+  next. Do not build all the estimators and then all the views.
+- **Pre-registration ordering is a hard sequencing rule, not a preference.**
+  The estimator spec and implementation are committed and tagged *before*
+  any code in this repo loads truth. Estimator changes after first scoring
+  are logged re-runs in DECISIONS.md with before/after error — never silent
+  edits. Git history is the blindness evidence. See PLAN.md.
+- **Slice 1 uses Method 0, the naive pre-period average, labeled as such on
+  screen.** Baseline estimation is on the critical path of every downstream
+  number including ROI. No unlabeled naive figures.
+- **Public deploy gate: at least two baseline methods must exist** before
+  anything goes to a lailarallc.com subdomain.
 - When a feature is working, suggest a simple test to verify it stays
   working: "This works now — want to add a quick test so it doesn't
   break later?" Don't force testing, but make it easy to say yes.
