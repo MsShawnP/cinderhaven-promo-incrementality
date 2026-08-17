@@ -1,0 +1,41 @@
+# --- Secrets. Never commit these. ---
+.env
+*.env
+.env*.local
+*.key
+*.pem
+credentials.*
+secrets.*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# --- Generated data ---
+# The upstream package's parquet cache, and anything this tool derives from
+# it. Never committed: it is reproducible from a pinned version + seed, and
+# committing it would put ground truth in git history.
+.cache/
+data/generated/
+*.parquet
+
+# --- Node / front end (applies once the stack is chosen) ---
+node_modules/
+.svelte-kit/
+dist/
+docs/.observablehq/cache/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Local tooling ---
+.claude-project-url
