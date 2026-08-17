@@ -136,20 +136,46 @@ Work in vertical slices — for this tool a slice is one view end-to-end
 (estimator → accuracy measurement → rendered view → test), not a horizontal
 layer.
 
-- [ ] **Stack decision** — run the planning process (`/clarify`, then
-      `/office-hours`, then `/plan-ceo-review` and `/plan-eng-review`).
-      Log the outcome in DECISIONS.md with the alternatives that were
-      rejected and why. Constraints and the three candidate stacks are
-      already recorded in DECISIONS.md as a pending decision — start there,
-      don't re-derive them.
+- [x] **Stack decision** — done 2026-08-17. **SvelteKit + D3, static, on
+      Cloudflare Pages.** Observable Framework and Dash rejected with reasons
+      in DECISIONS.md; the PENDING entry is closed, not edited away.
 - [ ] **Repo skeleton for the chosen stack** — dependency manifest with the
       upstream package pinned, test runner, lint config, `.gitignore`
       additions. Nothing rendering yet.
 - [ ] **CI with the truth gate, before any estimator exists** — a workflow
-      that installs the package and runs `assert_no_truth_access` over
-      `src/`. It must be proven to *fail*: commit a deliberate violation
-      fixture, watch CI go red, then remove it. A gate never shown to fail
-      is not evidence.
+      that runs `assert_no_truth_access` over `src/`. It must be proven to
+      *fail*: commit a deliberate violation fixture, watch CI go red, then
+      remove it. A gate never shown to fail is not evidence.
+      **Split this into two jobs.** The gate is pure AST parsing and needs no
+      data; keep it fast and dependency-light so it always runs. `pr.load()`
+      is ~8.5s cold with no warm cache in CI, and a gate that goes red for
+      unrelated data flakes is a gate people learn to ignore.
+- [ ] **Dependency-direction test** — assert that nothing outside the
+      accuracy module imports it, directly or transitively. The AST gate is
+      per-file; an estimator that imports the accuracy module reaches truth
+      while its own AST stays clean. See DECISIONS.md. Also worth checking
+      upstream whether `assert_no_truth_access` does transitive analysis —
+      currently unverified.
+- [ ] **Walking skeleton — the stack experiment.** One hardcoded number,
+      computed in Python, written as JSON by the real pipeline, rendered by
+      the real front end, deployed to a real static host. Hours, not days.
+      **This is what actually answers "is this stack right?"** — the question
+      slice 1 was carrying. Doing it first means an unfamiliar stack fails
+      fast and cheap, before any estimator work is entangled with it. It is
+      also the cheapest available insurance against the stall risk.
+- [ ] **Artifact contract** — what artifacts exist, their schema, where they
+      are written, how the front end consumes them. This is the highest-risk
+      integration point in the system and it was previously not a task at all.
+      Includes: the build **fails loudly** if the Python step fails — a static
+      build that silently ships yesterday's artifact is the worst outcome for
+      a tool whose premise is numeric credibility. Includes the accuracy
+      artifact's schema assertion (error metrics only, observed-feature regime
+      labels only — see DECISIONS.md).
+- [ ] **Reproducibility test** — run the pipeline twice, diff the artifacts.
+      Determinism is a stated requirement and nothing currently checks it.
+- [ ] **Deploy pipeline** — build and publish to Cloudflare Pages. Was missing
+      from the task list entirely. Gated on the two-method rule below before
+      anything is public.
 - [ ] **Slice 1 — ROI Scorecard end-to-end, on Method 0.** Baseline
       estimation is on the critical path of every downstream number,
       including ROI — incremental profit over spend requires incremental
@@ -223,6 +249,15 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
       Scorecard header works fully at 375px
 - [ ] The 30-second rule has been **verified in one timed session** with one
       person who works in trade marketing — not asserted
+- [ ] Nothing outside the accuracy module imports it — asserted by a test,
+      not by convention
+- [ ] No published artifact contains truth values, and every regime label in
+      the accuracy artifact is built from observed features only
+- [ ] Money is integer cents end to end; the reconciliation asserts equality
+      with no float tolerance
+- [ ] Running the pipeline twice produces byte-identical artifacts
+- [ ] The build fails loudly if the Python step fails — no stale artifact
+      ever ships
 
 ## Definition of success — project level
 

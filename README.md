@@ -16,7 +16,9 @@ actually was, by regime, including where the error is large.
 Measured error describes this estimator under a realistic, fully-known
 world. It is not a prediction of error on any other dataset.
 
-**Status:** scaffold. No stack chosen, no code written. See PLAN.md.
+**Status:** planning complete, no code written. Stack decided; the current arc
+is the repo skeleton, the truth gate in CI, and the ROI Scorecard end-to-end.
+See PLAN.md.
 
 ## Cinderhaven context
 
@@ -36,17 +38,18 @@ Nothing yet.
 
 ## Stack
 
-Undecided. Two constraints are fixed:
-
-- The estimation engine is **Python** —
+- **Python** estimation engine, computing at build time —
   `cinderhaven_promo_response.testing.assert_no_truth_access` parses source
   with `ast` and can only audit `.py` files, so estimation code in another
   language would make the blindness claim unenforceable.
-- The data dependency is **`cinderhaven-promo-response>=0.1.0`**, consumed
-  through its public API only.
+- **`cinderhaven-promo-response>=0.1.0`**, pinned, consumed through its
+  public API only.
+- **SvelteKit + D3**, static via `adapter-static`, on **Cloudflare Pages**.
 
-Everything that renders is open. Three candidates are written up in
-DECISIONS.md; the choice is made by the planning process.
+The pipeline writes small precomputed artifacts; the 1,340,462 scan rows
+never reach the browser. There is no server and no client-side query layer.
+Observable Framework and Dash were considered and rejected — reasoning in
+DECISIONS.md.
 
 ## Data contract
 

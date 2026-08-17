@@ -49,22 +49,28 @@ incrementality estimate, and can that error be shown rather than claimed?
 
 ## Stack and tools
 
-**Undecided. This is the first task in PLAN.md and is settled by the
-planning process, not by default.** Do not begin UI or engine code until
-the decision is logged in DECISIONS.md.
-
-Two things are already fixed, and they are constraints rather than
-preferences:
+**Settled 2026-08-17.** Python engine computes at build time and writes
+precomputed artifacts; **SvelteKit + D3**, static via `adapter-static`,
+deployed to **Cloudflare Pages**, renders the three views.
 
 - **The estimation engine is Python.** Not a stylistic choice —
   `cinderhaven_promo_response.testing.assert_no_truth_access` parses source
   with `ast` and can only audit `.py` files. Estimation code in any other
   language makes the project's central credibility claim unenforceable.
-- **The data dependency is `cinderhaven-promo-response>=0.1.0`**, consumed
-  through its public API only. See "Consumer contract" below.
-
-Undecided: everything that renders. Front-end framework, hosting, chart
-library, whether the tool is a static build or a live server.
+- **The data dependency is `cinderhaven-promo-response>=0.1.0`**, pinned,
+  consumed through its public API only. See "Consumer contract" below.
+- **SvelteKit was chosen for one narrow reason:** the requirements are
+  router-shaped — persistent cross-view filters, deep-linkable events,
+  comparison mode. Observable Framework is a multi-page app with no
+  client-side router and no built-in cross-route state, which would put a
+  document load on the tool's most-used transition. Dash was rejected as an
+  always-on server for data that never changes. Full reasoning and the
+  recorded caveat in DECISIONS.md.
+- **The 1,340,462 scan rows never reach the browser.** Everything a view
+  needs is precomputed. No client-side query layer, no DuckDB-WASM, no
+  server.
+- **Money is integer cents** through the pipeline. Reconciliation assertions
+  are exact; no float tolerances.
 
 ## Consumer contract — cinderhaven-promo-response v0.1.0
 
@@ -112,6 +118,30 @@ them invalidates the deliverable.
   same gate on both sides of the boundary is the claim worth making.
 - Do not weaken, skip, or mark `xfail` this test. It is the credibility of
   the accuracy view.
+- **Truth flows one way. Nothing outside the accuracy module may import it**,
+  directly or transitively — asserted by its own test. The gate is per-file:
+  an estimator that imports the accuracy module reaches truth at runtime
+  while its own AST stays clean and the gate passes. The gate alone does not
+  establish blindness.
+
+### Nothing published contains truth — including in its labels
+
+- Artifacts written for the front end may carry **error metrics derived from
+  truth**. They may never carry **truth values**. The accuracy artifact's
+  schema is asserted by a test.
+- `.gitignore` does not cover this. It excludes `.cache/` and `*.parquet`, so
+  the quarantined table cannot reach git — but the accuracy module writes an
+  artifact into the site's published data directory by design. This repo will
+  be public.
+- **Regime labels are built from observed features only** — promo type,
+  depth, duration, season, product line, calendar position. Truth-derived
+  labels leak generator structure even with every value aggregated away:
+  "error by actual-compliance band" reveals per-event compliance by
+  inspection. A truth-derived cut, if genuinely necessary, aggregates to ≥N
+  events per bucket and is labeled truth-derived in the schema.
+- The general form, worth remembering: **the gate protects values; structure
+  walks out through labels.** Same shape as the transitive-import hole — the
+  named defense is narrower than the thing it defends.
 
 ### Estimates are blind
 

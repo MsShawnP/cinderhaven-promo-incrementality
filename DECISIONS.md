@@ -45,9 +45,15 @@ Each entry:
   estimation code — the generator's coefficients are the answer key, and
   the AST gate will not catch it because it only denies `truth`.
 
-### 2026-08-17 — PENDING: front-end stack. Deferred to the planning process.
+### ~~2026-08-17 — PENDING: front-end stack. Deferred to the planning process.~~
 
-**Status: open. This is the first task in PLAN.md.** Recorded here so the
+> **CLOSED 2026-08-17 by `/plan-eng-review`.** Superseded by "Front-end stack:
+> SvelteKit" below. Body kept intact as history — the candidate analysis here
+> was written against six views, scrollytelling and a 1.34M-row browser
+> payload, all three of which turned out to be false. Read it for what was
+> considered, not for what is true.
+
+~~**Status: open. This is the first task in PLAN.md.**~~ Recorded here so the
 planning process starts from the constraints rather than re-deriving them.
 
 **What is already settled** (see the two decisions above): the engine is
@@ -108,6 +114,49 @@ never changes. Candidates 2 and 3 are both still live, and the margin
 between them narrowed when the scope dropped to three views. `/plan-eng-review`
 tests them fresh and inherits nothing from the six-view framing.
 
+### 2026-08-17 — Front-end stack: SvelteKit + D3, static, on Cloudflare Pages.
+
+Closes the PENDING entry above. Decided at `/plan-eng-review`.
+
+- **Decision:** Python engine writes precomputed artifacts at build time.
+  **SvelteKit** with `adapter-static` renders three views, deployed static to
+  Cloudflare Pages. D3 for the composite charts.
+- **Why — one reason, narrowly:** the requirements are router-shaped.
+  Persistent cross-view filters, deep-linkable events and comparison mode are
+  shared client state across routes. SvelteKit provides a client router,
+  stores and `searchParams` natively. Nothing else about this project argues
+  for it.
+
+**Rejected — Observable Framework, static, on Cloudflare Pages.** The closest
+call, and rejected on evidence rather than taste. Framework is a **multi-page
+app**: file-based routing, build-time page loaders, parameterized routes, and
+— across its routing, page-loaders and params documentation — **no client-side
+router and no built-in cross-route state**. The requirements are reachable via
+URL search params plus a shared module, but hand-rolled, and a document load
+lands on the **primary interaction path**: clicking an event row in the
+Scorecard to open Event Anatomy is the most-used transition in the tool and it
+would flash. Comparison mode across a page load is worse. *Caveat recorded
+honestly: this rests on Framework having no undocumented client router. Three
+documentation queries found none. If that is wrong, this decision is worth
+revisiting — the rest of Framework's model, especially Python data loaders at
+build time, fit this project well.*
+
+**Rejected — Dash/Plotly on Fly.io.** An always-on server for data that never
+changes: hosting cost, cold-start story and latency bought nothing. Plotly
+defaults fight the Lailara design system, and the flagship bar is exactly what
+that gives up.
+
+**Rejected earlier — Evidence.dev.** Strong at SQL scorecards, weakest at
+custom composite charts, which is precisely the waterfall.
+
+- **What makes this safe to have gotten wrong:** the engine is a plain Python
+  package under every option. A front-end swap costs zero estimation code. The
+  decision was made decisively rather than deliberated further, because the
+  project's named primary risk is the stall, not a wrong front end.
+- **Scope:** everything that renders.
+- **Do not:** add a server. Do not introduce a client-side data query layer —
+  artifacts are precomputed and small by decision.
+
 ### 2026-08-17 — Three views, not six. Scope halved.
 
 - **Decision:** Build **ROI Scorecard**, **Event Anatomy**, **Accuracy**.
@@ -151,6 +200,24 @@ tests them fresh and inherits nothing from the six-view framing.
 - **Do not:** present a Method 0 number without the label. Do not change an
   estimator after first scoring without a DECISIONS entry recording
   before/after.
+
+### 2026-08-17 — Truth flows one way. Nothing may import the accuracy module.
+
+- **Decision:** The accuracy module is a **sink, never a source**. No module
+  outside it may import it, directly or transitively. Enforced by a test of
+  the dependency direction, not by convention.
+- **The hole this closes:** `assert_no_truth_access` parses each file's AST
+  for forbidden imports. The accuracy module is exempted **by name**, so it is
+  unaudited — deliberately. But an estimation module that imports the accuracy
+  module gains runtime access to truth while its *own* AST contains no
+  forbidden import. The gate passes and the estimator is no longer blind.
+  Whether the package's gate does transitive analysis is **unverified** —
+  worth checking upstream. The test is cheap either way, and this is the
+  project's central claim.
+- **Scope:** all estimation code; the CI gate.
+- **Do not:** rely on the AST gate alone for blindness. It protects against
+  direct imports of `truth`. It does not protect against reaching truth
+  through a module that is allowed to have it.
 
 ---
 
@@ -258,6 +325,50 @@ as the headline. The mediocre middle is the honest denominator.
 - **Scope:** pipeline; ROI Scorecard header.
 - **Do not:** compute any portfolio figure in the front end. Do not treat
   transfer's zero-sum property as self-evidently safe.
+
+### 2026-08-17 — Money is integer cents. Reconciliation is exact, not tolerant.
+
+- **Decision:** Carry money as **integer cents** through the pipeline. Units
+  are already integers. The portfolio reconciliation asserts **equality**, not
+  approximate equality.
+- **Why:** the roll-up ties to a row-level sum over 1,340,462 values. In
+  float64, summation order changes the last bits, so the assertion would need
+  a tolerance — and a tolerance is a number that only ever gets widened when
+  it fails. Integer arithmetic removes the question. This matches the upstream
+  package's ethos: the reconciliation identity there is **bit-exact per row**,
+  not within epsilon.
+- **Scope:** pipeline; every monetary figure and every reconciliation test.
+- **Do not:** introduce a float tolerance into a reconciliation assertion. If
+  one appears to be necessary, that is a signal the arithmetic is wrong, not
+  that the tolerance is too tight.
+
+### 2026-08-17 — Published artifacts carry error metrics, never truth — including in their labels.
+
+- **Decision:** Artifacts written for the front end may contain **error
+  metrics derived from truth**. They may never contain **truth values**. The
+  accuracy artifact's schema is asserted by a test.
+- **Why `.gitignore` does not cover this:** the ignore file correctly excludes
+  `.cache/` and `*.parquet`, so the quarantined truth table cannot reach git.
+  But the accuracy module *writes* a precomputed artifact — `accuracy.json` or
+  similar — into the site's data directory, which is committed or built and
+  published by design. Nothing in the ignore file protects it. This repo will
+  be public.
+- **The subtler channel — regime labels.** Regime definitions in the accuracy
+  artifact must be built from **observed features only**: promo type, depth,
+  duration, season, product line, calendar position. Truth-derived regime
+  labels — actual compliance draw, actual dip magnitude, actual transfer —
+  leak generator structure **even with every truth value aggregated away**.
+  "Error by actual-compliance band" reveals per-event compliance by
+  inspection. If a truth-derived cut is analytically necessary, it aggregates
+  to **≥N events per bucket** and is labeled truth-derived in the artifact
+  schema. Default is observed-features-only.
+- **The general form, worth carrying:** the gate protects **values**;
+  structure can walk out through **labels**. Same class of hole as the
+  transitive-import entry above — the named defense is narrower than the thing
+  it is defending.
+- **Scope:** every artifact written for the front end.
+- **Do not:** cut error by any truth-derived feature without the aggregation
+  floor and the schema label.
 
 ---
 
