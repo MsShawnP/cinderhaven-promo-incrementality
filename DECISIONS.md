@@ -268,6 +268,28 @@ design system at `~/projects/reference/lailara-design-system/LAILARA_DESIGN_SYST
 governs colors, typography and chart rules; entries here record only
 project-specific choices on top of it.]
 
+### 2026-08-17 — Mobile responsibility splits by surface, not by view.
+
+- **Decision:** The **30-second surface** — the Scorecard header: verdict
+  line, one chart, three numbers — is **phone-first** and must fully work at
+  375px. The **exploration surfaces** — ranked-list interactions, Event
+  Anatomy, Accuracy — are **desktop-first**: readable and functional on
+  mobile, but comparison mode and dense waterfall interactions may degrade
+  gracefully with a "best on desktop" note.
+- **Why:** Distribution is a link from `lailarallc.com/work`, and links get
+  opened on phones. The first impression is therefore a phone impression, and
+  a 30-second verdict that only works at 1440px fails its own brief. The
+  exploration surfaces are consumed differently — nobody runs a comparison
+  across 131 events on a phone.
+- **What this buys:** the responsive work is bounded to **one** genuinely
+  responsive component instead of three. The global deployed-UI gate still
+  requires checking every surface at 1440px and 375px; this decision sets
+  what "passing" means at 375px for each.
+- **Scope:** all three views; the deployed-UI gate.
+- **Do not:** treat "responsive" as a uniform requirement across surfaces, and
+  do not let the Scorecard header inherit the exploration surfaces' mobile
+  allowances. It is the one component with no degradation budget.
+
 ---
 
 ## Output Formats

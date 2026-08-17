@@ -11,31 +11,38 @@ session. For session-by-session state, see HANDOFF.md.
 decision and one view — the ROI Scorecard — running end-to-end on real data,
 with the truth gate green in CI.
 
-The full five-view arc is defined by the planning process, not here. This
-plan is deliberately short until that runs.
+The project is **three views** — ROI Scorecard, Event Anatomy, Accuracy. This
+arc builds the first and a first pass at the third. Event Anatomy is the next
+arc.
 
 ## Why this arc, why now
 
 The data package shipped at v0.1.0 with a causal promo signal and quarantined
 ground truth, so the riskiest unknown ("does the data support the claims?")
 is already a settled fact. The next riskiest unknown is the stack: this tool's
-value is a story-driven waterfall and an accuracy view, and the wrong stack
-makes both expensive. Deciding it after building three views is how a rewrite
+value is a per-event decomposition and an accuracy view, and the wrong stack
+makes both expensive. Deciding it after building two views is how a rewrite
 happens.
 
-Proving one view end-to-end before the other four is what keeps that decision
+Proving one view end-to-end before the rest is what keeps that decision
 honest. A stack chosen on paper and never exercised is still an unknown.
+
+**What this arc does not produce: client-facing value.** Tasks 1–4 yield an
+ROI scorecard, and every vendor has one. Nothing differentiates this project
+until the accuracy view lands, and the two-method deploy gate pushes public
+launch past this arc entirely. That is an accepted sequencing cost, recorded
+so it is a decision rather than a discovery.
 
 ## Business question this arc answers
 
 How wrong is a trade-promotion incrementality estimate, and can that error be
 shown rather than claimed?
 
-## Goal — clarified 2026-08-17
+## Requirements — clarified 2026-08-17
 
-Output of `/clarify`. Refines the arc goal above; does not replace it. These
-are requirements for the stack decision, not the decision itself — that runs
-through `/office-hours`, `/plan-ceo-review` and `/plan-eng-review`.
+Output of `/clarify` and `/office-hours`. Refines the arc goal above; does not
+replace it. These are requirements for the stack decision, not the decision
+itself — that runs through `/plan-eng-review`.
 
 **Audience and framing**
 
@@ -50,11 +57,20 @@ through `/office-hours`, `/plan-ceo-review` and `/plan-eng-review`.
 **The 30-second rule — governs arrival**
 
 The ROI Scorecard's first paint must be readable by a CEO or CFO in 30 seconds
-or less: **verdict line, one chart, three numbers** (the Question Engine
-pattern). Exploration is opt-in depth *after* the verdict, never a prerequisite
-for it. The zero-state — before any filter is touched — is a deliverable in its
-own right, not a placeholder. "Genuine exploration" must not become "requires
+or less: **verdict line, one chart, three numbers.** That is the *Question
+Engine pattern* — a screen that answers one question outright and explains
+itself to an executive in 30 seconds, with no legend-reading, no drill-down
+and no prior context required.
+
+Exploration is opt-in depth *after* the verdict, never a prerequisite for it.
+The zero-state — before any filter is touched — is a deliverable in its own
+right, not a placeholder. "Genuine exploration" must not become "requires
 exploration."
+
+**Verification:** this is the only requirement here that cannot be checked by
+running a test. It is checked by **one timed session with one person who works
+in trade marketing, before public deploy.** Show the first paint, time them,
+ask what the tool is telling them. Unverified, it is an assertion.
 
 **Data shape**
 
@@ -99,11 +115,20 @@ whose per-page reactive model is least suited to shared cross-route state.
 Dash is now clearly out: an always-on server for data that never changes, and
 Plotly defaults fighting the design system.
 
-**Still open**
+**Mobile — decided 2026-08-17, split by surface**
 
-- **Mobile.** The global deployed-UI gate requires checking at 1440px *and*
-  375px. A cannibalization matrix at 375px is a hard design problem. Working
-  assumption is graceful reduction on phones, not full parity. Not confirmed.
+- **The 30-second surface is phone-first.** The Scorecard header — verdict
+  line, one chart, three numbers — must *fully* work at 375px. That screen is
+  the first impression from the `/work` link, and links get opened on phones.
+  A 30-second verdict that only works at 1440px fails its own brief.
+- **The exploration surfaces are desktop-first.** Ranked-list interactions,
+  Event Anatomy, Accuracy: readable and functional on mobile, but comparison
+  mode and dense waterfall interactions may degrade gracefully with a "best
+  on desktop" note.
+
+This bounds the responsive work to **one** genuinely responsive component
+instead of three, and it matches how each surface is actually consumed. Full
+entry in DECISIONS.md.
 
 ## Tasks
 
@@ -194,7 +219,54 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
 - [ ] The portfolio roll-up ties to both the sum of event nets and the
       row-level grain sum, asserted by a test rather than assumed
 - [ ] Scorecard first paint satisfies the 30-second rule — verdict line, one
-      chart, three numbers — with no filter interaction required
+      chart, three numbers — with no filter interaction required, and the
+      Scorecard header works fully at 375px
+- [ ] The 30-second rule has been **verified in one timed session** with one
+      person who works in trade marketing — not asserted
+
+## Definition of success — project level
+
+Distinct from the arc's definition of done above, which measures whether the
+artifact is correct. This measures whether building it was worth it. Horizon:
+**three months from public deploy.**
+
+The reason this section exists: the timeline is open-ended and the quality bar
+rose during `/office-hours`. A project with no external "done" and a rising
+internal bar has one predictable failure mode, and it isn't shipping something
+wrong. This is the external done.
+
+**Controlled — these are the bar for "worth building":**
+
+- [ ] Case study live on `lailarallc.com/work`, with the tool linked from it
+- [ ] Tool shown live to **≥3 people in the target ICP** — trade marketing or
+      finance at specialty food brands — each passing the timed 30-second check
+- [ ] Tool used as the demo in **every** promo-related sales conversation in
+      the window
+
+**Signal — directional, not pass/fail:**
+
+- ≥1 inbound inquiry or pitch conversation that cites the tool
+
+Marketing reach is not this repo's variable, so the signal item does not gate
+anything. The controlled items do.
+
+## Risks and external dependencies
+
+**Primary risk: the stall.** Open-ended timeline, a rigor bar that rose during
+`/office-hours`, and a deploy gate that pushes launch past this arc. The
+failure mode for this project is not shipping something wrong — it is not
+shipping. The project-level success definition above is the countermeasure;
+it exists to supply an external "done," not to measure marketing.
+
+**External dependency: the case study on `lailarallc.com/work`.** The tool is
+the product and carries no narrative wrapper of its own, by decision. The case
+study is what frames it and where its traffic comes from. It lives outside this
+repo and outside this task list — and if it is never written, the flagship does
+not function regardless of how good the tool is. Named here so it does not go
+unowned.
+
+**Secondary dependency: a portfolio link.** The tool has to be reachable from
+`lailarallc.com` for any of the controlled success items to be achievable.
 
 ---
 
