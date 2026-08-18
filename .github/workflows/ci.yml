@@ -7,7 +7,7 @@ on:
   pull_request:
 
 # Read-only. The workflow clones a private sibling repo via a fine-grained PAT
-# held in the PROMO_RESPONSE_READ_TOKEN secret (Contents + Metadata, read-only
+# held in the PROMO_RESPONSE_READ secret (Contents + Metadata, read-only
 # on cinderhaven-promo-response). Nothing here writes anywhere.
 permissions:
   contents: read
@@ -41,10 +41,10 @@ jobs:
         # a missing one. Cost: one wasted debugging cycle. This fails early and
         # says which repo the secret belongs on. The value is never echoed.
         env:
-          TOKEN: ${{ secrets.PROMO_RESPONSE_READ_TOKEN }}
+          TOKEN: ${{ secrets.PROMO_RESPONSE_READ }}
         run: |
           if [ -z "$TOKEN" ]; then
-            echo "::error::PROMO_RESPONSE_READ_TOKEN is not set on this repository."
+            echo "::error::PROMO_RESPONSE_READ is not set on this repository."
             echo "::error::It must exist in the Actions secrets of the repo that RUNS this workflow"
             echo "::error::(cinderhaven-promo-incrementality), not the repo it reads"
             echo "::error::(cinderhaven-promo-response). A secret on the upstream repo is not visible here."
@@ -58,7 +58,7 @@ jobs:
         # single source of truth. The token is not echoed.
         run: |
           git config --global \
-            url."https://x-access-token:${{ secrets.PROMO_RESPONSE_READ_TOKEN }}@github.com/".insteadOf \
+            url."https://x-access-token:${{ secrets.PROMO_RESPONSE_READ }}@github.com/".insteadOf \
             "https://github.com/"
 
       - name: Install the gate only
@@ -120,10 +120,10 @@ jobs:
         # a missing one. Cost: one wasted debugging cycle. This fails early and
         # says which repo the secret belongs on. The value is never echoed.
         env:
-          TOKEN: ${{ secrets.PROMO_RESPONSE_READ_TOKEN }}
+          TOKEN: ${{ secrets.PROMO_RESPONSE_READ }}
         run: |
           if [ -z "$TOKEN" ]; then
-            echo "::error::PROMO_RESPONSE_READ_TOKEN is not set on this repository."
+            echo "::error::PROMO_RESPONSE_READ is not set on this repository."
             echo "::error::It must exist in the Actions secrets of the repo that RUNS this workflow"
             echo "::error::(cinderhaven-promo-incrementality), not the repo it reads"
             echo "::error::(cinderhaven-promo-response). A secret on the upstream repo is not visible here."
@@ -134,7 +134,7 @@ jobs:
       - name: Authenticate to the private data package
         run: |
           git config --global \
-            url."https://x-access-token:${{ secrets.PROMO_RESPONSE_READ_TOKEN }}@github.com/".insteadOf \
+            url."https://x-access-token:${{ secrets.PROMO_RESPONSE_READ }}@github.com/".insteadOf \
             "https://github.com/"
 
       - name: Install with the pinned dependency

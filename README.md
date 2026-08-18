@@ -83,7 +83,7 @@ python -m venv .venv
 ```
 
 The upstream data package is a private repo pinned by commit SHA, so the
-install needs read access to it. In CI that is the `PROMO_RESPONSE_READ_TOKEN`
+install needs read access to it. In CI that is the `PROMO_RESPONSE_READ`
 secret; locally, whatever credentials git already has.
 
 Tests — one command, nothing skipped:
