@@ -1,0 +1,35 @@
+[project]
+name = "cinderhaven-promo-incrementality"
+version = "0.0.1"
+description = "Trade-promotion incrementality tool: ROI Scorecard, Event Anatomy, and an estimate-vs-truth Accuracy view over the Cinderhaven promo-event spine"
+readme = "README.md"
+requires-python = ">=3.11"
+
+# The pin is the SHA, not the tag. Annotated tags are mutable; a tag name
+# would let the dependency change under a manifest that still reads as
+# pinned. An accuracy number is meaningless without knowing which data
+# generation it scored against — see DECISIONS.md.
+#
+# 70021d4 = v0.1.0, "release 0.1.0: plausibility audit passed, retired-figure
+# scan vendored". Recorded here for humans; resolve with
+# `git rev-parse v0.1.0^{commit}` in the upstream repo, not `git rev-parse
+# v0.1.0` — that returns the annotated tag object (1d3ec86), not a commit.
+dependencies = [
+    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@70021d4d472bdf4ab5132778472b4ca8a95fe0e8",
+]
+
+# Local iteration off a working tree is a hand-run command, never a manifest
+# entry:  pip install -e ../cinderhaven-promo-response
+# Putting that path here would make "pinned at v0.1.0" describe this machine
+# rather than anything CI can reproduce.
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.ruff]
+line-length = 88
+src = ["src", "tests"]

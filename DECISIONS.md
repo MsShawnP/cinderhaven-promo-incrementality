@@ -308,6 +308,50 @@ as the headline. The mediocre middle is the honest denominator.
 - **Do not:** report an accuracy number without recording the
   `cinderhaven-promo-response` version and seed alongside it.
 
+### 2026-08-18 — The upstream package is pinned by commit SHA in the manifest. Never an editable local path.
+
+- **Decision:** `pyproject.toml` declares the dependency as a git URL pinned to
+  the **full 40-character commit SHA** of the release:
+
+      cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@70021d4d472bdf4ab5132778472b4ca8a95fe0e8
+
+  `70021d4` is v0.1.0. The tag name is recorded in a comment for humans; the
+  pin is the SHA.
+- **Why SHA and not the tag name:** annotated tags are mutable. A tag can be
+  moved and the manifest still reads as pinned, which is the worst version of
+  a pin — it satisfies review and not reproducibility. The rest of the fleet
+  pins SHAs (`0f300ef`, `c4ea09e`); same discipline, same reason.
+- **Why the full SHA and not the short form:** a short SHA is a prefix match,
+  and prefixes collide as a repo grows.
+- **The trap, which cost a wrong pin on 2026-08-18:** `git rev-parse v0.1.0`
+  returns the **annotated tag object** (`1d3ec86`), not a commit. Use
+  `git rev-parse v0.1.0^{commit}`. The first SHA proposed for this manifest,
+  `a237910`, was neither — it was an unrelated ancestor commit dated 75 minutes
+  before the release, predating the plausibility audit and the retired-figure
+  scan. It resolves, it installs, and every accuracy figure scored against it
+  would have been scored against a build that never passed its own release
+  gate. **It was caught only because a SHA is checkable**; a tag name would
+  have been right by accident and taught nothing.
+- **Verification that the pin took effect** — pip records provenance, so this
+  is checkable rather than assumed:
+
+      .venv/Lib/site-packages/cinderhaven_promo_response-0.1.0.dist-info/direct_url.json
+      → "commit_id": "70021d4d472bdf4ab5132778472b4ca8a95fe0e8"
+
+- **Rejected — editable install from `../cinderhaven-promo-response`.** It
+  makes "pinned at v0.1.0" describe a working tree rather than anything CI can
+  reproduce, failing the pin decision it appears to satisfy. Local iteration is
+  still fine as a **hand-run command** — `pip install -e ../cinderhaven-promo-response` —
+  that the manifest never records.
+- **Rejected — vendoring a wheel into this repo.** It is a pure-Python package
+  that generates its data at first load; a committed binary artifact is just a
+  second thing that can drift from the tag.
+- **Scope:** the dependency manifest; every published accuracy figure.
+- **Do not:** put an editable or local path in the manifest, for any reason,
+  including "just while iterating." Do not pin a tag name. Do not pin a short
+  SHA. Do not record a SHA without confirming it is the peeled commit of the
+  intended tag.
+
 ### 2026-08-17 — The portfolio roll-up is a pipeline artifact with a reconciliation test.
 
 - **Decision:** The Scorecard is a portfolio header plus a ranked list. The
