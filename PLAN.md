@@ -150,6 +150,25 @@ layer.
       data; keep it fast and dependency-light so it always runs. `pr.load()`
       is ~8.5s cold with no warm cache in CI, and a gate that goes red for
       unrelated data flakes is a gate people learn to ignore.
+- [ ] **Re-pin to v0.1.1 once upstream ships the packaging fix.** `pr.load()`
+      raises `FileNotFoundError` on the first call in any fresh install of
+      v0.1.0 — `FIGURES.md` is read at runtime but not packaged into the wheel.
+      See FAILURES.md for the reproduction and the defect class. **Consequence
+      for this arc: the CI data job is expected red until this lands.** That is
+      the correct state — a red job telling the truth beats a green one hiding
+      an upstream bug that is already scheduled to be fixed. The truth-gate job
+      is unaffected; it is pure AST parsing and needs no data, which is the
+      second reason for the split above.
+      The fix is an upstream v0.1.1 patch release made in its own session, not
+      from this repo. Its acceptance test: **cold-cache `pr.load()` succeeds
+      from a wheel install**, plus a release-checklist line for the general
+      rule — *every file the package reads at runtime is present in the built
+      artifact.* Re-pinning here is then a one-line manifest change, logged in
+      DECISIONS.md as a re-run per the pin decision.
+      **Do not adopt a local workaround** — not a swallowed exception, not a
+      shipped warm cache — without its own DECISIONS.md entry. A consumer that
+      silently swallows an exception from its data package is the failure mode
+      this project's premise argues against.
 - [ ] **Dependency-direction test** — assert that nothing outside the
       accuracy module imports it, directly or transitively. The AST gate is
       per-file; an estimator that imports the accuracy module reaches truth
