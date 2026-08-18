@@ -110,3 +110,32 @@ here — no venv exists yet.
 plus pytest and ruff. Then create `.venv` and confirm `pr.load()` runs.
 
 ---
+
+## 2026-08-18 13:31
+
+**What changed:** Task 3 done — two-job CI live, truth gate proven green and
+the data contract proven red for the documented reason, with real runner
+evidence.
+
+**Why:** Local green proved the gate function; only a push proves the workflow
+wiring, the secret, and the `--no-deps` install work on a runner. It took three
+runs to get clean evidence — each failure was a real setup defect the CI caught.
+
+**State:** Green — `truth-gate` (AST over `src/`, `--no-deps`, pandas-absent
+asserted; demonstrated to fail via a planted `src/` violation plus two permanent
+fixtures covering both channels). Red by design — `data-contract`, failing only
+at the test step on the upstream `FIGURES.md` cold-cache defect, after auth +
+install + pin-verification all pass. Three setup bugs found and fixed along the
+way: secret on the wrong repo (upstream, not consumer) → added a token preflight;
+secret name mismatch (`PROMO_RESPONSE_READ` vs `..._TOKEN`) → aligned code to the
+existing name; token regenerated and re-verified on a runner. Exemption list is
+now a named file (`src/incrementality/accuracy.py`), not a directory, with an
+invariant test. 10 tests pass locally, ruff clean. Untouched: SvelteKit scaffold,
+any estimator, the walking skeleton.
+
+**Next:** Task 5 — the walking skeleton. One Python-computed number → JSON →
+rendered by the real front end → deployed to a real static host. This is what
+actually answers "is this stack right?" and is the cheapest insurance against
+the stall risk. Scaffold SvelteKit + adapter-static first.
+
+---
