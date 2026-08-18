@@ -69,3 +69,44 @@ the recommendation now points at SvelteKit (cross-view state, not narrative),
 and mobile is still undecided — the 375px cannibalization matrix is unresolved.
 
 ---
+## 2026-08-17 16:51 — backfill (session ended without /wrap)
+
+**What changed:** `/office-hours`, `/plan-ceo-review` and `/plan-eng-review`
+run; scope collapsed to three views; stack decided.
+
+**Why:** Entry written 2026-08-18 to close a hole — three commits landed
+after the 15:52 entry and none were logged. No work was lost; the decisions
+are all in DECISIONS.md. The log just didn't record them.
+
+**State:** Stack settled — SvelteKit + D3, static, Cloudflare Pages; the
+PENDING entry is struck through, not deleted. Scope is three views, not six.
+Positioning, external-validity, mobile-split, integer-cents, artifact-label
+and dependency-direction decisions all logged. Still docs-only: no manifest,
+no CI, no code.
+
+**Next:** Repo skeleton — task 2 in PLAN.md.
+
+---
+
+## 2026-08-18 09:45
+
+**What changed:** Settled how the upstream package is installed: git URL
+pinned to a commit SHA, not an editable local path and not a vendored wheel.
+
+**Why:** An editable install off `../cinderhaven-promo-response` would make
+"pinned at v0.1.0" describe the working tree rather than anything CI can
+reproduce — it fails the pin decision it appears to satisfy. SHA over tag
+name because annotated tags are mutable; the fleet pins SHAs everywhere else.
+
+**State:** Nothing written yet. The SHA supplied in session, `a237910`, was
+checked and is **wrong** — it is an ancestor of `v0.1.0` dated 75 minutes
+before it, predating the plausibility audit and the retired-figure scan. The
+v0.1.0 commit is `70021d4d472bdf4ab5132778472b4ca8a95fe0e8`. Still docs-only:
+no manifest, no CI, no code. `cinderhaven_promo_response` is not importable
+here — no venv exists yet.
+
+**Next:** Write `pyproject.toml` pinning
+`cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@70021d4`,
+plus pytest and ruff. Then create `.venv` and confirm `pr.load()` runs.
+
+---
