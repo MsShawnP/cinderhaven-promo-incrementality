@@ -139,3 +139,21 @@ actually answers "is this stack right?" and is the cheapest insurance against
 the stall risk. Scaffold SvelteKit + adapter-static first.
 
 ---
+
+## 2026-08-18 14:40
+
+**What changed:** Re-pinned the upstream package to v0.1.1 (7cfe95c); the
+data-contract CI job is now green cold. CI is fully green.
+
+**Why:** Upstream v0.1.1 fixed the FIGURES.md cold-cache crash that made the
+data job red by design. Moving the pin closes the loop the red job held open.
+
+**State:** pyproject.toml pins 7cfe95c (v0.1.1, peeled commit) with updated
+human comments; test_data_contract.py asserts 0.1.1 and its docstring records
+the fix; CI job comments no longer say "expected red". Full consumer suite: 10
+passed on a cold cache — every pr.load() test included. Truth gate still green.
+Repo skeleton, CI, and the re-pin are all done. Untouched: SvelteKit scaffold,
+any estimator, the walking skeleton.
+
+**Next:** Task 5 — the walking skeleton. One Python-computed number → JSON →
+SvelteKit (adapter-static) → Cloudflare Pages. Scaffold the front end first.

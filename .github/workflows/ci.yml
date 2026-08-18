@@ -91,19 +91,19 @@ jobs:
   # ---------------------------------------------------------------------------
   # Job 2 — the data contract. Installs the pinned package and calls pr.load().
   #
-  # EXPECTED RED until upstream v0.1.1. pr.load() raises FileNotFoundError on
-  # the first call in a fresh install of v0.1.0: FIGURES.md is read at runtime
-  # but absent from the wheel. CI is a cold cache every run, so this fails here
-  # and passes locally on a warm one. See FAILURES.md and the re-pin task in
-  # PLAN.md.
+  # Green since the pin moved to v0.1.1 (7cfe95c). Under v0.1.0 this was red on
+  # every run: pr.load() raised FileNotFoundError on the first call because the
+  # consumer serve path read FIGURES.md, a source file absent from the wheel,
+  # and CI is a cold cache every run. The upstream packaging fix removed it. The
+  # job asserts the contract — 131 events, 1,340,462 rows, eight observed
+  # columns — and that the install resolves to the pinned SHA.
   #
-  # Deliberately NOT given continue-on-error. A red job reporting a real
-  # upstream defect that is already scheduled to be fixed is more useful than a
-  # green one hiding it, and continue-on-error is how "temporary" becomes
-  # permanent.
+  # No continue-on-error, and it should stay that way: if this goes red again it
+  # means the upstream data or its packaging changed under the pin, which is
+  # exactly the signal worth failing on.
   # ---------------------------------------------------------------------------
   data-contract:
-    name: Data contract (expected red until upstream v0.1.1)
+    name: Data contract
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

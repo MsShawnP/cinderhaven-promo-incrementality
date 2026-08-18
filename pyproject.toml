@@ -10,17 +10,20 @@ requires-python = ">=3.11"
 # pinned. An accuracy number is meaningless without knowing which data
 # generation it scored against — see DECISIONS.md.
 #
-# 70021d4 = v0.1.0, "release 0.1.0: plausibility audit passed, retired-figure
-# scan vendored". Recorded here for humans; resolve with
-# `git rev-parse v0.1.0^{commit}` in the upstream repo, not `git rev-parse
-# v0.1.0` — that returns the annotated tag object (1d3ec86), not a commit.
+# 7cfe95c = v0.1.1, "release 0.1.1: fix pr.load() crash on first call in a
+# fresh install". Re-pinned 2026-08-18 from 70021d4 (v0.1.0), whose pr.load()
+# raised FileNotFoundError on the first call in any fresh install — the upstream
+# packaging fix. Data-neutral: v0.1.1 is byte-for-byte the v0.1.0 data. Recorded
+# here for humans; resolve with `git rev-parse v0.1.1^{commit}` in the upstream
+# repo, not `git rev-parse v0.1.1` — that returns the annotated tag object
+# (e8439fb), not a commit. See DECISIONS.md and FAILURES.md.
 dependencies = [
-    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@70021d4d472bdf4ab5132778472b4ca8a95fe0e8",
+    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@7cfe95c8e014bc7dec30801efbf27b6d27418f3b",
 ]
 
 # Local iteration off a working tree is a hand-run command, never a manifest
 # entry:  pip install -e ../cinderhaven-promo-response
-# Putting that path here would make "pinned at v0.1.0" describe this machine
+# Putting that path here would make "pinned at v0.1.1" describe this machine
 # rather than anything CI can reproduce.
 
 [project.optional-dependencies]

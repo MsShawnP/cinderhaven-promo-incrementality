@@ -4,11 +4,12 @@ This is the whole interface to `cinderhaven-promo-response`: two frames from
 `pr.load()`, observed columns only. If any of it drifts, every downstream
 number drifts with it and nothing else in this repo would notice.
 
-**Expected red in CI until upstream v0.1.1.** `pr.load()` raises
-FileNotFoundError on the first call in a fresh install of v0.1.0 — see
-FAILURES.md. CI is a cold cache every run, so this fails there and passes
-locally on a warm one. That asymmetry is the bug, not a flake; it is left
-visible rather than worked around.
+Green on a cold cache since upstream v0.1.1 (SHA 7cfe95c). In v0.1.0
+`pr.load()` raised FileNotFoundError on the first call in any fresh install —
+the consumer serve path rewrote a source file absent from the wheel — so this
+job was red on every CI run (cold cache) and passed only on a warm local one.
+The upstream packaging fix removed that asymmetry; the pin was moved to v0.1.1
+in the same change that flipped this green. See FAILURES.md and DECISIONS.md.
 """
 
 import cinderhaven_promo_response as pr
@@ -39,7 +40,7 @@ def loaded():
 
 
 def test_package_is_the_pinned_version(loaded):
-    assert pr.__version__ == "0.1.0"
+    assert pr.__version__ == "0.1.1"
 
 
 def test_event_count_matches_the_contract(loaded):
