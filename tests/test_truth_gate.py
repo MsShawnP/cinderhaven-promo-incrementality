@@ -16,10 +16,15 @@ from cinderhaven_promo_response.testing import (
     assert_no_truth_access,
 )
 
-# The exemption list. One entry, named, narrow, and not yet created — the
-# accuracy view is the only module that will ever be added here. A directory
-# glob or a broad prefix would turn the gate off while looking like it is on.
-ACCURACY_VIEW = ("src/accuracy/",)
+# The exemption list. Every entry is an explicit **file** path, never a
+# directory. A directory exemption is a growth path: anything later dropped
+# into it inherits the blindness exemption silently, and a "list is still
+# singular" check would not fire because the entry count never changes. When
+# the accuracy view grows past one module, each file is named on its own line.
+# The friction is the point — an exemption should cost a visible line.
+#
+# The file below does not exist yet; the accuracy view is a later slice.
+ACCURACY_VIEW = ("src/incrementality/accuracy.py",)
 
 FIXTURES = "tests/fixtures"
 
@@ -53,13 +58,28 @@ def test_gate_refuses_to_run_over_an_empty_tree(tmp_path):
         assert_no_truth_access(str(tmp_path))
 
 
-def test_exemption_list_stays_singular():
+def test_every_exemption_is_a_named_file_not_a_directory():
+    """The invariant that must survive the list growing.
+
+    `exclude` matches on substring, so a trailing-slash entry exempts every
+    file placed under it, forever, with no further edit and no failing test.
+    Naming files individually means each exemption costs one visible line.
+    """
+    for entry in ACCURACY_VIEW:
+        assert entry.endswith(".py"), (
+            f"exemption {entry!r} is not a file path. A directory exemption "
+            "silently covers every file added under it later — name the module."
+        )
+        assert not entry.endswith("/"), f"exemption {entry!r} is a directory"
+
+
+def test_exemption_list_matches_the_logged_decision():
     """A second exemption is a decision to log, not a line to add quietly.
 
     See DECISIONS.md: truth flows one way. Widening this list is how the
     gate gets turned off one plausible entry at a time.
     """
-    assert ACCURACY_VIEW == ("src/accuracy/",), (
+    assert ACCURACY_VIEW == ("src/incrementality/accuracy.py",), (
         "the truth-gate exemption list changed; this requires a DECISIONS.md "
         f"entry explaining why, not a test edit. Found: {ACCURACY_VIEW!r}"
     )
