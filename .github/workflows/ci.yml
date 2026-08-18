@@ -1,0 +1,131 @@
+name: CI
+
+# The truth gate runs on every push from the first commit that could contain an
+# estimator, not added later when convenient. See CLAUDE.md.
+on:
+  push:
+  pull_request:
+
+# Read-only. The workflow clones a private sibling repo via a fine-grained PAT
+# held in the PROMO_RESPONSE_READ_TOKEN secret (Contents + Metadata, read-only
+# on cinderhaven-promo-response). Nothing here writes anywhere.
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1 — the truth gate. Pure AST parsing over src/. No data, by design.
+  #
+  # Deliberately installed with --no-deps: the gate module imports only `ast`
+  # and `pathlib`, so pandas/numpy/pyarrow are never needed here. A gate that
+  # can go red because a wheel failed to resolve is a gate people learn to
+  # ignore, and this one is the credibility of the accuracy view.
+  #
+  # This job must stay green. If it is red, estimation code can reach truth.
+  # ---------------------------------------------------------------------------
+  truth-gate:
+    name: Truth gate (AST, no data)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Authenticate to the private data package
+        # Rewrites the plain https URL in pyproject.toml at git level, so the
+        # manifest never contains a credential and the pinned SHA stays the
+        # single source of truth. The token is not echoed.
+        run: |
+          git config --global \
+            url."https://x-access-token:${{ secrets.PROMO_RESPONSE_READ_TOKEN }}@github.com/".insteadOf \
+            "https://github.com/"
+
+      - name: Install the gate only
+        # The requirement string is read out of pyproject.toml rather than
+        # repeated here. Duplicating a pinned SHA across two files is the drift
+        # this project's pin decision exists to prevent.
+        run: |
+          python -m pip install --upgrade pip
+          DEP=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['dependencies'][0])")
+          python -m pip install --no-deps "$DEP"
+          python -m pip install pytest
+
+      - name: Confirm the gate imported without its data layer
+        # If pandas is present, --no-deps silently stopped meaning anything and
+        # this job is no longer the fast, isolated gate it claims to be.
+        run: |
+          python - <<'PY'
+          import importlib.util, sys
+          from cinderhaven_promo_response.testing import assert_no_truth_access  # noqa: F401
+          assert importlib.util.find_spec("pandas") is None, (
+              "pandas is installed in the gate job; --no-deps is not doing what "
+              "this job's design assumes"
+          )
+          print("gate imported clean; pandas absent as intended")
+          PY
+
+      - name: Run the truth gate
+        run: python -m pytest tests/test_truth_gate.py -v
+
+  # ---------------------------------------------------------------------------
+  # Job 2 — the data contract. Installs the pinned package and calls pr.load().
+  #
+  # EXPECTED RED until upstream v0.1.1. pr.load() raises FileNotFoundError on
+  # the first call in a fresh install of v0.1.0: FIGURES.md is read at runtime
+  # but absent from the wheel. CI is a cold cache every run, so this fails here
+  # and passes locally on a warm one. See FAILURES.md and the re-pin task in
+  # PLAN.md.
+  #
+  # Deliberately NOT given continue-on-error. A red job reporting a real
+  # upstream defect that is already scheduled to be fixed is more useful than a
+  # green one hiding it, and continue-on-error is how "temporary" becomes
+  # permanent.
+  # ---------------------------------------------------------------------------
+  data-contract:
+    name: Data contract (expected red until upstream v0.1.1)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Authenticate to the private data package
+        run: |
+          git config --global \
+            url."https://x-access-token:${{ secrets.PROMO_RESPONSE_READ_TOKEN }}@github.com/".insteadOf \
+            "https://github.com/"
+
+      - name: Install with the pinned dependency
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Confirm the installed package resolves to the pinned SHA
+        # pip records provenance in direct_url.json; this checks the pin took
+        # effect rather than trusting that it did. The manifest stays the only
+        # place the SHA is written.
+        run: |
+          python - <<'PY'
+          import json, tomllib
+          from importlib.metadata import Distribution
+
+          requirement = tomllib.load(open("pyproject.toml", "rb"))["project"]["dependencies"][0]
+          expected = requirement.rsplit("@", 1)[-1].strip()
+
+          provenance = json.loads(
+              Distribution.from_name("cinderhaven-promo-response").read_text("direct_url.json")
+          )
+          found = provenance["vcs_info"]["commit_id"]
+
+          assert found == expected, f"installed {found}, manifest pins {expected}"
+          print(f"pin verified: {found}")
+          PY
+
+      - name: Run the data contract tests
+        run: python -m pytest tests/test_data_contract.py -v

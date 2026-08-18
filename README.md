@@ -73,9 +73,29 @@ is enforced on both sides of the boundary.
 
 ## Run
 
+The Python engine only. Nothing renders yet — the SvelteKit front end is not
+scaffolded.
+
+```bash
+python -m venv .venv
+.venv/Scripts/python -m pip install -e ".[dev]"   # Windows
+# .venv/bin/pip install -e ".[dev]"               # macOS / Linux
 ```
-# Not runnable yet — no stack, no dependency manifest.
+
+The upstream data package is a private repo pinned by commit SHA, so the
+install needs read access to it. In CI that is the `PROMO_RESPONSE_READ_TOKEN`
+secret; locally, whatever credentials git already has.
+
+Tests — one command, nothing skipped:
+
+```bash
+.venv/Scripts/python -m pytest
 ```
+
+`tests/test_data_contract.py` calls `pr.load()`, which is ~8.5s on a cold cache
+and ~0.6s warm. **It currently fails on a cold cache** — an upstream v0.1.0
+packaging defect, documented in FAILURES.md and scheduled for v0.1.1. The truth
+gate is unaffected: it is pure AST parsing over `src/` and needs no data.
 
 ---
 

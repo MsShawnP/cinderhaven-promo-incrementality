@@ -1,0 +1,63 @@
+"""The consumer contract, asserted rather than trusted.
+
+This is the whole interface to `cinderhaven-promo-response`: two frames from
+`pr.load()`, observed columns only. If any of it drifts, every downstream
+number drifts with it and nothing else in this repo would notice.
+
+**Expected red in CI until upstream v0.1.1.** `pr.load()` raises
+FileNotFoundError on the first call in a fresh install of v0.1.0 — see
+FAILURES.md. CI is a cold cache every run, so this fails there and passes
+locally on a warm one. That asymmetry is the bug, not a flake; it is left
+visible rather than worked around.
+"""
+
+import cinderhaven_promo_response as pr
+import pytest
+
+# Contract figures from CLAUDE.md. Pinned deliberately: these are the shape of
+# the dependency, not an output of this repo's code, so a golden value is the
+# point. A change here means the upstream data changed under a pinned SHA,
+# which should be impossible.
+EXPECTED_EVENTS = 131
+EXPECTED_SCAN_ROWS = 1_340_462
+OBSERVED_COLUMNS = [
+    "sku",
+    "store_id",
+    "week_ending",
+    "observed_units",
+    "regular_price",
+    "promoted_price",
+    "promo_id",
+    "complied",
+]
+
+
+@pytest.fixture(scope="session")
+def loaded():
+    """~8.5s cold, ~0.6s warm. Loaded once per session, per tests/CLAUDE.md."""
+    return pr.load()
+
+
+def test_package_is_the_pinned_version(loaded):
+    assert pr.__version__ == "0.1.0"
+
+
+def test_event_count_matches_the_contract(loaded):
+    events, _ = loaded
+    assert len(events) == EXPECTED_EVENTS
+
+
+def test_scan_delta_row_count_matches_the_contract(loaded):
+    _, delta = loaded
+    assert len(delta) == EXPECTED_SCAN_ROWS
+
+
+def test_scan_delta_carries_observed_columns_only(loaded):
+    """Truth must not ride along on the observed artifact.
+
+    The upstream loader hard-fails if it does. Asserted again on this side of
+    the boundary because it is the one failure that would otherwise be silent
+    and would invalidate every accuracy figure downstream.
+    """
+    _, delta = loaded
+    assert list(delta.columns) == OBSERVED_COLUMNS

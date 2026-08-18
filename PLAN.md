@@ -142,6 +142,9 @@ layer.
 - [ ] **Repo skeleton for the chosen stack** — dependency manifest with the
       upstream package pinned, test runner, lint config, `.gitignore`
       additions. Nothing rendering yet.
+      **Python side done 2026-08-18** — `pyproject.toml` with the pinned SHA,
+      pytest, ruff, `src/incrementality/` package root. **SvelteKit scaffold
+      not started**, which is what keeps this unchecked.
 - [ ] **CI with the truth gate, before any estimator exists** — a workflow
       that runs `assert_no_truth_access` over `src/`. It must be proven to
       *fail*: commit a deliberate violation fixture, watch CI go red, then
@@ -150,6 +153,16 @@ layer.
       data; keep it fast and dependency-light so it always runs. `pr.load()`
       is ~8.5s cold with no warm cache in CI, and a gate that goes red for
       unrelated data flakes is a gate people learn to ignore.
+      **Written 2026-08-18** — `.github/workflows/ci.yml`, two jobs. The gate
+      job installs the package with `--no-deps` (the gate imports only `ast`
+      and `pathlib`) and asserts pandas is absent, so "dependency-light" is
+      enforced rather than intended. **Proven to fail locally**: a violation
+      planted in `src/` turns the gate red naming the file and line, and two
+      permanent fixtures in `tests/fixtures/` keep both channels — import and
+      string literal — demonstrated on every run. **Still unchecked because the
+      CI run itself has not been observed.** Failing locally proves the gate
+      function works; it does not prove the workflow wiring, the secret, or the
+      `--no-deps` install work on a runner. That needs a push.
 - [ ] **Re-pin to v0.1.1 once upstream ships the packaging fix.** `pr.load()`
       raises `FileNotFoundError` on the first call in any fresh install of
       v0.1.0 — `FIGURES.md` is read at runtime but not packaged into the wheel.
