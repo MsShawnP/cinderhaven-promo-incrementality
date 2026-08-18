@@ -34,6 +34,24 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Confirm the read token is present
+        # An absent secret expands to an empty string, producing
+        # `https://x-access-token:@github.com/` and a git error that reads
+        # "Invalid username or token" — which looks like a bad PAT rather than
+        # a missing one. Cost: one wasted debugging cycle. This fails early and
+        # says which repo the secret belongs on. The value is never echoed.
+        env:
+          TOKEN: ${{ secrets.PROMO_RESPONSE_READ_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::PROMO_RESPONSE_READ_TOKEN is not set on this repository."
+            echo "::error::It must exist in the Actions secrets of the repo that RUNS this workflow"
+            echo "::error::(cinderhaven-promo-incrementality), not the repo it reads"
+            echo "::error::(cinderhaven-promo-response). A secret on the upstream repo is not visible here."
+            exit 1
+          fi
+          echo "token present"
+
       - name: Authenticate to the private data package
         # Rewrites the plain https URL in pyproject.toml at git level, so the
         # manifest never contains a credential and the pinned SHA stays the
@@ -94,6 +112,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+
+      - name: Confirm the read token is present
+        # An absent secret expands to an empty string, producing
+        # `https://x-access-token:@github.com/` and a git error that reads
+        # "Invalid username or token" — which looks like a bad PAT rather than
+        # a missing one. Cost: one wasted debugging cycle. This fails early and
+        # says which repo the secret belongs on. The value is never echoed.
+        env:
+          TOKEN: ${{ secrets.PROMO_RESPONSE_READ_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::PROMO_RESPONSE_READ_TOKEN is not set on this repository."
+            echo "::error::It must exist in the Actions secrets of the repo that RUNS this workflow"
+            echo "::error::(cinderhaven-promo-incrementality), not the repo it reads"
+            echo "::error::(cinderhaven-promo-response). A secret on the upstream repo is not visible here."
+            exit 1
+          fi
+          echo "token present"
 
       - name: Authenticate to the private data package
         run: |
