@@ -69,8 +69,14 @@ deployed to **Cloudflare Pages**, renders the three views.
 - **The 1,340,462 scan rows never reach the browser.** Everything a view
   needs is precomputed. No client-side query layer, no DuckDB-WASM, no
   server.
-- **Money is integer cents** through the pipeline. Reconciliation assertions
-  are exact; no float tolerances.
+- **Money is integer cents** through the pipeline, quantized once at the row
+  grain with **round-half-even** (banker's). Units are **continuous**, not
+  integer — the upstream noise deviate makes `observed_units` fractional on
+  every row (corrected 2026-08-19; the earlier "units are integers" premise was
+  an eng-review error the schema check caught). The row-level integer-cent
+  value is the atomic unit both roll-ups share, so reconciliation asserts
+  **equality**, no float tolerance. Round-half-even, not half-up: across
+  1,340,462 rows half-up biases totals upward; half-even does not.
 
 ## Consumer contract — cinderhaven-promo-response v0.1.0
 
@@ -145,13 +151,27 @@ them invalidates the deliverable.
 
 ### Estimates are blind
 
-- Estimation code sees `pr.load()` output only. No `baseline_units`, no
-  `lift_units`, no `caused_by_promo_id`, no peeking at the generator's
-  coefficients in `config.py` to reverse-engineer an answer.
-- Reading `cinderhaven_promo_response.config` from estimation code is a
-  truth leak the AST gate will not catch, because the gate only denies
-  `truth`. Do not do it. If an estimator needs a prior, it derives it from
-  observed data or cites an external source.
+- **The allowed surface is exactly three names:** `load()` (the observed
+  layer), `economics()` (the product price card — per-SKU COGS and
+  per-SKU×retailer wholesale/unit margin; arrives in upstream v0.2.0), and
+  `testing` (the truth gate, run against this repo's own code). Everything
+  else is banned.
+- **Demarcation principle — blindness protects the demand response, not the
+  price card.** Lift, dip, transfer, compliance, seasonality, baseline
+  velocity: the estimator must never see these. COGS and wholesale price are
+  product economics a real client hands a vendor on day one; no vendor
+  estimates a client's COGS and no accuracy claim rests on not knowing it.
+  `economics()` mirrors the real engagement exactly.
+- **Banned: `config`, `constants`, `truth`.** `config` holds the response
+  coefficients (`LIFT_CENTERS`, `DIP_FRACTION`). `constants` holds the
+  baseline-demand generator (`BASE_UNITS`, `SKU_ARCHETYPES`,
+  `ARCHETYPE_VELOCITY_MULT`, `SEASONALITY`, `SEASONAL_PROFILES`) — the true
+  baseline by another route. Both are the answer key. The AST gate denies only
+  `truth`; `config` and `constants` are the "structure walks out past the
+  gate" hole and are banned by convention plus this repo's own supplementary
+  import check. If an estimator needs a prior, it derives it from observed data
+  or cites an external source — never from the generator.
+- No `baseline_units`, `lift_units`, or `caused_by_promo_id`, ever.
 
 ### Accuracy is reported honestly
 

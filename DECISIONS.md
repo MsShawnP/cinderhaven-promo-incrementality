@@ -180,6 +180,44 @@ custom composite charts, which is precisely the waterfall.
   beats view count — one anatomy view with a working method toggle is
   deeper than four shallow pages.
 
+### 2026-08-19 — Blindness protects the demand response, not the price card. Economics via a blessed accessor.
+
+- **Decision:** Estimation code's **allowed surface is exactly** `pr.load()`,
+  `pr.economics()`, and `pr.testing`. `economics()` — per-SKU COGS and
+  per-SKU×retailer wholesale/unit margin — is added upstream in **v0.2.0** in its
+  own module that imports **no demand parameters**. `config`, `constants`, and
+  `truth` are all banned.
+- **The demarcation principle:** blindness protects the **demand response** —
+  lift, dip, transfer, compliance, seasonality, baseline velocity — the things an
+  estimator must not see. **COGS and wholesale price are not demand response.**
+  They are product economics a real client hands a vendor on day one; no vendor
+  estimates a client's COGS, and no accuracy claim rests on not knowing it.
+  `economics()` mirrors the real engagement; withholding it would model a world
+  no analyst works in.
+- **Why a new accessor rather than reading `constants`:** `constants` tangles the
+  price card (COGS, wholesale, MSRP — legitimate) with the **baseline-demand
+  generator** (`BASE_UNITS`, `SKU_ARCHETYPES`, `ARCHETYPE_VELOCITY_MULT`,
+  `SEASONALITY`, `SEASONAL_PROFILES`). Importing it for COGS also hands over the
+  true seasonal and velocity structure — the baseline Method 0 is supposed to
+  *estimate*. That is a blindness breach the AST gate does **not** catch (it
+  denies `truth`, not `constants`) — the same "structure walks out past the gate"
+  hole as the `config` ban. The fix is upstream separation, not a consumer
+  workaround.
+- **Enforcement:** the allowed surface is asserted by this repo's own
+  supplementary import check over `src/` (bans `config`/`constants`), on top of
+  the upstream `assert_no_truth_access` truth gate. Lands with the pipeline
+  commits.
+- **Rejected — external cited margin %:** would ship slice 1 without waiting on
+  v0.2.0, but folds a margin-assumption error into what the accuracy view later
+  presents as *estimation* error — muddying the one attribution the tool exists
+  to keep clean. Not worth blurring the thesis exhibit for ship-now.
+- **Rejected — revenue-basis ROI (no COGS):** systematically overstates ROI
+  (SPEC.md's own msrp-vs-wholesale warning); an ROI that flatters promos is the
+  competitor's product, not this one.
+- **Scope:** all estimation code; the CI gate; the upstream v0.2.0 release.
+- **Do not:** import `constants` or `config` from estimation code. Do not compute
+  margin from MSRP — manufacturer margin is wholesale − COGS.
+
 ### 2026-08-17 — Slice 1 ships Method 0, the naive baseline, labeled as such.
 
 - **Decision:** Baseline estimation is on the critical path of **every**
@@ -372,9 +410,13 @@ as the headline. The mediocre middle is the honest denominator.
 
 ### 2026-08-17 — Money is integer cents. Reconciliation is exact, not tolerant.
 
-- **Decision:** Carry money as **integer cents** through the pipeline. Units
-  are already integers. The portfolio reconciliation asserts **equality**, not
-  approximate equality.
+- **Decision:** Carry money as **integer cents** through the pipeline,
+  quantized once at the row grain with **round-half-even**. The portfolio
+  reconciliation asserts **equality**, not approximate equality.
+  ~~Units are already integers.~~ **Corrected 2026-08-19:** units are
+  *continuous* — see the 2026-08-19 money-grain entry below, which supersedes
+  this line. The exactness now rests on the shared row-level atomic integer,
+  not on units being whole.
 - **Why:** the roll-up ties to a row-level sum over 1,340,462 values. In
   float64, summation order changes the last bits, so the assertion would need
   a tolerance — and a tolerance is a number that only ever gets widened when
@@ -385,6 +427,43 @@ as the headline. The mediocre middle is the honest denominator.
 - **Do not:** introduce a float tolerance into a reconciliation assertion. If
   one appears to be necessary, that is a signal the arithmetic is wrong, not
   that the tolerance is too tight.
+
+### 2026-08-19 — Units are continuous; money is integer cents, round-half-even at the row grain.
+
+- **Decision:** `observed_units` is **continuous** — fractional on all 1,340,462
+  rows (the upstream noise deviate), range 0.03–396.5. Revenue = units × price is
+  therefore inherently fractional-cents. Money is carried as **integer cents**,
+  quantized **once at the row grain** with **round-half-even** (banker's). That
+  per-row integer is the atomic unit; the event-sum and the row-grain-sum
+  aggregate the *same* integers, so the portfolio reconciliation ties **exactly**
+  with no float tolerance.
+- **Why round-half-even, stated explicitly:** across 1.34M rows, always-round-
+  half-up introduces a small systematic upward bias in totals; half-even removes
+  it. An unstated rounding mode resurfaces as a one-cent reconciliation mystery
+  in an environment with different defaults. Named here, in CLAUDE.md, and pinned
+  by a portfolio-total test.
+- **What this corrects:** the 2026-08-17 "units are already integers" premise
+  (an eng-review assumption) was wrong; the schema check caught it before the
+  Method 0 spec froze. Exactness never depended on integer units — it depends on
+  the shared row-level atomic integer.
+- **Scope:** every monetary figure; every reconciliation test.
+- **Do not:** quantize at more than one grain, use half-up, or introduce a float
+  tolerance. If a tolerance seems necessary the arithmetic is wrong.
+
+### 2026-08-19 — The portfolio universe is all 131 events; phantom included and marked.
+
+- **Decision:** The ROI Scorecard scores **all 131 events** — 121 `executed`,
+  7 `phantom` (planned and funded, ran nowhere), 3 `unplanned` (ran without a
+  plan). Phantom and unplanned are **marked** in the artifact, never dropped.
+- **Why:** phantom promos accrued $5,277 while producing no real lift — trade-
+  spend leakage rendered in ROI form, the clearest loss story the tool exists to
+  show. Excluding them would quietly flatter the portfolio number, which is the
+  exact sin the tool indicts. Matches CLAUDE.md's "N of 131." Method 0 handles
+  them without special-casing: a phantom's promo weeks are `complied=False` with
+  no lift, so incremental units ≈ 0 and ROI is deeply negative by construction.
+- **Scope:** portfolio roll-up; the ranked event list; the "N lost money" count.
+- **Do not:** filter to executed-only for the headline. If a view needs an
+  executed-only cut it is an explicit, labeled secondary view, not the default.
 
 ### 2026-08-17 — Published artifacts carry error metrics, never truth — including in their labels.
 

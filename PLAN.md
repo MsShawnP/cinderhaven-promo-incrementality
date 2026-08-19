@@ -209,6 +209,14 @@ layer.
 - [ ] **Deploy pipeline** — build and publish to Cloudflare Pages. Was missing
       from the task list entirely. Gated on the two-method rule below before
       anything is public.
+- [ ] **Upstream `cinderhaven-promo-response` v0.2.0 — `economics()` accessor.**
+      Blocks slice 1's pipeline. Adds a demand-free accessor returning the
+      product price card (per-SKU COGS, per-SKU x retailer wholesale/unit
+      margin) in its own module importing no demand parameters. Consumer then
+      re-pins to v0.2.0 (logged re-run) and the allowed surface becomes exactly
+      `load()`, `economics()`, `testing`. Same release dance as v0.1.1. See the
+      demarcation entry in DECISIONS. The estimator spec (Commit 1) does **not**
+      depend on this and is already committed.
 - [ ] **Slice 1 — ROI Scorecard end-to-end, on Method 0.** Baseline
       estimation is on the critical path of every downstream number,
       including ROI — incremental profit over spend requires incremental
@@ -218,6 +226,11 @@ layer.
       portfolio header (spend, net incremental margin, ROI, N of 131 that
       lost money), ranked event list, filters. First paint must satisfy the
       30-second rule before any filter is touched.
+      **Progress:** Commit 1 (pre-registration spec, `docs/estimators.md`)
+      landed 2026-08-19 — Method 0 fully specified, no code. Money grain,
+      event universe and the blindness/economics demarcation logged in
+      DECISIONS. **The pipeline commits are blocked on upstream v0.2.0**
+      (`economics()`), which supplies the margin basis — see the task below.
 - [ ] **Accuracy view, first pass** — score slice 1's estimates against
       `truth.load_truth()`, guarded by `assert_aligned_with_observed`. The
       one module that imports truth; exempt it by name in the CI gate.
