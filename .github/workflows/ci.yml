@@ -233,7 +233,19 @@ jobs:
             echo "::error::  gh secret set CLOUDFLARE_ACCOUNT_ID --repo MsShawnP/cinderhaven-promo-incrementality"
             exit 1
           fi
-          echo "cloudflare credentials present"
+          # Present is not the same as valid. A Cloudflare account ID is 32
+          # lowercase hex characters; a trailing newline or stray char from a
+          # paste leaves it non-empty but malformed, and wrangler then fails
+          # with an opaque routing error (API code 7003) rather than saying the
+          # ID is wrong. Catch that shape here. The value is not printed.
+          if ! printf '%s' "$CF_ACCOUNT_ID" | grep -Eq '^[0-9a-f]{32}$'; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID is set but not a 32-char hex account ID."
+            echo "::error::Likely a trailing newline or the wrong value. Re-set it from"
+            echo "::error::the dashboard (Workers & Pages -> right sidebar -> Account ID):"
+            echo "::error::  gh secret set CLOUDFLARE_ACCOUNT_ID --repo MsShawnP/cinderhaven-promo-incrementality"
+            exit 1
+          fi
+          echo "cloudflare credentials present and account id well-formed"
 
       - name: Authenticate to the private data package
         run: |
