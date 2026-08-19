@@ -78,9 +78,15 @@ For event `E` (`promo_id`) covering SKU `S` at retailer `R` over
   would inflate the baseline.
 - **Insufficiency rule:** if fewer than `M = 4` non-promo weeks are available in
   the window (series start, sparse authorization), the store-event is flagged
-  `insufficient_pre_period` and **excluded from the incremental computation**,
-  counted and surfaced rather than silently defaulted. Never fabricate a
-  baseline from too little data.
+  `insufficient_pre_period` and **excluded from the incremental computation** —
+  never given a fabricated baseline.
+- **Exclusion stays visible (the denominator is never silently shrunk).** An
+  event dropped as not estimable does **not** vanish: it appears in the
+  Scorecard **unranked**, marked *"not estimable by Method 0,"* and **every
+  portfolio figure is labeled "of N estimable events."** A portfolio total that
+  quietly shrinks its own denominator is the vendor trick this tool exists to
+  mock. (This is also a Method-0-vs-Method-1 contrast later: a better baseline
+  rescues some of these.)
 
 ### 2.3 Incremental units ("gross lift")
 
@@ -90,15 +96,23 @@ For each promoted store-week row `r = (S, T, w)` with `promo_id == E`:
 
 ### 2.4 Subsidized baseline (reported, not netted here)
 
-The baseline volume that sold at the discounted price — margin given away on
-units that would have sold anyway:
+The baseline volume that sold at the discounted price — a **decomposition of
+`accrued_cost`**, not a term in the ROI numerator:
 
     subsidized_units(r) = baseline_units(S, T, E)
     subsidy_giveaway(r) = baseline_units(S, T, E) * (regular_price(r) - promoted_price(r))
 
-Computed and carried for the Event Anatomy waterfall (a later slice). It is
-**not** subtracted again in the ROI below: for scan-funded events the giveaway
-is already what `accrued_cost` pays.
+> **Framing (PENDING CONFIRMATION — framing A proposed 2026-08-19).** The ROI numerator is
+> **manufacturer margin (wholesale − COGS) on incremental units only** — retail
+> prices do not enter it. The subsidy giveaway is a **decomposition of
+> `accrued_cost` (the denominator)** — trade dollars spent on baseline units
+> that would have sold anyway — surfaced in Event Anatomy; it is **never**
+> subtracted from the numerator. Nothing double-counts: for `scan_based` events
+> the baseline subsidy is already inside `accrued_cost`. Netting it into the
+> numerator (framing B) would double-count it against the denominator.
+
+Computed and carried for the Event Anatomy waterfall (a later slice), display
+only.
 
 ### 2.5 Money — integer cents, round-half-even, row grain
 
@@ -121,10 +135,13 @@ is the atomic unit everything downstream sums.
 Portfolio header (the three CFO numbers + the count), all computed in the
 pipeline, never in the front end:
 
+    # sums run over ESTIMABLE events only; excluded events are shown unranked,
+    # and every figure is labeled "of N estimable events" (see 2.2).
     total_accrued_spend_cents    = sum_E event_accrued_cost_cents(E)
     net_incremental_margin_cents = sum_E event_net_margin_cents(E)
     portfolio_ROI                = net_incremental_margin_cents / total_accrued_spend_cents
-    N_lost_money                 = count{ E : event_lost_money(E) }   # of 131
+    N_estimable                  = count of events with a Method 0 baseline   # <= 131
+    N_lost_money                 = count{ E : event_lost_money(E) }   # of N_estimable
 
 ### 2.7 Reconciliation (exact, no tolerance)
 
