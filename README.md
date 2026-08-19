@@ -73,8 +73,10 @@ is enforced on both sides of the boundary.
 
 ## Run
 
-The Python engine only. Nothing renders yet — the SvelteKit front end is not
-scaffolded.
+Two halves: a Python engine that computes artifacts, and a SvelteKit front end
+that renders them as a fully static site.
+
+**Python engine:**
 
 ```bash
 python -m venv .venv
@@ -86,16 +88,34 @@ The upstream data package is a private repo pinned by commit SHA, so the
 install needs read access to it. In CI that is the `PROMO_RESPONSE_READ`
 secret; locally, whatever credentials git already has.
 
-Tests — one command, nothing skipped:
+**Front end** (Node 20+; the build imports an artifact the engine writes):
+
+```bash
+npm --prefix web ci
+```
+
+**Build the static site — one command, engine first:**
+
+```bash
+bash scripts/build.sh          # runs the pipeline, then the static build
+```
+
+`scripts/build.sh` runs the Python pipeline before the SvelteKit build, because
+the front end imports `web/src/lib/data/skeleton.json`, which the pipeline
+writes and which is never committed. If the pipeline fails, the build aborts —
+no stale artifact ships. Output lands in `web/build/`.
+
+**Tests — one command, nothing skipped:**
 
 ```bash
 .venv/Scripts/python -m pytest
 ```
 
-`tests/test_data_contract.py` calls `pr.load()`, which is ~8.5s on a cold cache
-and ~0.6s warm. **It currently fails on a cold cache** — an upstream v0.1.0
-packaging defect, documented in FAILURES.md and scheduled for v0.1.1. The truth
-gate is unaffected: it is pure AST parsing over `src/` and needs no data.
+`tests/test_data_contract.py` calls `pr.load()` (~8.5s cold, ~0.6s warm) and
+asserts the consumer contract. It passes cold since the pin moved to
+`cinderhaven-promo-response` v0.1.1, which fixed the v0.1.0 first-call crash
+(see FAILURES.md). The truth gate is pure AST parsing over `src/` and needs no
+data.
 
 ---
 
