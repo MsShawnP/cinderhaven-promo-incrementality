@@ -40,7 +40,7 @@ def loaded():
 
 
 def test_package_is_the_pinned_version(loaded):
-    assert pr.__version__ == "0.2.0"
+    assert pr.__version__ == "0.2.1"
 
 
 def test_event_count_matches_the_contract(loaded):

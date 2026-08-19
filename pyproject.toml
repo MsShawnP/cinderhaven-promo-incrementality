@@ -10,20 +10,20 @@ requires-python = ">=3.11"
 # pinned. An accuracy number is meaningless without knowing which data
 # generation it scored against — see DECISIONS.md.
 #
-# eefe9a4 = v0.2.0, "release 0.2.0: economics() price-card accessor". Re-pinned
-# 2026-08-19 from 7cfe95c (v0.1.1) to reach economics() — the demand-free
-# per-SKU COGS + per-SKU×retailer wholesale/unit margin the Method 0 ROI needs.
-# Data-neutral: v0.2.0 regenerates nothing; 131 events / 1,340,462 rows / the
-# eight observed columns are unchanged. Resolve with
-# `git rev-parse v0.2.0^{commit}` — NOT `git rev-parse v0.2.0`, which returns
-# the annotated tag object (bea1982), not a commit. See DECISIONS.md.
+# 11caa13 = v0.2.1, "release 0.2.1: economics() imports pandas lazily". This is
+# v0.2.0 (economics() accessor) plus the fix for a regression that version
+# introduced — importing the package pulled pandas, which broke the --no-deps
+# truth-gate job. v0.2.0 was never pinned in a shipped state; go straight to
+# v0.2.1. Data-neutral: 131 events / 1,340,462 rows / the eight observed columns
+# are unchanged. Resolve with `git rev-parse v0.2.1^{commit}` — NOT
+# `git rev-parse v0.2.1`, which returns the annotated tag object. See DECISIONS.md.
 dependencies = [
-    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@eefe9a43ec4496bb3bb58440829b95843dbc1e96",
+    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@11caa13e232b0a7dc76ae02126932fdc4dfb6026",
 ]
 
 # Local iteration off a working tree is a hand-run command, never a manifest
 # entry:  pip install -e ../cinderhaven-promo-response
-# Putting that path here would make "pinned at v0.2.0" describe this machine
+# Putting that path here would make "pinned at v0.2.1" describe this machine
 # rather than anything CI can reproduce.
 
 [project.optional-dependencies]
