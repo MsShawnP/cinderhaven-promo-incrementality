@@ -25,6 +25,10 @@ venv/
 # committing it would put ground truth in git history.
 .cache/
 data/generated/
+# Precomputed front-end artifacts written by the Python pipeline. Never
+# committed: a committed copy could ship stale, and the build contract
+# requires the pipeline to (re)generate it or fail loudly (PLAN.md).
+web/src/lib/data/*.json
 *.parquet
 
 # --- Node / front end (applies once the stack is chosen) ---
