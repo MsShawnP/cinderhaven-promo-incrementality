@@ -85,8 +85,12 @@ jobs:
           print("gate imported clean; pandas absent as intended")
           PY
 
-      - name: Run the truth gate
-        run: python -m pytest tests/test_truth_gate.py -v
+      - name: Run the truth gate and the generator-import ban
+        # Both are AST-only and dependency-light. The import ban closes the
+        # hole the truth gate leaves open: it denies `truth`, this denies
+        # `config`/`constants` (the response coefficients and the demand
+        # generator) — the answer key by another route.
+        run: python -m pytest tests/test_truth_gate.py tests/test_import_ban.py -v
 
   # ---------------------------------------------------------------------------
   # Job 2 — the data contract. Installs the pinned package and calls pr.load().
