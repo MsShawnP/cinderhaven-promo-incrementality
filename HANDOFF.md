@@ -157,3 +157,29 @@ any estimator, the walking skeleton.
 
 **Next:** Task 5 — the walking skeleton. One Python-computed number → JSON →
 SvelteKit (adapter-static) → Cloudflare Pages. Scaffold the front end first.
+
+## 2026-08-19 11:40
+
+**What changed:** Walking skeleton built end to end — Python computes observed
+facts → deterministic JSON → SvelteKit adapter-static prerenders them to static
+HTML. Both halves pushed (e3d2bd4, 58f3be9). Deploy is the only remaining step.
+
+**Why:** Task 5 is the arc's real "is this stack right?" test and the cheapest
+insurance against the stall. Proving the pipe before any estimator means the
+stack fails fast and cheap if it's going to.
+
+**State:** Working — full pipe verified: real numbers (13,838,493 units, 131
+events, 1,340,462 rows, v0.1.1) baked into static build/index.html at prerender
+time, not fetched at runtime. `scripts/build.sh` runs pipeline-first with set -e
+so no stale artifact ships. 16 Python tests green, ruff clean, front-end build
+green. Two determinism bugs caught by tests, not shipped (CRLF translation;
+redundant int cast). No D3 yet (renders one number; dep arrives with first
+chart). Untouched: any estimator, Method 0, ROI Scorecard, accuracy view.
+Pending on Shawn: (1) platform paste push — committed 421beef in the platform
+repo, held; (2) Cloudflare deploy creds.
+
+**Next:** Deploy via Path B — build in GitHub Actions, `wrangler pages deploy
+web/build`. Blocked until Shawn creates a Cloudflare API token + account ID and
+adds them as CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID repo secrets, plus a
+Direct-Upload Pages project named cinderhaven-promo-incrementality. Then write
+the deploy job (folding in the Node-20 action-version bump).
