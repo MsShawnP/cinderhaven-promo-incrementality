@@ -209,14 +209,12 @@ layer.
 - [x] **Deploy pipeline** — build and publish to Cloudflare Pages. Was missing
       from the task list entirely. Gated on the two-method rule below before
       anything is public.
-- [ ] **Upstream `cinderhaven-promo-response` v0.2.0 — `economics()` accessor.**
-      Blocks slice 1's pipeline. Adds a demand-free accessor returning the
-      product price card (per-SKU COGS, per-SKU x retailer wholesale/unit
-      margin) in its own module importing no demand parameters. Consumer then
-      re-pins to v0.2.0 (logged re-run) and the allowed surface becomes exactly
-      `load()`, `economics()`, `testing`. Same release dance as v0.1.1. See the
-      demarcation entry in DECISIONS. The estimator spec (Commit 1) does **not**
-      depend on this and is already committed.
+- [x] **Upstream `cinderhaven-promo-response` v0.2.0 — `economics()` accessor.**
+      **Done 2026-08-19** — shipped as v0.2.0 and fixed to v0.2.1 (lazy pandas
+      import); consumer pinned to v0.2.1 (11caa13). The allowed surface is now
+      exactly `load()`, `economics()`, `testing`. `method0.py` consumes
+      `economics()` for the manufacturer-margin basis (wholesale − COGS per
+      SKU×retailer). See the demarcation entry in DECISIONS.
 - [ ] **Slice 1 — ROI Scorecard end-to-end, on Method 0.** Baseline
       estimation is on the critical path of every downstream number,
       including ROI — incremental profit over spend requires incremental
@@ -226,11 +224,16 @@ layer.
       portfolio header (spend, net incremental margin, ROI, N of 131 that
       lost money), ranked event list, filters. First paint must satisfy the
       30-second rule before any filter is touched.
-      **Progress:** Commit 1 (pre-registration spec, `docs/estimators.md`)
-      landed 2026-08-19 — Method 0 fully specified, no code. Money grain,
-      event universe and the blindness/economics demarcation logged in
-      DECISIONS. **The pipeline commits are blocked on upstream v0.2.0**
-      (`economics()`), which supplies the margin basis — see the task below.
+      **Progress:** Spec frozen (`docs/estimators.md`) and the **pipeline +
+      artifact now landed** (2026-08-19): `method0.py` (baseline → incremental
+      units → manufacturer-margin cents via `economics()` → per-event ROI /
+      giveaway share → portfolio roll-up over 129 estimable events) and
+      `build_scorecard.py` (deterministic `scorecard/v1` artifact). 40 tests
+      green, reconciliation exact (11,820,037 cents both ways), truth gate +
+      import ban green, artifact byte-identical. §2.4 corrected to a volume-basis
+      giveaway share pre-freeze (DECISIONS). **Remaining for this slice: the
+      SvelteKit Scorecard VIEW** consuming `scorecard.json` — 30-second rule,
+      375px header — and its one-timed-session verification.
 - [ ] **Accuracy view, first pass** — score slice 1's estimates against
       `truth.load_truth()`, guarded by `assert_aligned_with_observed`. The
       one module that imports truth; exempt it by name in the CI gate.

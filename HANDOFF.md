@@ -255,3 +255,47 @@ with the EXACT reconciliation test + property tests (sign, phantom→~0 lift,
 estimable-count labeling) + giveaway-share per event. Then artifact writer,
 then Scorecard view. Tracked guard-gap: deploy token value-validity is only
 checkable at runtime (wrangler), not preflighted — acceptable, noted.
+
+## 2026-08-19 (later) — Method 0 pipeline + Scorecard artifact landed
+
+**What changed:** The Method 0 estimation module and the ROI Scorecard artifact
+writer are built, tested, and committed (3 commits: 33d59f2 spec correction,
+e08532c estimator+tests, 9ee2b84 writer+wiring). Slice 1's pipeline is done end
+to end; only the SvelteKit view remains.
+
+**Why:** Slice 1's pipeline — the frozen spec made real. Implemented cold from
+`docs/estimators.md` (the spec's own completeness test). One genuine spec bug
+surfaced during implementation and was corrected pre-freeze (see below).
+
+**The spec bug — §2.4 giveaway share (asked, user chose volume share).** The
+frozen formula divided a *retail* giveaway (`baseline×(regular−promoted)`) by the
+*manufacturer* `accrued_cost` — mixed dimensions, "shares" to 936% (clean_winner,
+smallest subsidy base). Corrected to `Σ baseline_units / Σ observed_units` over
+complied rows (discount is constant within an event, so it cancels). Scan-funded
+events keep the "% of trade dollars" copy (accrued = rate×promoted units makes it
+exact); fixed-funded are volume-only; net-dip events (share>1) flagged. Logged as
+a **pre-freeze correction, not a re-run** (no truth loaded yet). DECISIONS +
+FAILURES entries written. Two adjacent gaps also clarified pre-freeze: event
+estimability (≥1 sufficient store-event → N_estimable=129) and zero accrued cost
+(3 events → ROI null, lost_money still defined).
+
+**State — Method 0 numbers (v0.2.1, this generation):** portfolio ROI 1.132
+(naive, expected rosy), net incremental margin $118,200.37, accrued spend
+$104,425.13, **64 of 129 estimable events lost money**, 2 of 131 not estimable
+(PRE-0048/PRE-0054, series-start). Reconciliation ties exactly (11,820,037 cents,
+event-grain == row-grain). **40 tests pass, ruff clean, truth gate + import ban
+green over all of src/, artifact byte-identical across builds.** scorecard.json
+(scorecard/v1) written to web/src/lib/data/ (gitignored), wired into build.sh as
+a pipeline-first step. NOT pushed — CI has not run these commits.
+
+**Untouched:** the SvelteKit Scorecard view (deliberately stopped before it), the
+dependency-direction test (PLAN, still `[ ]`), Method 1 (deploy gate needs two
+baseline methods), the accuracy view.
+
+**Next:** The ROI Scorecard **view** — SvelteKit consuming scorecard.json. First
+paint must satisfy the 30-second rule (verdict line, one chart, three numbers)
+before any filter, and the header must fully work at 375px. Ranking is a view
+choice (artifact is in canonical promo_id order); non-estimable events shown
+unranked and marked; every portfolio figure labeled "of 129 estimable events".
+Then the dependency-direction test, then Method 1 (comparable-store) to clear the
+two-method public-deploy gate.
