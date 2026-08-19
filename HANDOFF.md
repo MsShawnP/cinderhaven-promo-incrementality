@@ -230,3 +230,28 @@ Method 0 pipeline, the import-ban check, the Scorecard view.
 (bans config/constants in src/, alongside the truth gate), then the estimation
 module: baseline → incremental units → margin (via economics()) → ROI →
 portfolio roll-up with the exact reconciliation test. Then the artifact writer.
+
+## 2026-08-19 17:22 — /wrap
+
+**Started from:** Docs-only repo, stack decided; task 2 (skeleton) next.
+
+**Did:** Skeleton (task 2), two-job CI with truth gate proven-to-fail (task 3),
+walking skeleton deployed live to Cloudflare Pages (task 5). Three upstream
+releases — v0.1.1 (FIGURES.md cold-cache fix), v0.2.0 (economics() accessor),
+v0.2.1 (pandas-eager-import regression fix) — consumer re-pinned through each.
+Slice 1 pre-registration: froze docs/estimators.md (Method 0), resolved 3
+modeling forks (continuous units + integer-cent round-half-even; all-131 with
+phantom marked; economics() margin basis), confirmed ROI framing A (#7), landed
+the generator-import ban. Platform canonical paragraph pushed at v0.1.1 SHA.
+
+**State:** Consumer pinned upstream v0.2.1, all 3 CI jobs green, skeleton live.
+Slice 1 spec frozen + import-ban guardrail in. Upstream v0.2.1, 254 tests.
+Untouched: the Method 0 estimation module, the Scorecard view.
+
+**Next:** Write src/incrementality/method0.py — baseline (8-wk pre-period,
+promo weeks excluded, insufficiency flag) → incremental units → margin via
+economics() → integer-cent round-half-even at row grain → portfolio roll-up
+with the EXACT reconciliation test + property tests (sign, phantom→~0 lift,
+estimable-count labeling) + giveaway-share per event. Then artifact writer,
+then Scorecard view. Tracked guard-gap: deploy token value-validity is only
+checkable at runtime (wrangler), not preflighted — acceptable, noted.

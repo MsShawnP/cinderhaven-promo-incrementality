@@ -108,4 +108,55 @@ cache is warm). CI is blocked until the upstream release or a logged workaround.
 **Tags:** upstream, cinderhaven-promo-response, packaging, FIGURES.md,
 pr.load, cold-cache, ci, wheel, package-data
 
+### 2026-08-19 — v0.2.0 economics() broke the consumer's --no-deps truth gate
+
+**Attempted:** Ship `economics()` upstream (v0.2.0) with `import pandas` at the
+top of `economics.py`, and `from .economics import economics` in the package
+`__init__`.
+
+**Why it didn't work:** That made `import cinderhaven_promo_response` require
+pandas. The consumer's truth-gate CI job installs the package with `--no-deps`
+(dependency-light, never flakes on wheel resolution) and imports it to run the
+AST check — with no pandas present, the import raised and the gate job went red.
+The consumer's own `Confirm the gate imported without its data layer` step
+caught it on the re-pin push.
+
+**What we tried instead:** v0.2.1 — import pandas lazily *inside* `economics()`,
+restoring the package's import-without-pandas property. Added a regression test
+that spawns a fresh interpreter, imports the package, and asserts pandas is
+absent, so the property cannot regress silently. Consumer re-pinned v0.2.0 →
+v0.2.1 (v0.2.0 was never green in CI, so it was superseded, not shipped).
+
+**The pattern, now four-for-four:** the consumer gate caught the upstream defect,
+the fix landed upstream with its own regression test, and nothing was papered
+over downstream. Same shape as the FIGURES.md cold-cache catch and the
+brand-fonts package-data catch — a downstream guard surfacing an upstream
+packaging gap. See DECISIONS.md, "No downstream paper-over."
+
+**Status:** Resolved (v0.2.1).
+
+**Tags:** upstream, cinderhaven-promo-response, packaging, pandas, lazy-import,
+--no-deps, truth-gate, regression, economics
+
+### 2026-08-19 — First §2.4 draft mixed retail-price subsidy into a manufacturer-margin ROI
+
+**Attempted:** Draft the Method 0 subsidy math as
+`baseline_units × (regular_price − promoted_price)` netted against margin.
+
+**Why it didn't work:** The ROI numerator is *manufacturer* margin
+(wholesale − COGS), which never touches retail price; the shelf discount is the
+retailer's move. Netting a retail-price giveaway against a manufacturer-margin
+numerator double-counts (for scan_based the baseline subsidy is already inside
+`accrued_cost`, the denominator). Caught during the #7 verification, before the
+spec was frozen or tagged.
+
+**What we tried instead:** Framing A — numerator is manufacturer margin on
+incremental units; the giveaway is a *decomposition of accrued_cost* (the
+denominator), displayed as a share of trade dollars, never netted. Same lesson
+the upstream calibration bug taught (retail margin ≠ manufacturer margin, ~2.8x).
+
+**Status:** Resolved before freeze; framing A written into docs/estimators.md §2.4.
+
+**Tags:** modeling, roi, manufacturer-margin, subsidy, pre-registration, near-miss
+
 [New entries get added here, most recent at the top]

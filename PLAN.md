@@ -139,7 +139,7 @@ layer.
 - [x] **Stack decision** — done 2026-08-17. **SvelteKit + D3, static, on
       Cloudflare Pages.** Observable Framework and Dash rejected with reasons
       in DECISIONS.md; the PENDING entry is closed, not edited away.
-- [ ] **Repo skeleton for the chosen stack** — dependency manifest with the
+- [x] **Repo skeleton for the chosen stack** — dependency manifest with the
       upstream package pinned, test runner, lint config, `.gitignore`
       additions. Nothing rendering yet.
       **Python side done 2026-08-18** — `pyproject.toml` with the pinned SHA,
@@ -189,7 +189,7 @@ layer.
       while its own AST stays clean. See DECISIONS.md. Also worth checking
       upstream whether `assert_no_truth_access` does transitive analysis —
       currently unverified.
-- [ ] **Walking skeleton — the stack experiment.** One hardcoded number,
+- [x] **Walking skeleton — the stack experiment.** One hardcoded number,
       computed in Python, written as JSON by the real pipeline, rendered by
       the real front end, deployed to a real static host. Hours, not days.
       **This is what actually answers "is this stack right?"** — the question
@@ -206,7 +206,7 @@ layer.
       labels only — see DECISIONS.md).
 - [ ] **Reproducibility test** — run the pipeline twice, diff the artifacts.
       Determinism is a stated requirement and nothing currently checks it.
-- [ ] **Deploy pipeline** — build and publish to Cloudflare Pages. Was missing
+- [x] **Deploy pipeline** — build and publish to Cloudflare Pages. Was missing
       from the task list entirely. Gated on the two-method rule below before
       anything is public.
 - [ ] **Upstream `cinderhaven-promo-response` v0.2.0 — `economics()` accessor.**

@@ -259,6 +259,28 @@ custom composite charts, which is precisely the waterfall.
 
 ---
 
+### 2026-08-19 — Upstream defects are fixed upstream, with their own regression test. No downstream paper-over.
+
+- **Decision:** When a consumer-side gate catches a defect that lives in the
+  data package, the fix goes **in the package**, ships as a new pinned version,
+  and carries **its own regression test**. The consumer never swallows the
+  error, ships a warm-cache workaround, or adapts its gate to tolerate the bug.
+- **Why:** The pattern held four-for-four this cycle and before it — the
+  FIGURES.md cold-cache crash (v0.1.1), the pandas-eager-import gate break
+  (v0.2.1), and, in sibling repos, brand fonts missing from `package-data`. Each
+  time a downstream guard surfaced an upstream packaging gap. A downstream
+  paper-over (swallowed exception, tolerated import, shipped cache) hides the
+  defect for the *next* consumer and rots the guard that caught it. Fixing
+  upstream with a regression test means the class cannot recur silently.
+- **The general rule it generalizes:** every file a package reads at runtime
+  must be present in the built artifact, asserted against the **wheel**, not the
+  source tree. Both v0.1.1 (FIGURES.md) and the brand-fonts bug were this exact
+  class; both were invisible to a test run from a checkout.
+- **Scope:** the consumer↔package boundary; any shared-dependency defect.
+- **Do not:** swallow a data-package exception, ship a warm cache to dodge a
+  cold-cache bug, or weaken a downstream gate to accommodate an upstream defect.
+  Fix the source and add the test that proves it stays fixed.
+
 ## Positioning & Claims
 
 Added 2026-08-17 during `/office-hours`. These entries govern what this
