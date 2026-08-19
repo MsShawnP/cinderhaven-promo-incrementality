@@ -183,3 +183,28 @@ web/build`. Blocked until Shawn creates a Cloudflare API token + account ID and
 adds them as CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID repo secrets, plus a
 Direct-Upload Pages project named cinderhaven-promo-incrementality. Then write
 the deploy job (folding in the Node-20 action-version bump).
+
+## 2026-08-19 13:27
+
+**What changed:** Walking skeleton deployed and verified live — CI's deploy job
+builds and ships to Cloudflare Pages; the served HTML carries the pipeline's
+prerendered numbers. Task 5 done, deploy included.
+
+**Why:** Closes the arc's real "is this stack right?" question with a live URL,
+not an assertion. Biggest cut yet to the named stall risk.
+
+**State:** Green end to end. https://cinderhaven-promo-incrementality.pages.dev
+returns 200 with 131 / 1,340,462 / 13,838,493 / 0.1.1 baked into static HTML at
+prerender. CI three jobs green (truth-gate, data-contract, deploy). Deploy job
+gated needs:[truth-gate,data-contract] + push-to-main; preflights now name every
+credential failure (wrong-repo PAT → empty token → malformed account id, each
+caught with a clear message). Platform paste pushed (421beef). This .pages.dev
+is the unstyled plumbing check — NOT the flagship; Lailara design system + the
+two-method public-deploy gate apply before any lailarallc.com subdomain.
+Untouched: any estimator, ROI numbers, truth, the accuracy view.
+
+**Next:** Slice 1 — ROI Scorecard on Method 0. Pre-registration rule governs
+commit order: Commit 1 is docs/estimators.md (Method 0 spec, cited, no code),
+committed before any code loads truth. Then observed-only estimation pipeline
+with the exact portfolio reconciliation test, then the Scorecard view. Truth
+gate stays green throughout; no accuracy numbers in this slice.
