@@ -257,6 +257,59 @@ custom composite charts, which is precisely the waterfall.
   direct imports of `truth`. It does not protect against reaching truth
   through a module that is allowed to have it.
 
+### 2026-08-19 — §2.4 giveaway share is a volume ratio, not retail-giveaway ÷ accrued-cost. Pre-freeze correction.
+
+- **Decision:** `subsidized_cost_share(E) = Σ baseline_units / Σ observed_units`
+  over **complied** promoted rows — the fraction of the volume sold on discount
+  that would have sold anyway at baseline. Replaces the frozen §2.4 formula
+  `Σ(baseline_units × (regular − promoted)) / accrued_cost`.
+- **Why:** the original formula divided a **retail** giveaway (retail-discount
+  dollars) by a **manufacturer** figure (`accrued_cost` is only 0.55–0.69× the
+  retail discount, and that ratio is stable only for scan_based — billback and
+  off_invoice range 0.24–1.75×). Mixed dimensions produced "shares" up to **936%**
+  (`clean_winner`). Because discount depth is constant within an event, the
+  discount cancels and the honest metric collapses to a plain volume ratio.
+- **The equivalence that keeps the CEO copy usable:** for **scan-funded** events
+  `accrued_cost = rate × promoted units`, so `baseline_units ÷ promoted_units`
+  equals `baseline_dollars ÷ accrued_dollars` identically — there *"X% of trade
+  dollars subsidized volume you'd have sold anyway"* is dimensionally true. For
+  **fixed-funded** events the fund is not per-unit, so only the volume phrasing
+  is honest; the universal on-screen stat is worded in volume.
+- **Net-dip annotation:** a share `> 1` means the naive baseline sat above the
+  promoted volume (a dip / pull-forward artifact), carried as the flag
+  `baseline_exceeds_promoted` rather than shown as a >100% subsidy.
+- **Why this is a correction, not a re-run:** caught by the dimension/schema check
+  **before any truth was loaded or any accuracy scored** — the pre-registration
+  ordering held. The §6 re-run discipline (before/after error, logged) applies to
+  changes *after first scoring*; this is a pre-freeze fix. That the mixed-dimension
+  bug's most absurd number (936%) landed on the story with the smallest subsidy
+  base is confirmation the check caught a real defect, not cosmetics.
+- **Scope:** `docs/estimators.md` §2.4; `method0.py`; the Scorecard artifact.
+- **Do not:** divide a retail-dollar quantity by `accrued_cost`. Do not present
+  the volume share as a dollar share for fixed-funded events.
+
+### 2026-08-19 — Two §2.4-adjacent spec gaps resolved pre-freeze: event estimability and zero accrued cost.
+
+- **Event estimability:** an event is estimable iff **≥1** of its store-events has
+  a sufficient pre-period (store-events drop individually; an event is "not
+  estimable" only with zero sufficient store-events). Exactly 2 of 131 events
+  (`PRE-0048`, `PRE-0054`, both 2023-01-28, three weeks into the series) are not
+  estimable → `N_estimable = 129`. The alternative reading (an event is estimable
+  only if *all* its store-events are sufficient) was rejected: a single new store
+  would knock out an entire event, contradicting the per-store-event exclusion
+  language in §2.2.
+- **Zero accrued cost:** 3 events accrued `$0.00` (2 phantom, 1 executed).
+  `event_ROI = net/cost` is **null** there (division by zero has no honest numeric
+  answer — not a sentinel, not a clamp); `event_lost_money` uses `net < cost` and
+  stays defined. `portfolio_ROI` divides by the positive sum of estimable costs
+  and is always defined.
+- **Why logged:** both are gaps in the frozen spec surfaced during implementation.
+  Recorded so the resolution is a decision, not a silent choice, per the
+  pre-registration discipline.
+- **Scope:** `docs/estimators.md` §2.2 and §2.6; `method0.py`.
+- **Do not:** filter the two non-estimable events out silently, or emit a numeric
+  ROI for a zero-cost event.
+
 ---
 
 ### 2026-08-19 — Upstream defects are fixed upstream, with their own regression test. No downstream paper-over.

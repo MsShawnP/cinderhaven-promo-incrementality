@@ -37,6 +37,38 @@ quarto" or "scope, scrollytelling, decoration"]
 
 ## Entries
 
+### 2026-08-19 — First method0 giveaway share divided retail dollars by manufacturer cost
+
+**Attempted:** Implement §2.4 `subsidized_cost_share` literally as written —
+`Σ(baseline_units × (regular − promoted)) / accrued_cost` — a per-row retail
+giveaway summed and divided by the event's accrued trade cost.
+
+**Why it didn't work:** mixed dimensions. The numerator is a **retail** discount
+(shopper-side dollars); `accrued_cost` is the **manufacturer's** trade spend, only
+0.55–0.69× the retail discount for scan_based and wildly variable (0.24–1.75×) for
+billback/off_invoice. The ratio blew past 100% on 6 events, peaking at **936%** for
+`clean_winner` — whose ~12%-of-volume coupon gives it the smallest subsidy base and
+so the biggest blow-up. The display copy *"X% of trade dollars"* implies ≤100%, so
+the number was not just ugly, it was incoherent.
+
+**What we tried instead:** the volume ratio `Σ baseline_units / Σ observed_units`
+over complied rows. Discount depth is constant within an event, so the discount
+cancels and this is the dimensionally honest version of the same intent. For
+scan-funded events it equals the dollar share identically (`accrued = rate ×
+promoted units`); for fixed-funded events only the volume phrasing is honest.
+Corrected in §2.4 and DECISIONS.md **before any scoring** — the pre-registration
+ordering meant this was a pre-freeze correction, not a post-hoc re-run.
+
+**The lesson, same as the upstream calibration bug (retail margin ≠ manufacturer
+margin, ~2.8×):** retail prices decompose *cost*; they never share a denominator
+with manufacturer trade dollars. A ratio whose most absurd value lands on the
+smallest-base case is a dimension bug, not an outlier.
+
+**Status:** Resolved before freeze; volume share written into §2.4 and method0.py.
+
+**Tags:** modeling, giveaway-share, dimensions, retail-vs-manufacturer,
+pre-registration, near-miss, method0
+
 ### 2026-08-18 — `pr.load()` raises on first call in any fresh install of v0.1.0
 
 **Attempted:** Install `cinderhaven-promo-response` from the pinned git SHA

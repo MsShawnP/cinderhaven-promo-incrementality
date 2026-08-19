@@ -81,6 +81,14 @@ For event `E` (`promo_id`) covering SKU `S` at retailer `R` over
   the window (series start, sparse authorization), the store-event is flagged
   `insufficient_pre_period` and **excluded from the incremental computation** —
   never given a fabricated baseline.
+- **Event-level estimability (clarified 2026-08-19, pre-freeze).** Store-events
+  are dropped **individually** when insufficient. An **event** is estimable iff
+  **at least one** of its store-events has a sufficient pre-period; its net then
+  sums over the sufficient store-events only. An event is *"not estimable by
+  Method 0"* only when it has **zero** sufficient store-events. In this
+  generation that is exactly **2 of 131** — `PRE-0048` and `PRE-0054`, both
+  starting 2023-01-28, three weeks after the series begins, so no store has four
+  pre-period weeks. `N_estimable = 129`.
 - **Exclusion stays visible (the denominator is never silently shrunk).** An
   event dropped as not estimable does **not** vanish: it appears in the
   Scorecard **unranked**, marked *"not estimable by Method 0,"* and **every
@@ -119,17 +127,52 @@ The baseline volume that sold during the promo — a **decomposition of
 > (**retail margin ≠ manufacturer margin**, ~2.8×), now institutionalized here:
 > retail prices decompose the *cost*, they never enter the *margin*.
 
-**Display requirement — the giveaway share.** Every event surfaces the giveaway
-as a **share of its accrued cost**: *"X% of this event's trade dollars
-subsidized baseline volume."* It is the `pure_subsidy` story's headline stat and
-the most CEO-legible number the decomposition produces — a promo can post real
-incremental units and still be a bad buy because most of the spend subsidized
-volume that needed no subsidy.
+**Display requirement — the giveaway share.** Every event surfaces the share of
+its promoted volume that would have sold anyway: *"X% of the volume sold on
+discount would have sold anyway."* It is the `pure_subsidy` story's headline stat
+and the most CEO-legible number the decomposition produces — a promo can post
+real incremental units and still be a bad buy because most of the discounted
+volume needed no subsidy.
 
-    subsidized_cost_share(E) = (accrued dollars spent on baseline volume) / accrued_cost(E)
+    subsidized_cost_share(E) = (sum over complied rows of baseline_units)
+                             / (sum over complied rows of observed_units)
 
-Computed in the pipeline, carried for the Scorecard and the Event Anatomy
-waterfall.
+Over **complied rows only** — volume that actually sold on discount. A volume
+ratio, in `[0, 1]` except on net-dip events (see the annotation below).
+
+> **Corrected 2026-08-19 (pre-freeze, before any scoring).** The original §2.4
+> formula divided the *retail* giveaway (`baseline_units × (regular − promoted)`)
+> by the *manufacturer* `accrued_cost` — two different dimensions — producing
+> "shares" up to **936%** (`clean_winner`, whose ~12%-of-volume coupon gives it
+> the smallest subsidy base and so the largest blow-up: the mixed-dimension bug's
+> most absurd number landed on the story with the smallest base, confirming the
+> dimension check caught a real defect). The volume ratio above is the
+> dimensionally honest version of the same intent — *a share of what the spend
+> bought.* Logged as a spec correction in DECISIONS.md. This is a pre-freeze fix,
+> not a post-scoring re-run: no truth has been loaded.
+>
+> **Scan-funded equivalence — where the "trade dollars" copy stays honest.**
+> Discount depth is constant within an event, so the volume ratio equals the
+> discount-weighted *dollar* share identically. For **scan-funded** events,
+> `accrued_cost = rate × promoted units`, so `baseline_units ÷ promoted_units`
+> equals `baseline_dollars ÷ accrued_dollars` exactly — there the CEO line *"X%
+> of this deal's trade dollars subsidized volume you'd have sold anyway"* is
+> dimensionally true and may be used. For **fixed-funded** events (billback,
+> off_invoice, MCB) the fund is not per-unit, so only the volume phrasing is
+> honest; the universal stat is therefore worded in volume.
+>
+> **Net-dip annotation.** A share `> 1` means the pre-period baseline sat *above*
+> the volume that sold during the promo — a dip / pull-forward artifact of the
+> naive baseline, not a >100% subsidy. Carried as a flag
+> (`baseline_exceeds_promoted`) so the view annotates it rather than showing a
+> nonsensical percentage.
+
+The **per-row retail giveaway** `subsidy_giveaway(r) = baseline_units × (regular
+− promoted)` remains defined above as a decomposition of the retail discount; it
+is an **Event Anatomy** waterfall quantity (next arc), not computed in the
+Scorecard pipeline. The Scorecard carries only the volume share.
+
+Computed in the pipeline, never in the front end.
 
 ### 2.5 Money — integer cents, round-half-even, row grain
 
@@ -159,6 +202,14 @@ pipeline, never in the front end:
     portfolio_ROI                = net_incremental_margin_cents / total_accrued_spend_cents
     N_estimable                  = count of events with a Method 0 baseline   # <= 131
     N_lost_money                 = count{ E : event_lost_money(E) }   # of N_estimable
+
+**Zero accrued cost (clarified 2026-08-19, pre-freeze).** Three events accrued
+`$0.00` (two phantoms and one executed that accrued nothing). `event_ROI` divides
+by `accrued_cost`, which is undefined at zero — so ROI is **null** there, not a
+sentinel or a clamp. `event_lost_money` uses the `net < cost` comparison, which
+is still defined (`net < 0` at zero cost), so those events are still classified.
+The **portfolio** denominator is the *sum* of estimable accrued costs, which is
+positive, so `portfolio_ROI` is always defined.
 
 ### 2.7 Reconciliation (exact, no tolerance)
 
