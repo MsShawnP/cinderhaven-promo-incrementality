@@ -208,3 +208,25 @@ commit order: Commit 1 is docs/estimators.md (Method 0 spec, cited, no code),
 committed before any code loads truth. Then observed-only estimation pipeline
 with the exact portfolio reconciliation test, then the Scorecard view. Truth
 gate stays green throughout; no accuracy numbers in this slice.
+
+## 2026-08-19 17:07
+
+**What changed:** Slice 1 spec frozen — ROI framing A confirmed (#7), giveaway
+share added; upstream shipped economics() (v0.2.0 → v0.2.1 fix), consumer pinned
+to v0.2.1, CI fully green. Ready to write Method 0 pipeline code.
+
+**Why:** #7 was the last open modeling fork (manufacturer margin vs retail);
+confirming it froze the pre-registration spec so the estimator can be built and
+tagged as blindness evidence. economics() is the demand-free margin basis.
+
+**State:** Frozen spec at docs/estimators.md (framing A: numerator = mfr margin
+wholesale−COGS on incremental units; giveaway = decomposition of accrued_cost,
+displayed as % of trade dollars). Upstream v0.2.1 (economics() + lazy-pandas fix
++ regression test, 254 tests). Consumer pinned 11caa13, all 3 CI jobs green.
+Commits 1–2 of slice 1 are spec-only, no estimation code yet. Untouched: the
+Method 0 pipeline, the import-ban check, the Scorecard view.
+
+**Next:** Method 0 pipeline. First land the supplementary import-ban check
+(bans config/constants in src/, alongside the truth gate), then the estimation
+module: baseline → incremental units → margin (via economics()) → ROI →
+portfolio roll-up with the exact reconciliation test. Then the artifact writer.
