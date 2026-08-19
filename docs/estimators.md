@@ -6,9 +6,10 @@ truth.** The git history is the blindness evidence: an estimator whose spec and
 code predate the first truth import cannot have been tuned against the answer.
 See DECISIONS.md, external-validity entry.
 
-Status: **Method 0 pre-registered. Implementation pending upstream v0.2.0**
-(`economics()`), which supplies the margin basis. No estimation code exists yet
-at the time this spec is committed.
+Status: **Method 0 pre-registered and frozen 2026-08-19.** The ROI framing is
+confirmed (§2.4, framing A); `economics()` shipped in upstream v0.2.1 and the
+consumer is pinned to it. The estimation pipeline is implemented against this
+spec; changes after first scoring are logged re-runs (§6).
 
 ---
 
@@ -96,23 +97,39 @@ For each promoted store-week row `r = (S, T, w)` with `promo_id == E`:
 
 ### 2.4 Subsidized baseline (reported, not netted here)
 
-The baseline volume that sold at the discounted price — a **decomposition of
+The baseline volume that sold during the promo — a **decomposition of
 `accrued_cost`**, not a term in the ROI numerator:
 
     subsidized_units(r) = baseline_units(S, T, E)
     subsidy_giveaway(r) = baseline_units(S, T, E) * (regular_price(r) - promoted_price(r))
 
-> **Framing (PENDING CONFIRMATION — framing A proposed 2026-08-19).** The ROI numerator is
-> **manufacturer margin (wholesale − COGS) on incremental units only** — retail
-> prices do not enter it. The subsidy giveaway is a **decomposition of
-> `accrued_cost` (the denominator)** — trade dollars spent on baseline units
-> that would have sold anyway — surfaced in Event Anatomy; it is **never**
-> subtracted from the numerator. Nothing double-counts: for `scan_based` events
-> the baseline subsidy is already inside `accrued_cost`. Netting it into the
-> numerator (framing B) would double-count it against the denominator.
+> **Framing A — confirmed 2026-08-19.** The manufacturer's realized economics
+> are **wholesale − COGS per unit**, and **all** promo funding flows through
+> `accrued_cost`. The shelf discount (`promoted_price`) is the *retailer's*
+> price move: it drives demand but never touches the manufacturer's wholesale
+> margin per unit. So:
+>
+> - **numerator** = manufacturer margin on *incremental* units,
+> - **denominator** = accrued trade cost,
+> - **giveaway** = the slice of that cost which bought volume that would have
+>   sold anyway.
+>
+> Nothing is netted twice — the giveaway lives inside the denominator, never
+> the numerator. This is the same lesson the upstream calibration bug taught
+> (**retail margin ≠ manufacturer margin**, ~2.8×), now institutionalized here:
+> retail prices decompose the *cost*, they never enter the *margin*.
 
-Computed and carried for the Event Anatomy waterfall (a later slice), display
-only.
+**Display requirement — the giveaway share.** Every event surfaces the giveaway
+as a **share of its accrued cost**: *"X% of this event's trade dollars
+subsidized baseline volume."* It is the `pure_subsidy` story's headline stat and
+the most CEO-legible number the decomposition produces — a promo can post real
+incremental units and still be a bad buy because most of the spend subsidized
+volume that needed no subsidy.
+
+    subsidized_cost_share(E) = (accrued dollars spent on baseline volume) / accrued_cost(E)
+
+Computed in the pipeline, carried for the Scorecard and the Event Anatomy
+waterfall.
 
 ### 2.5 Money — integer cents, round-half-even, row grain
 
