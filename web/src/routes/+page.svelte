@@ -1,110 +1,138 @@
 <script>
-	// The ROI Scorecard — the verdict. First paint must read in 30 seconds:
-	// verdict line, one chart, three numbers (PLAN.md). Every figure is Method 0,
-	// the naive pre-period-average baseline, and is labelled as such on screen.
+	// The ROI Scorecard — the verdict, now over two baseline methods with a toggle.
+	// First paint still reads in 30 seconds: verdict line, one chart, three numbers.
+	// Method 0 (naive pre-period) is shown first — the anti-rigging exhibit — and the
+	// toggle reveals Method 1 (comparable-store), with the delta between them visible.
 	//
 	// Imported at build time. The Python pipeline writes this file; a missing file
 	// fails the build loudly rather than shipping stale numbers (build contract).
 	import scorecard from '$lib/data/scorecard.json';
 	import { dollars, roiText, pct } from '$lib/format.js';
 
-	const { portfolio, events } = scorecard;
+	const { portfolios, events } = scorecard;
 
-	// Distribution for the header chart: the 129 estimable events grouped by
-	// return on trade spend. This is a display grouping of the artifact's own
-	// per-event roi / lost_money — not a new portfolio figure (those all come
-	// from the pipeline, DECISIONS.md).
-	const estimable = events.filter((e) => e.estimable);
-	const made = estimable.filter((e) => !e.lost_money);
-	const inRange = (e, lo, hi) => e.roi !== null && e.roi >= lo && e.roi < hi;
+	const METHOD_SHORT = { method0: 'Method 0', method1: 'Method 1' };
+	const METHOD_TAG = {
+		method0: 'Method 0 · pre-period',
+		method1: 'Method 1 · comparable-store'
+	};
 
-	const tiers = [
-		{
-			label: 'Lost money',
-			hint: 'below break-even',
-			n: estimable.filter((e) => e.lost_money).length,
-			color: 'var(--ll-tokyo-40)'
-		},
-		{ label: 'Returned 1–2×', hint: '', n: made.filter((e) => inRange(e, 1, 2)).length, color: 'var(--ll-hk-70)' },
-		{ label: 'Returned 2–4×', hint: '', n: made.filter((e) => inRange(e, 2, 4)).length, color: 'var(--ll-hk-55)' },
-		{
-			label: 'Returned 4×+',
-			hint: '',
-			// roi >= 4, plus the one zero-cost winner (roi null but made money).
-			n: made.filter((e) => e.roi === null || e.roi >= 4).length,
-			color: 'var(--ll-hk-20)'
-		}
-	];
-	const maxTier = Math.max(...tiers.map((t) => t.n));
+	// Which method the header, chart and list reflect. Method 0 leads (naive, shown
+	// first); the toggle switches to Method 1 and everything follows.
+	let selected = $state('method0');
+	const otherKey = $derived(selected === 'method0' ? 'method1' : 'method0');
+	const active = $derived(portfolios[selected]);
+	const other = $derived(portfolios[otherKey]);
 
-	const portfolioRoi = roiText(portfolio.portfolio_roi);
+	const ledeText = $derived(
+		selected === 'method0'
+			? 'Method 0 is the most forgiving measure available — each promotion judged against the eight weeks before it. Even so, half these events didn’t pay back. The portfolio clears ' +
+					roiText(active.portfolio_roi) +
+					' only because a thin tail of winners carries a middle that didn’t.'
+			: 'Method 1 judges each promotion against comparable stores that didn’t run it — the stricter, concurrent test Method 0 is blind to. It clears ' +
+					roiText(active.portfolio_roi) +
+					' on the dollar. Toggle to Method 0 to see how much the naive pre-period read flatters the same promotions.'
+	);
 
-	// Ranked event list. Estimable events ranked by net incremental margin
-	// (defined for all of them); the two non-estimable events are shown unranked
-	// at the bottom, never dropped — the denominator is never silently shrunk
-	// (spec 2.2). Story labels mark the four seeded events; plan_status marks
-	// phantom / unplanned. Seeded stories are marked, not claimed "found" — that
-	// is the Accuracy view's job.
+	// Distribution for the header chart: the estimable events grouped by return on
+	// trade spend, for the active method. A display grouping of the artifact's own
+	// per-event roi / lost_money — not a new portfolio figure (DECISIONS.md).
+	function tiersFor(method) {
+		const est = events.filter((e) => e[method].estimable);
+		const made = est.filter((e) => !e[method].lost_money);
+		const inRange = (e, lo, hi) => e[method].roi !== null && e[method].roi >= lo && e[method].roi < hi;
+		return [
+			{ label: 'Lost money', n: est.filter((e) => e[method].lost_money).length, color: 'var(--ll-tokyo-40)' },
+			{ label: 'Returned 1–2×', n: made.filter((e) => inRange(e, 1, 2)).length, color: 'var(--ll-hk-70)' },
+			{ label: 'Returned 2–4×', n: made.filter((e) => inRange(e, 2, 4)).length, color: 'var(--ll-hk-55)' },
+			{
+				label: 'Returned 4×+',
+				// roi >= 4, plus any zero-cost winner (roi null but made money).
+				n: made.filter((e) => e[method].roi === null || e[method].roi >= 4).length,
+				color: 'var(--ll-hk-20)'
+			}
+		];
+	}
+	const tiers = $derived(tiersFor(selected));
+	const maxTier = $derived(Math.max(...tiers.map((t) => t.n)));
+
+	// Ranked event list, for the active method: estimable events by net margin; the
+	// events this method cannot estimate are shown unranked below, never dropped
+	// (spec 2.2, 3.5). Story labels mark the four seeded events; plan_status marks
+	// phantom / unplanned. Marked, not claimed "found" — the Accuracy view's job.
 	const STORY_LABELS = {
 		pure_subsidy: 'Pure subsidy',
 		hero_cannibal: 'Hero cannibal',
 		pantry_trap: 'Pantry trap',
 		clean_winner: 'Clean winner'
 	};
-	const ranked = estimable
-		.slice()
-		.sort((a, b) => b.net_margin_cents - a.net_margin_cents);
-	const unranked = events.filter((e) => !e.estimable);
+	const ranked = $derived(
+		events
+			.filter((e) => e[selected].estimable)
+			.slice()
+			.sort((a, b) => b[selected].net_margin_cents - a[selected].net_margin_cents)
+	);
+	const unranked = $derived(events.filter((e) => !e[selected].estimable));
 
-	// Table annotations. Net-dip (spec 2.4): a giveaway share > 1 means sales
-	// during the promo fell below the pre-period baseline, so it is not a broken
-	// percentage — it is flagged. Scan-funded phantoms accrue nothing (no sale,
-	// no scan), so their $0 spend and noisy negative margin need a word.
+	// Table annotations, for the active method. Net-dip (spec 2.4): a giveaway share
+	// > 1 means sales fell below the baseline during the promo — flagged, not a broken
+	// percentage. Scan-funded phantoms accrue nothing, so their $0 spend and noisy
+	// negative margin need a word (shared across methods).
 	const isZeroPhantom = (e) => e.plan_status === 'phantom' && e.accrued_cost_cents === 0;
-	const hasNetDip = ranked.some((e) => e.baseline_exceeds_promoted);
-	const hasZeroPhantom = ranked.some(isZeroPhantom);
+	const hasNetDip = $derived(ranked.some((e) => e[selected].baseline_exceeds_promoted));
+	const hasZeroPhantom = $derived(ranked.some(isZeroPhantom));
 </script>
 
 <div class="lailara-container">
 	<section class="scorecard">
-		<p class="eyebrow">ROI Scorecard · Method 0</p>
+		<p class="eyebrow">ROI Scorecard</p>
 
-		<h1 class="verdict">{portfolio.n_lost_money} of {portfolio.n_estimable} promotions lost money.</h1>
+		<div class="toggle" role="tablist" aria-label="Baseline method">
+			{#each ['method0', 'method1'] as key (key)}
+				<button
+					role="tab"
+					aria-selected={selected === key}
+					class="toggle-btn"
+					class:active={selected === key}
+					onclick={() => (selected = key)}
+				>
+					{METHOD_TAG[key]}
+				</button>
+			{/each}
+		</div>
 
-		<p class="lede ll-measure">
-			Method 0 is the most forgiving measure available — each promotion judged against
-			the eight weeks before it. Even so, half these events didn't pay back. The portfolio
-			clears {portfolioRoi} only because a thin tail of winners carries a middle that didn't.
-		</p>
+		<h1 class="verdict">{active.n_lost_money} of {active.n_estimable} promotions lost money.</h1>
 
-		<!-- Three numbers: the CFO header (spend, net incremental margin, ROI),
-		     all computed in the pipeline. -->
+		<p class="lede ll-measure">{ledeText}</p>
+
+		<!-- Three numbers: the CFO header for the active method, each with the other
+		     method's value beneath it so the delta is visible without toggling. -->
 		<dl class="stats">
 			<div class="stat">
 				<dt>Trade spend</dt>
-				<dd>{dollars(portfolio.total_accrued_spend_cents)}</dd>
-				<p class="stat-note">
-					what these promotions actually cost, across the {portfolio.n_estimable} estimable events
-				</p>
+				<dd>{dollars(active.total_accrued_spend_cents)}</dd>
+				<p class="stat-note">what these promotions actually cost, across the {active.n_estimable} estimable events</p>
+				<p class="stat-delta">{METHOD_SHORT[otherKey]}: {dollars(other.total_accrued_spend_cents)}</p>
 			</div>
 			<div class="stat">
 				<dt>Net incremental margin</dt>
-				<dd>{dollars(portfolio.net_incremental_margin_cents)}</dd>
+				<dd>{dollars(active.net_incremental_margin_cents)}</dd>
 				<p class="stat-note">manufacturer margin on incremental units</p>
+				<p class="stat-delta">{METHOD_SHORT[otherKey]}: {dollars(other.net_incremental_margin_cents)}</p>
 			</div>
 			<div class="stat stat--verdict">
 				<dt>Portfolio ROI</dt>
-				<dd>{portfolioRoi}</dd>
+				<dd>{roiText(active.portfolio_roi)}</dd>
 				<p class="stat-note">margin returned per dollar of spend</p>
+				<p class="stat-delta">{METHOD_SHORT[otherKey]}: {roiText(other.portfolio_roi)}</p>
 			</div>
 		</dl>
 
-		<!-- One chart: where the estimable promotions landed. DOM bars, not raster —
-		     vector-crisp for print and natively responsive to 375px. -->
+		<!-- One chart: where the estimable promotions landed under the active method. -->
 		<figure class="chart">
 			<figcaption>
-				<h2>Where the {portfolio.n_estimable} estimable promotions landed</h2>
-				<p class="chart-sub">Grouped by return on trade spend · Method 0 estimate</p>
+				<h2>Where the {active.n_estimable} estimable promotions landed</h2>
+				<p class="chart-sub">Grouped by return on trade spend · {METHOD_TAG[selected]}</p>
 			</figcaption>
 
 			<div class="bars">
@@ -112,10 +140,7 @@
 					<div class="bar-row">
 						<span class="bar-label">{tier.label}</span>
 						<div class="bar-track">
-							<div
-								class="bar-fill"
-								style="width: {(tier.n / maxTier) * 100}%; background: {tier.color};"
-							></div>
+							<div class="bar-fill" style="width: {(tier.n / maxTier) * 100}%; background: {tier.color};"></div>
 							<span class="bar-value">{tier.n}</span>
 						</div>
 					</div>
@@ -123,107 +148,112 @@
 			</div>
 
 			<p class="footnote">
-				{portfolio.n_events - portfolio.n_estimable} of {portfolio.n_events} events not estimable
-				by Method 0 (insufficient pre-period history), shown unranked below and excluded from
-				these totals. Method 0 is the simplest baseline on this site — better ones follow. Treat
-				it as the floor, not the verdict.
+				{active.n_events - active.n_estimable} of {active.n_events} events not estimable by
+				{METHOD_SHORT[selected]}, shown unranked below and excluded from these totals. Method 0
+				(naive pre-period) and Method 1 (comparable-store) are the two baselines on this site —
+				toggle to compare. Treat them as floors, not the verdict.
 			</p>
 		</figure>
-	</section>
 
-	<!-- Ranked event list: opt-in depth after the verdict. All 129 estimable
-	     events by net margin, plus the 2 unranked non-estimable events. -->
-	<section class="ranked">
-		<h2 class="ranked-title">Every promotion, ranked by net margin</h2>
-		<p class="ranked-sub">
-			{portfolio.n_estimable} estimable events. Rows below break-even — margin under
-			spend — are marked in the ROI column. Method 0 estimate.
-		</p>
+		<!-- Ranked event list for the active method, with the other method's ROI per
+		     row so the method delta is visible event by event. -->
+		<section class="ranked">
+			<h2 class="ranked-title">Every promotion, ranked by net margin</h2>
+			<p class="ranked-sub">
+				{active.n_estimable} estimable events under {METHOD_SHORT[selected]}. Rows below
+				break-even — margin under spend — are marked in the ROI column.
+			</p>
 
-		<div class="lailara-table-wrap">
-			<table class="event-table">
-				<thead>
-					<tr>
-						<th class="col-rank" scope="col">#</th>
-						<th class="col-promo" scope="col">Promotion</th>
-						<th class="col-num" scope="col">Net margin</th>
-						<th class="col-num" scope="col">Trade spend</th>
-						<th class="col-num" scope="col">ROI</th>
-						<th class="col-num" scope="col">Giveaway</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each ranked as e, i (e.promo_id)}
-						<tr class:lost={e.lost_money}>
-							<td class="col-rank">{i + 1}</td>
-							<td class="col-promo">
-								<span class="promo-head">
-									<span class="promo-id">{e.promo_id}</span>
-									{#if STORY_LABELS[e.story_tag]}
-										<span class="badge badge-story">{STORY_LABELS[e.story_tag]}</span>
-									{/if}
-									{#if e.plan_status !== 'executed'}
-										<span class="badge badge-status">{e.plan_status}</span>
-									{/if}
-									{#if isZeroPhantom(e)}<sup class="mark">‡</sup>{/if}
-								</span>
-								<span class="promo-meta"
-									>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type}</span
-								>
-							</td>
-							<td class="col-num">{dollars(e.net_margin_cents)}</td>
-							<td class="col-num">{dollars(e.accrued_cost_cents)}</td>
-							<td class="col-num roi" class:neg={e.lost_money}>{roiText(e.roi)}</td>
-							<td class="col-num"
-								>{pct(e.subsidized_cost_share)}{#if e.baseline_exceeds_promoted}<sup class="mark"
-										>†</sup
-									>{/if}</td
-							>
+			<div class="lailara-table-wrap">
+				<table class="event-table">
+					<thead>
+						<tr>
+							<th class="col-rank" scope="col">#</th>
+							<th class="col-promo" scope="col">Promotion</th>
+							<th class="col-num" scope="col">Net margin</th>
+							<th class="col-num" scope="col">Trade spend</th>
+							<th class="col-num" scope="col">ROI</th>
+							<th class="col-num" scope="col">{METHOD_SHORT[otherKey]} ROI</th>
+							<th class="col-num" scope="col">Giveaway</th>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-
-		{#if hasNetDip || hasZeroPhantom}
-			<ul class="table-notes ll-measure">
-				{#if hasNetDip}
-					<li>
-						<span class="mark">†</span> Giveaway over 100%: sales during the promotion fell below
-						the pre-period baseline — a dip — so the baseline volume outweighs what actually sold.
-						Method 0 reads a dip and a weak promotion the same way.
-					</li>
-				{/if}
-				{#if hasZeroPhantom}
-					<li>
-						<span class="mark">‡</span> Scan-funded phantom — the promotion never ran, so nothing
-						accrued; the margin shown is estimation noise around zero.
-					</li>
-				{/if}
-			</ul>
-		{/if}
-
-		{#if unranked.length}
-			<div class="unranked">
-				<h3>Not estimable by Method 0</h3>
-				<p class="unranked-note ll-measure">
-					{unranked.length} events with too little pre-period history for a naive baseline.
-					Excluded from the totals above and shown here — the denominator is never hidden.
-					A comparable-store baseline can estimate events like these; Method 0 can't.
-				</p>
-				<ul>
-					{#each unranked as e (e.promo_id)}
-						<li>
-							<span class="promo-id">{e.promo_id}</span>
-							<span class="promo-meta"
-								>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type} ·
-								{dollars(e.accrued_cost_cents)} spend</span
-							>
-						</li>
-					{/each}
-				</ul>
+					</thead>
+					<tbody>
+						{#each ranked as e, i (e.promo_id)}
+							<tr class:lost={e[selected].lost_money}>
+								<td class="col-rank">{i + 1}</td>
+								<td class="col-promo">
+									<span class="promo-head">
+										<span class="promo-id">{e.promo_id}</span>
+										{#if STORY_LABELS[e.story_tag]}
+											<span class="badge badge-story">{STORY_LABELS[e.story_tag]}</span>
+										{/if}
+										{#if e.plan_status !== 'executed'}
+											<span class="badge badge-status">{e.plan_status}</span>
+										{/if}
+										{#if isZeroPhantom(e)}<sup class="mark">‡</sup>{/if}
+									</span>
+									<span class="promo-meta"
+										>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type}</span
+									>
+								</td>
+								<td class="col-num">{dollars(e[selected].net_margin_cents)}</td>
+								<td class="col-num">{dollars(e.accrued_cost_cents)}</td>
+								<td class="col-num roi" class:neg={e[selected].lost_money}
+									>{roiText(e[selected].roi)}{#if e[selected].baseline_exceeds_promoted}<sup class="mark"
+											>†</sup
+										>{/if}</td
+								>
+								<td class="col-num other-roi">{roiText(e[otherKey].roi)}</td>
+								<td class="col-num">{pct(e[selected].subsidized_cost_share)}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
 			</div>
-		{/if}
+
+			{#if hasNetDip || hasZeroPhantom}
+				<ul class="table-notes ll-measure">
+					{#if hasNetDip}
+						<li>
+							<span class="mark">†</span> Giveaway over 100%: sales during the promotion fell below
+							the baseline — a dip — so the baseline volume outweighs what actually sold.
+						</li>
+					{/if}
+					{#if hasZeroPhantom}
+						<li>
+							<span class="mark">‡</span> Scan-funded phantom — the promotion never ran, so nothing
+							accrued; the margin shown is estimation noise around zero.
+						</li>
+					{/if}
+				</ul>
+			{/if}
+
+			{#if unranked.length}
+				<div class="unranked">
+					<h3>Not estimable by {METHOD_SHORT[selected]}</h3>
+					<p class="unranked-note ll-measure">
+						{unranked.length}
+						{unranked.length === 1 ? 'event' : 'events'}
+						{selected === 'method0'
+							? 'with too little pre-period history for a naive baseline'
+							: 'with too few comparable control stores for a trustworthy median'}. Excluded from
+						the totals above and shown here — the denominator is never hidden. Some are estimable
+						under {METHOD_SHORT[otherKey]}; toggle to see.
+					</p>
+					<ul>
+						{#each unranked as e (e.promo_id)}
+							<li>
+								<span class="promo-id">{e.promo_id}</span>
+								<span class="promo-meta"
+									>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type} ·
+									{dollars(e.accrued_cost_cents)} spend</span
+								>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+		</section>
 	</section>
 </div>
 
@@ -241,6 +271,39 @@
 		text-transform: uppercase;
 		color: var(--ll-red-42);
 		margin: 0 0 var(--ll-space-md);
+	}
+
+	/* Method toggle */
+	.toggle {
+		display: inline-flex;
+		border: 1px solid var(--ll-london-85);
+		border-radius: var(--ll-radius);
+		overflow: hidden;
+		margin: 0 0 var(--ll-space-lg);
+	}
+	.toggle-btn {
+		font-family: var(--ll-sans);
+		font-size: 13px;
+		font-weight: 600;
+		padding: 8px 16px;
+		border: none;
+		background: transparent;
+		color: var(--ll-london-35);
+		cursor: pointer;
+	}
+	.toggle-btn + .toggle-btn {
+		border-left: 1px solid var(--ll-london-85);
+	}
+	.toggle-btn:hover {
+		background: var(--ll-london-95);
+	}
+	.toggle-btn.active {
+		background: var(--ll-chicago-20);
+		color: #fff;
+	}
+	.toggle-btn:focus-visible {
+		outline: 2px solid var(--ll-london-5);
+		outline-offset: -2px;
 	}
 
 	.verdict {
@@ -300,6 +363,13 @@
 		color: var(--ll-london-35);
 		margin: var(--ll-space-xs) 0 0;
 		line-height: 1.4;
+	}
+	.stat-delta {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--ll-london-20);
+		margin: var(--ll-space-xs) 0 0;
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* One chart — DOM bars */
@@ -380,8 +450,6 @@
 		margin: 0 0 var(--ll-space-lg);
 		max-width: var(--ll-body-max-width);
 	}
-	/* Wide table scrolls inside its own container at every width — the frame only
-	   sets this below 640px, which would let the page scroll on tablet. */
 	.lailara-table-wrap {
 		overflow-x: auto;
 		max-width: 100%;
@@ -420,7 +488,6 @@
 		font-variant-numeric: tabular-nums;
 		width: 2.5rem;
 	}
-	/* Lost-money rows: a 3px Tokyo rule on the leading edge — red as ink, not fill. */
 	.event-table tbody td:first-child {
 		border-left: 3px solid transparent;
 	}
@@ -431,8 +498,9 @@
 		color: var(--ll-tokyo-40);
 		font-weight: 600;
 	}
-	/* Footnote markers: dagger on net-dip giveaway cells, double-dagger on
-	   scan-funded zero-cost phantoms. Explained in .table-notes below the table. */
+	.other-roi {
+		color: var(--ll-london-35);
+	}
 	.mark {
 		color: var(--ll-london-40);
 		font-weight: 600;
@@ -528,6 +596,13 @@
 		}
 		.bar-label {
 			text-align: left;
+		}
+		.toggle {
+			display: flex;
+			width: 100%;
+		}
+		.toggle-btn {
+			flex: 1;
 		}
 	}
 </style>
