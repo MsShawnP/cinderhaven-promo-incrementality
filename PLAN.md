@@ -307,6 +307,13 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
       Scorecard header works fully at 375px
 - [ ] The 30-second rule has been **verified in one timed session** with one
       person who works in trade marketing — not asserted
+- [ ] **Public-facing copy has had a writing audit before deploy** — every
+      on-screen sentence checked against the Economist voice: no overclaim
+      ("the most optimistic read there is"), no undefined jargon reaching the
+      reader before it is defined ("estimable," "accrued," "naive baseline"),
+      no dangling fragments. Sits beside the 30-second check because copy is
+      half of what a CEO reads in those thirty seconds. (Logged 2026-08-21
+      after a review caught all three failure modes in one pass.)
 - [ ] Nothing outside the accuracy module imports it — asserted by a test,
       not by convention
 - [ ] No published artifact contains truth values, and every regime label in
