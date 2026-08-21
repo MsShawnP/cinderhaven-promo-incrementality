@@ -38,7 +38,6 @@
 	const maxTier = Math.max(...tiers.map((t) => t.n));
 
 	const portfolioRoi = roiText(portfolio.portfolio_roi);
-	const lostPct = Math.round((portfolio.n_lost_money / portfolio.n_estimable) * 100);
 
 	// Ranked event list. Estimable events ranked by net incremental margin
 	// (defined for all of them); the two non-estimable events are shown unranked
@@ -56,6 +55,14 @@
 		.slice()
 		.sort((a, b) => b.net_margin_cents - a.net_margin_cents);
 	const unranked = events.filter((e) => !e.estimable);
+
+	// Table annotations. Net-dip (spec 2.4): a giveaway share > 1 means sales
+	// during the promo fell below the pre-period baseline, so it is not a broken
+	// percentage — it is flagged. Scan-funded phantoms accrue nothing (no sale,
+	// no scan), so their $0 spend and noisy negative margin need a word.
+	const isZeroPhantom = (e) => e.plan_status === 'phantom' && e.accrued_cost_cents === 0;
+	const hasNetDip = ranked.some((e) => e.baseline_exceeds_promoted);
+	const hasZeroPhantom = ranked.some(isZeroPhantom);
 </script>
 
 <div class="lailara-container">
@@ -65,10 +72,9 @@
 		<h1 class="verdict">{portfolio.n_lost_money} of {portfolio.n_estimable} promotions lost money.</h1>
 
 		<p class="lede ll-measure">
-			Method 0 — the naive pre-period baseline, the most optimistic read there is —
-			still puts {lostPct}% of estimable events below break-even. The portfolio clears
-			{portfolioRoi} on the dollar only because a thin tail of winners carries a middle that
-			mostly didn't pay back.
+			Method 0 is the most forgiving measure available — each promotion judged against
+			the eight weeks before it. Even so, half these events didn't pay back. The portfolio
+			clears {portfolioRoi} only because a thin tail of winners carries a middle that didn't.
 		</p>
 
 		<!-- Three numbers: the CFO header (spend, net incremental margin, ROI),
@@ -77,7 +83,9 @@
 			<div class="stat">
 				<dt>Trade spend</dt>
 				<dd>{dollars(portfolio.total_accrued_spend_cents)}</dd>
-				<p class="stat-note">accrued, {portfolio.n_estimable} estimable events</p>
+				<p class="stat-note">
+					what these promotions actually cost, across the {portfolio.n_estimable} measurable events
+				</p>
 			</div>
 			<div class="stat">
 				<dt>Net incremental margin</dt>
@@ -117,8 +125,8 @@
 			<p class="footnote">
 				{portfolio.n_events - portfolio.n_estimable} of {portfolio.n_events} events not estimable
 				by Method 0 (insufficient pre-period history), shown unranked below and excluded from
-				these totals. Method 0 is the naive pre-period-average baseline — the first of several,
-				shown before comparable-store methods. Synthetic data.
+				these totals. Method 0 is the simplest baseline on this site — better ones follow. Treat
+				it as the floor, not the verdict.
 			</p>
 		</figure>
 	</section>
@@ -157,6 +165,7 @@
 									{#if e.plan_status !== 'executed'}
 										<span class="badge badge-status">{e.plan_status}</span>
 									{/if}
+									{#if isZeroPhantom(e)}<sup class="mark">‡</sup>{/if}
 								</span>
 								<span class="promo-meta"
 									>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type}</span
@@ -165,12 +174,34 @@
 							<td class="col-num">{dollars(e.net_margin_cents)}</td>
 							<td class="col-num">{dollars(e.accrued_cost_cents)}</td>
 							<td class="col-num roi" class:neg={e.lost_money}>{roiText(e.roi)}</td>
-							<td class="col-num">{pct(e.subsidized_cost_share)}</td>
+							<td class="col-num"
+								>{pct(e.subsidized_cost_share)}{#if e.baseline_exceeds_promoted}<sup class="mark"
+										>†</sup
+									>{/if}</td
+							>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
 		</div>
+
+		{#if hasNetDip || hasZeroPhantom}
+			<ul class="table-notes ll-measure">
+				{#if hasNetDip}
+					<li>
+						<span class="mark">†</span> Giveaway over 100%: sales during the promotion fell below
+						the pre-period baseline — a dip — so the baseline volume outweighs what actually sold.
+						Method 0 reads a dip and a weak promotion the same way.
+					</li>
+				{/if}
+				{#if hasZeroPhantom}
+					<li>
+						<span class="mark">‡</span> Scan-funded phantom — the promotion never ran, so nothing
+						accrued; the margin shown is estimation noise around zero.
+					</li>
+				{/if}
+			</ul>
+		{/if}
 
 		{#if unranked.length}
 			<div class="unranked">
@@ -178,7 +209,7 @@
 				<p class="unranked-note ll-measure">
 					{unranked.length} events with too little pre-period history for a naive baseline.
 					Excluded from the totals above and shown here — the denominator is never hidden.
-					A comparable-store method rescues some of these.
+					A comparable-store baseline can estimate events like these; Method 0 can't.
 				</p>
 				<ul>
 					{#each unranked as e (e.promo_id)}
@@ -399,6 +430,30 @@
 	.roi.neg {
 		color: var(--ll-tokyo-40);
 		font-weight: 600;
+	}
+	/* Footnote markers: dagger on net-dip giveaway cells, double-dagger on
+	   scan-funded zero-cost phantoms. Explained in .table-notes below the table. */
+	.mark {
+		color: var(--ll-london-40);
+		font-weight: 600;
+	}
+	sup.mark {
+		font-size: 0.7em;
+		padding-left: 1px;
+	}
+	.table-notes {
+		list-style: none;
+		padding: 0;
+		margin: var(--ll-space-base) 0 0;
+		display: grid;
+		gap: var(--ll-space-xs);
+		font-size: 12px;
+		font-style: italic;
+		line-height: 1.5;
+		color: var(--ll-london-35);
+	}
+	.table-notes .mark {
+		font-style: normal;
 	}
 	.promo-head {
 		display: flex;
