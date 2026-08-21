@@ -392,3 +392,51 @@ accuracy view, filters, Event Anatomy, the human 375px design look (still owed).
 then re-pin here and build `method1.py`. Or, in parallel, the accuracy view can
 start on Method 0 alone (it only needs one method to score) — but the two-method
 deploy gate still holds public launch until Method 1 ships.
+
+## 2026-08-21 — Method 1 shipped end-to-end; two-method deploy gate cleared
+
+**What changed:** The whole Method 1 slice, in order. (1) Re-pin to v0.3.0
+(`6556460`, adds `store_card()`); logged re-run; data-contract test asserts v0.3.0
++ the store_card shape. (2) Discovered `store_card()` ships `region` only (no
+`store_format`), so §3's match key routes format through a consumer JUDGMENT map
+(retailer→class). (3) STOP-AND-ASK: measured that a flat region+format+band match
+starves pools (club=Costco, supercenter=Walmart are single-banner classes) — only
+57/131 estimable, all four stories dropped. User chose **hierarchical** matching;
+amended §3, tagged `method1-preregistration-r2` before writing code. (4) Extracted
+the shared roll-up/reconciliation into `common.py` (behavior-preserving; Method 0
+numbers unchanged). (5) `method1.py`: per-week comparable-median baseline, region +
+format-class + volume band relaxing to region + band, MIN_POOL=5, band [v/2,2v],
+`insufficient_comparable_pool` visible exclusions, per-event `match_relaxed_share`
+regime dimension. (6) Re-scored the artifact to **scorecard/v2** carrying both
+methods. (7) **Method 0 / Method 1 toggle** on the Scorecard with the delta visible.
+
+**Why:** clears the two-method public-deploy gate and builds the "compare the
+methods" demo — the setup the accuracy view pays off.
+
+**State — all green, all pushed (commits a182318 … 877a31a; tags
+method1-preregistration, method1-preregistration-r2).** Method 1 (blind, v0.3.0):
+129/131 estimable (rescues series-start PRE-0054, drops thin-pool PRE-0097),
+reconciliation exact, portfolio ROI **1.04** vs Method 0's **1.13** — less rosy, the
+comparable baseline catches the concurrent trend. All four seeded stories estimable.
+58 Python tests + full front-end build green; truth gate, import ban,
+dependency-direction all green; artifact byte-identical. Toggle verified in the DOM
+(flips every surface; no page h-scroll at 1280/375; full-width toggle + stacked
+stats on mobile). CI watched on push (deploy included).
+
+**Blindness ledger — still airtight:** no `truth.load_truth()` anywhere in the repo.
+Both methods are spec-tagged AND implemented-and-frozen before any truth access, per
+the ordering constraint added this session. `store_card().region` is package-assigned
+(never join to platform data — DECISIONS).
+
+**Untouched:** the accuracy view (the single first-contact with truth — deliberately
+not started), filters, Event Anatomy, the human 375px/30-second timed check with a
+trade-marketing person.
+
+**Next — the accuracy view.** Now unblocked and correctly sequenced: both methods
+are frozen behind it, so it is the repo's single clean first truth access. Score
+Method 0 and Method 1 against `truth.load_truth()` (guarded by
+`assert_aligned_with_observed`), in the one module exempt from the truth gate by
+name (`src/incrementality/accuracy.py`). Headline error over the full population;
+the four seeded stories marked and reported separately; the background distribution
+shown alongside them; `match_relaxed_share` available as a Method 1 regime cut. The
+dependency-direction guard fires the moment that module lands.
