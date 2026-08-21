@@ -10,15 +10,15 @@ requires-python = ">=3.11"
 # pinned. An accuracy number is meaningless without knowing which data
 # generation it scored against — see DECISIONS.md.
 #
-# 11caa13 = v0.2.1, "release 0.2.1: economics() imports pandas lazily". This is
-# v0.2.0 (economics() accessor) plus the fix for a regression that version
-# introduced — importing the package pulled pandas, which broke the --no-deps
-# truth-gate job. v0.2.0 was never pinned in a shipped state; go straight to
-# v0.2.1. Data-neutral: 131 events / 1,340,462 rows / the eight observed columns
-# are unchanged. Resolve with `git rev-parse v0.2.1^{commit}` — NOT
-# `git rev-parse v0.2.1`, which returns the annotated tag object. See DECISIONS.md.
+# 6556460 = v0.3.0, adds store_card() — per-store identity (retailer_id, region,
+# store_format), the accessor Method 1's comparable-store matching consumes. Same
+# demarcation as economics(): identity a client hands a vendor, not demand
+# response. Data-neutral for the observed layer — 131 events / 1,340,462 rows /
+# the eight observed columns are unchanged; store_card() is additive. Re-pin
+# logged as a re-run in DECISIONS.md. Resolve with `git rev-parse v0.3.0^{commit}`
+# — NOT `git rev-parse v0.3.0`, which returns the annotated tag object.
 dependencies = [
-    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@11caa13e232b0a7dc76ae02126932fdc4dfb6026",
+    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@6556460000d56fd2df1c89c59f592f363b93245c",
 ]
 
 # Local iteration off a working tree is a hand-run command, never a manifest

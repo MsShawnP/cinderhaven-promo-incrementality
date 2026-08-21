@@ -265,6 +265,71 @@ custom composite charts, which is precisely the waterfall.
   `MIN_POOL` or the band against measured error. Do not implement Method 1 before
   the consumer is pinned to a `store_card()`-bearing release.
 
+### 2026-08-21 — Re-pin to v0.3.0 (store_card()). Logged re-run per the pin decision.
+
+- **Decision:** The consumer is re-pinned from v0.2.1 (`11caa13`) to **v0.3.0**
+  (`6556460000d56fd2df1c89c59f592f363b93245c`), which adds `store_card()`. Logged
+  as a **re-run** per the pin decision — an accuracy number is meaningless without
+  recording which generation it scored against, and the pin is the record.
+- **Data-neutral for the observed layer:** `store_card()` is additive; `load()`
+  still returns 131 events / 1,340,462 rows / the eight observed columns unchanged.
+  No estimate that predates this re-pin changes because of it. Verified: the
+  data-contract test asserts v0.3.0 and the unchanged observed shape, plus the new
+  `store_card()` contract.
+- **What `store_card()` actually ships:** `store_id`, `retailer_id`, `region` —
+  and **no `store_format`.** The card is geography + banner identity; format is
+  supplied consumer-side by judgment (next entry), and volume is derived by the
+  estimator from observed velocity, never on the card.
+- **Scope:** `pyproject.toml`; `tests/test_data_contract.py`; every Method 1 figure.
+- **Do not:** report a Method 1 accuracy figure without recording the v0.3.0 SHA
+  and seed alongside it.
+
+### 2026-08-21 — `store_card().region` is package-assigned, not the SSOT draw. Never join it to platform store data.
+
+- **Decision:** The `region` column from `store_card()` is a value the data
+  package **assigns** to each synthetic store. It is **not** a draw from any
+  single-source-of-truth store master, and it must **never** be joined to real
+  platform store data — the store ids are synthetic and the join would be
+  meaningless (and, if it appeared to work, misleading).
+- **Why it still earns its place:** region is legitimate comparability identity —
+  the estimator matches controls within a region — exactly the day-one store-master
+  attribute a real vendor uses. Its being package-assigned is a property of the
+  synthetic world, not a defect; the accuracy view measures how well identity-based
+  matching recovers truth, and that measurement is honest whether the region labels
+  are "real" or assigned, so long as they are never confused for platform data.
+- **Scope:** all Method 1 code; any place `store_card()` output is used or displayed.
+- **Do not:** join `store_card().region` to platform/real store data. Do not present
+  it as a customer's actual region assignment.
+
+### 2026-08-21 — Method 1 format class is a consumer JUDGMENT mapping (retailer → format), because store_card() ships no format.
+
+- **Decision:** `store_card()` carries no `store_format`, so Method 1's match key
+  uses a **consumer-side JUDGMENT mapping** from retailer to a coarse **format
+  class**, tagged `JUDGMENT` in the estimator spec (§3):
+
+      RET-COSTCO      -> club
+      RET-WALMART     -> supercenter
+      RET-WHOLEFOODS  -> natural
+      RET-SPROUTS     -> natural
+      RET-KROGER      -> conventional
+      RET-REGIONAL    -> conventional
+
+  The final match key is **region (`store_card()`) + format class (this mapping) +
+  observed volume band**.
+- **Why format class matters — it is what makes cross-banner matching valid:**
+  banner alone leaves 80% of events with no controls (banner-wide promotion). Format
+  class is coarser than banner — Whole Foods and Sprouts are both `natural` — so a
+  Sprouts promo can borrow Whole Foods controls in the same region and volume band.
+  That is the mechanism that turns the empty same-banner pool into a usable one.
+- **Why it is JUDGMENT, and honest as such:** the mapping is the estimator author's
+  retail knowledge, not read from the generator. It is cited as judgment (like every
+  modelling assumption), predates any truth access, and is not tuned against error.
+  A different analyst might class Sprouts separately from Whole Foods; that is a
+  defensible alternative, logged if changed, never silently.
+- **Scope:** `docs/estimators.md` §3; `method1.py`.
+- **Do not:** derive format from `constants`/`config` or from truth. Do not change
+  the mapping after first scoring without a logged re-run.
+
 ### 2026-08-17 — Slice 1 ships Method 0, the naive baseline, labeled as such.
 
 - **Decision:** Baseline estimation is on the critical path of **every**

@@ -40,7 +40,7 @@ def loaded():
 
 
 def test_package_is_the_pinned_version(loaded):
-    assert pr.__version__ == "0.2.1"
+    assert pr.__version__ == "0.3.0"
 
 
 def test_event_count_matches_the_contract(loaded):
@@ -62,3 +62,30 @@ def test_scan_delta_carries_observed_columns_only(loaded):
     """
     _, delta = loaded
     assert list(delta.columns) == OBSERVED_COLUMNS
+
+
+# store_card() — added in v0.3.0, consumed by Method 1's comparable-store match.
+# Store-master identity only; the demarcation forbids anything velocity-shaped.
+STORE_CARD_COLUMNS = ["store_id", "retailer_id", "region"]
+EXPECTED_STORES = 640
+
+
+def test_store_card_carries_identity_columns_only(loaded):
+    # No volume/size tier: the card is identity (geography), and volume is derived
+    # by the estimator from observed units — the store_card demarcation (DECISIONS).
+    card = pr.store_card()
+    assert list(card.columns) == STORE_CARD_COLUMNS
+
+
+def test_store_card_covers_every_store(loaded):
+    card = pr.store_card()
+    assert card["store_id"].nunique() == EXPECTED_STORES
+    assert len(card) == EXPECTED_STORES
+
+
+def test_store_card_region_is_categorical_not_a_velocity_proxy(loaded):
+    # A small closed set of geographic regions — not a per-store continuous value
+    # that could stand in for baseline velocity. Guards the demarcation from the
+    # consumer side.
+    card = pr.store_card()
+    assert 2 <= card["region"].nunique() <= 12

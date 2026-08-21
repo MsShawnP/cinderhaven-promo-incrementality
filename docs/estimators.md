@@ -265,16 +265,37 @@ No part of this method is justified by how the generator works.
 ### 3.2 The allowed surface adds `store_card()`
 
 Method 1 consumes one name beyond Method 0's surface: **`store_card()`** (upstream
-**v0.3.0**), one row per `store_id` carrying **store-master identity** —
-`retailer_id`, `region`, `store_format`. It is the day-one data a client hands a
-vendor, exactly `economics()`'s demarcation: identity, not demand response.
+**v0.3.0**, shipped), one row per `store_id` carrying **store-master identity** —
+`store_id`, `retailer_id`, `region` (five regions). It is the day-one data a client
+hands a vendor, exactly `economics()`'s demarcation: identity, not demand response.
 
-> **Demarcation, verbatim (governs the v0.3.0 release):** the card carries
-> geography and format identity; **volume tier is derived by the estimator from
+> **Demarcation, verbatim (governed the v0.3.0 release):** the card carries
+> geography and banner identity; **volume tier is derived by the estimator from
 > observed pre-period velocity, never shipped on the card** — anything
 > velocity-shaped stays off it, because baseline velocity is on the protected side
 > of the blindness line (DECISIONS.md, the `economics()` demarcation). This keeps
 > `store_card()` unambiguously on the identity side, same as `economics()`.
+
+**`region` is package-assigned, not a real store-master draw** — it is a value the
+synthetic data package assigns to each store and must never be joined to platform
+store data (DECISIONS.md). It is legitimate comparability identity all the same.
+
+**Format class is a consumer-side JUDGMENT mapping.** `store_card()` ships no
+`store_format`, so Method 1 assigns a coarse format class from the retailer by the
+estimator author's retail knowledge — **tagged `JUDGMENT`, not read from the
+generator:**
+
+    RET-COSTCO      -> club            # JUDGMENT: warehouse club
+    RET-WALMART     -> supercenter     # JUDGMENT: mass supercenter
+    RET-WHOLEFOODS  -> natural         # JUDGMENT: natural/organic
+    RET-SPROUTS     -> natural         # JUDGMENT: natural/organic
+    RET-KROGER      -> conventional    # JUDGMENT: conventional grocery
+    RET-REGIONAL    -> conventional    # JUDGMENT: conventional grocery
+
+Format class is coarser than banner on purpose — two natural banners share a class —
+which is exactly what turns the empty same-banner pool (§3.7) into a usable
+cross-banner one. The mapping predates any truth access and is not tuned against
+error; changing it after first scoring is a logged re-run.
 
 The allowed surface becomes exactly `load()`, `economics()`, `store_card()`,
 `testing`. `config`, `constants`, `truth` remain banned; the AST gate and the
@@ -290,8 +311,8 @@ that:
 - are **not running any promotion during `W`** — every `(store, S, w in W)` row has
   `promo_id` null (a clean control, not merely not-running-*this*-event),
 - are **not** `T` and **not** among `E`'s promoted stores,
-- **match `T` on store identity:** same `region` and same `store_format`
-  (`store_card()`), and observed volume within a band of `T`'s (§3.6).
+- **match `T` on store identity:** same `region` (`store_card()`) + same **format
+  class** (the §3.2 JUDGMENT mapping) + observed volume within a band of `T`'s (§3.6).
 
 **Cross-banner is allowed and expected.** Same-banner control pools are empty for
 ~80% of events (§3.7), so `C` is drawn across retailers; the identity match is what
