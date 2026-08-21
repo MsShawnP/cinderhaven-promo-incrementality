@@ -346,3 +346,49 @@ in .claude/launch.json → http://localhost:5173.
 and a blindness guarantee), (b) Method 1 comparable-store baseline (unblocks the
 two-method public-deploy gate), or (c) a human design pass on the Scorecard once
 the Browser pane is viewable. Event Anatomy + filters are the following arc.
+
+## 2026-08-21 — Dependency-direction guard + Method 1 pre-registration (§3); blocked on store_card() v0.3.0
+
+**What changed:** Two things. (1) Dependency-direction guard landed (90d0eda):
+`tests/test_dependency_direction.py` asserts nothing under `src/` except the
+accuracy module imports it — closing the transitive-import hole in the per-file
+truth gate, forward-guarding before `accuracy.py` exists, demonstrated-to-fail
+with a permanent fixture. (2) Method 1 pre-registered (624d376, tagged
+`method1-preregistration`): spec §3 committed before any Method 1 code.
+
+**Why blocked:** Before writing §3 I measured comparable-pool availability
+(observed-only). **Same-banner clean control pools are empty for 40/131 events,
+<5 for 106/131 (median 2)** — promotions here are banner-wide, so a same-banner
+comparable method would exclude ~80% of events. Valid matching must go
+cross-banner on store identity (region, format) the observed layer does not carry.
+That fired the pre-authorized STOP-AND-ASK; user chose to add an upstream
+`store_card()` accessor rather than improvise. Method 1's pipeline is blocked on it.
+
+**State:** §3 registers a comparable-store baseline — per-week comparable-median
+counterfactual, matched on region + store_format (`store_card()`) + observed volume
+band, cross-banner, `MIN_POOL` + `insufficient_comparable_pool` rider, weaknesses
+stated (banner-wide finding included). Money/reconciliation/determinism unchanged
+from Method 0. Spec §§3–6 renumbered → 4–7; 4 code/test cross-refs fixed. 43 tests
+green, ruff clean, all pushed. DECISIONS logs the `store_card()` demarcation
+(identity only; volume tier derived from observed velocity, never on the card) and
+parks the indexed diff-in-diff as a **Method 2 candidate**, not a rejected fallback.
+`MIN_POOL` + volume band are provisional — set from the matched-pool distribution
+once `store_card()` ships, tuned on pool size not error, logged before first scoring.
+
+**Blocking dependency — upstream v0.3.0 (a data-repo session, not this repo):**
+`store_card()` — one row per `store_id`: `retailer_id`, `region`, `store_format`.
+Pure store-master identity, `economics()`'s demarcation; explicitly **no**
+volume/size tier (consumers derive volume from observed units). Own module, no
+demand parameters, AST-clean, demand-free import test, wheel-runtime-files rule,
+CHANGELOG, full suite, tag v0.3.0, push with tag, report peeled commit SHA for the
+consumer re-pin. Then here: re-pin (logged re-run) → `method1.py` → re-score
+scorecard with both methods → Method 0/1 toggle with delta → two-method deploy gate
+clears.
+
+**Untouched:** `method1.py` (blocked on v0.3.0), the scorecard method toggle, the
+accuracy view, filters, Event Anatomy, the human 375px design look (still owed).
+
+**Next:** run the upstream `store_card()` v0.3.0 release in the data-repo session,
+then re-pin here and build `method1.py`. Or, in parallel, the accuracy view can
+start on Method 0 alone (it only needs one method to score) — but the two-method
+deploy gate still holds public launch until Method 1 ships.
