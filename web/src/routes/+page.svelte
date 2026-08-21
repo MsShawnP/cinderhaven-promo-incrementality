@@ -6,15 +6,9 @@
 	// Imported at build time. The Python pipeline writes this file; a missing file
 	// fails the build loudly rather than shipping stale numbers (build contract).
 	import scorecard from '$lib/data/scorecard.json';
+	import { dollars, roiText, pct } from '$lib/format.js';
 
 	const { portfolio, events } = scorecard;
-
-	const usd = new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		maximumFractionDigits: 0
-	});
-	const dollars = (cents) => usd.format(cents / 100);
 
 	// Distribution for the header chart: the 129 estimable events grouped by
 	// return on trade spend. This is a display grouping of the artifact's own
@@ -43,8 +37,25 @@
 	];
 	const maxTier = Math.max(...tiers.map((t) => t.n));
 
-	const roiText = `${portfolio.portfolio_roi.toFixed(2)}×`;
+	const portfolioRoi = roiText(portfolio.portfolio_roi);
 	const lostPct = Math.round((portfolio.n_lost_money / portfolio.n_estimable) * 100);
+
+	// Ranked event list. Estimable events ranked by net incremental margin
+	// (defined for all of them); the two non-estimable events are shown unranked
+	// at the bottom, never dropped — the denominator is never silently shrunk
+	// (spec 2.2). Story labels mark the four seeded events; plan_status marks
+	// phantom / unplanned. Seeded stories are marked, not claimed "found" — that
+	// is the Accuracy view's job.
+	const STORY_LABELS = {
+		pure_subsidy: 'Pure subsidy',
+		hero_cannibal: 'Hero cannibal',
+		pantry_trap: 'Pantry trap',
+		clean_winner: 'Clean winner'
+	};
+	const ranked = estimable
+		.slice()
+		.sort((a, b) => b.net_margin_cents - a.net_margin_cents);
+	const unranked = events.filter((e) => !e.estimable);
 </script>
 
 <div class="lailara-container">
@@ -56,7 +67,7 @@
 		<p class="lede ll-measure">
 			Method 0 — the naive pre-period baseline, the most optimistic read there is —
 			still puts {lostPct}% of estimable events below break-even. The portfolio clears
-			{roiText} on the dollar only because a thin tail of winners carries a middle that
+			{portfolioRoi} on the dollar only because a thin tail of winners carries a middle that
 			mostly didn't pay back.
 		</p>
 
@@ -75,7 +86,7 @@
 			</div>
 			<div class="stat stat--verdict">
 				<dt>Portfolio ROI</dt>
-				<dd>{roiText}</dd>
+				<dd>{portfolioRoi}</dd>
 				<p class="stat-note">margin returned per dollar of spend</p>
 			</div>
 		</dl>
@@ -110,6 +121,78 @@
 				shown before comparable-store methods. Synthetic data.
 			</p>
 		</figure>
+	</section>
+
+	<!-- Ranked event list: opt-in depth after the verdict. All 129 estimable
+	     events by net margin, plus the 2 unranked non-estimable events. -->
+	<section class="ranked">
+		<h2 class="ranked-title">Every promotion, ranked by net margin</h2>
+		<p class="ranked-sub">
+			{portfolio.n_estimable} estimable events. Rows below break-even — margin under
+			spend — are marked in the ROI column. Method 0 estimate.
+		</p>
+
+		<div class="lailara-table-wrap">
+			<table class="event-table">
+				<thead>
+					<tr>
+						<th class="col-rank" scope="col">#</th>
+						<th class="col-promo" scope="col">Promotion</th>
+						<th class="col-num" scope="col">Net margin</th>
+						<th class="col-num" scope="col">Trade spend</th>
+						<th class="col-num" scope="col">ROI</th>
+						<th class="col-num" scope="col">Giveaway</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each ranked as e, i (e.promo_id)}
+						<tr class:lost={e.lost_money}>
+							<td class="col-rank">{i + 1}</td>
+							<td class="col-promo">
+								<span class="promo-head">
+									<span class="promo-id">{e.promo_id}</span>
+									{#if STORY_LABELS[e.story_tag]}
+										<span class="badge badge-story">{STORY_LABELS[e.story_tag]}</span>
+									{/if}
+									{#if e.plan_status !== 'executed'}
+										<span class="badge badge-status">{e.plan_status}</span>
+									{/if}
+								</span>
+								<span class="promo-meta"
+									>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type}</span
+								>
+							</td>
+							<td class="col-num">{dollars(e.net_margin_cents)}</td>
+							<td class="col-num">{dollars(e.accrued_cost_cents)}</td>
+							<td class="col-num roi" class:neg={e.lost_money}>{roiText(e.roi)}</td>
+							<td class="col-num">{pct(e.subsidized_cost_share)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+
+		{#if unranked.length}
+			<div class="unranked">
+				<h3>Not estimable by Method 0</h3>
+				<p class="unranked-note ll-measure">
+					{unranked.length} events with too little pre-period history for a naive baseline.
+					Excluded from the totals above and shown here — the denominator is never hidden.
+					A comparable-store method rescues some of these.
+				</p>
+				<ul>
+					{#each unranked as e (e.promo_id)}
+						<li>
+							<span class="promo-id">{e.promo_id}</span>
+							<span class="promo-meta"
+								>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type} ·
+								{dollars(e.accrued_cost_cents)} spend</span
+							>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 	</section>
 </div>
 
@@ -244,6 +327,138 @@
 		color: var(--ll-london-35);
 		margin: var(--ll-space-lg) 0 0;
 		max-width: var(--ll-body-max-width);
+	}
+
+	/* Ranked event list */
+	.ranked {
+		margin-top: var(--ll-space-3xl);
+		padding-top: var(--ll-space-2xl);
+		border-top: 1px solid var(--ll-london-85);
+		font-family: var(--ll-sans);
+	}
+	.ranked-title {
+		font-family: var(--ll-serif);
+		font-weight: 700;
+		font-size: clamp(1.25rem, 3vw, 1.375rem);
+		color: var(--ll-london-5);
+		margin: 0 0 var(--ll-space-xxs);
+	}
+	.ranked-sub {
+		font-size: 14px;
+		color: var(--ll-london-35);
+		margin: 0 0 var(--ll-space-lg);
+		max-width: var(--ll-body-max-width);
+	}
+	/* Wide table scrolls inside its own container at every width — the frame only
+	   sets this below 640px, which would let the page scroll on tablet. */
+	.lailara-table-wrap {
+		overflow-x: auto;
+		max-width: 100%;
+		-webkit-overflow-scrolling: touch;
+	}
+	.event-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 14px;
+	}
+	.event-table thead th {
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: var(--ll-london-35);
+		text-align: left;
+		padding: 0 var(--ll-space-base) var(--ll-space-sm);
+		border-bottom: 2px solid var(--ll-london-5);
+		white-space: nowrap;
+	}
+	.event-table tbody td {
+		padding: var(--ll-space-md) var(--ll-space-base);
+		border-bottom: 1px solid var(--ll-london-85);
+		vertical-align: baseline;
+		color: var(--ll-london-20);
+	}
+	.col-num {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+	.col-rank {
+		text-align: right;
+		color: var(--ll-london-35);
+		font-variant-numeric: tabular-nums;
+		width: 2.5rem;
+	}
+	/* Lost-money rows: a 3px Tokyo rule on the leading edge — red as ink, not fill. */
+	.event-table tbody td:first-child {
+		border-left: 3px solid transparent;
+	}
+	.event-table tbody tr.lost td:first-child {
+		border-left-color: var(--ll-tokyo-40);
+	}
+	.roi.neg {
+		color: var(--ll-tokyo-40);
+		font-weight: 600;
+	}
+	.promo-head {
+		display: flex;
+		align-items: center;
+		gap: var(--ll-space-sm);
+		flex-wrap: wrap;
+	}
+	.promo-id {
+		font-weight: 600;
+		color: var(--ll-london-5);
+	}
+	.promo-meta {
+		display: block;
+		font-size: 12px;
+		color: var(--ll-london-35);
+		margin-top: 2px;
+	}
+	.badge {
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		padding: 1px 6px;
+		border-radius: var(--ll-radius);
+		white-space: nowrap;
+	}
+	.badge-story {
+		background: var(--ll-chicago-95);
+		color: var(--ll-chicago-20);
+	}
+	.badge-status {
+		background: var(--ll-sg-95);
+		color: var(--ll-sg-35);
+		text-transform: capitalize;
+	}
+	.unranked {
+		margin-top: var(--ll-space-2xl);
+	}
+	.unranked h3 {
+		font-family: var(--ll-serif);
+		font-weight: 700;
+		font-size: 18px;
+		color: var(--ll-london-5);
+		margin: 0 0 var(--ll-space-xs);
+	}
+	.unranked-note {
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--ll-london-35);
+		margin: 0 0 var(--ll-space-base);
+	}
+	.unranked ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: var(--ll-space-sm);
+	}
+	.unranked li {
+		padding-left: var(--ll-space-md);
+		border-left: 3px solid var(--ll-london-70);
 	}
 
 	/* Phone-first: the header must fully work at 375px (DECISIONS.md). */
