@@ -3,7 +3,7 @@
 The front end consumes this at build time. It carries the portfolio header (the
 CFO numbers, spec section 2.6) and one record per event; every monetary figure is
 integer cents and every ratio is derived from those cents, so the artifact is
-deterministic (spec section 5). No truth, no baseline generator — this is the
+deterministic (spec section 6). No truth, no baseline generator — this is the
 same blind estimate ``method0`` produces, serialized.
 
 Determinism, as with the skeleton: no wall-clock, no unseeded value, canonical

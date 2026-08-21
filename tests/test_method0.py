@@ -91,7 +91,7 @@ def test_portfolio_has_both_winners_and_losers(result):
     assert 0 < pf["n_lost_money"] < pf["n_estimable"]
 
 
-# --- phantom near-zero-lift (spec 3, DECISIONS) -----------------------------
+# --- phantom near-zero-lift (spec 4, DECISIONS) -----------------------------
 
 
 def test_phantom_events_produce_negligible_portfolio_lift(result):
@@ -148,7 +148,7 @@ def test_background_giveaway_share_is_substantial(result):
     assert shares.median() > 0.3
 
 
-# --- determinism (spec 5) ---------------------------------------------------
+# --- determinism (spec 6) ---------------------------------------------------
 
 
 def test_two_runs_produce_an_identical_portfolio(result):

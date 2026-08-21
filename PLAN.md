@@ -246,6 +246,33 @@ layer.
       a trade-marketing person (a human step, gated with public deploy). Screenshot
       review still pending — the Browser pane wasn't displayable this session, so
       the visual was verified via DOM, not a rendered image.
+- [ ] **Upstream `cinderhaven-promo-response` v0.3.0 — `store_card()` accessor.**
+      **Blocks Method 1's pipeline.** One row per `store_id`: `retailer_id`,
+      `region`, `store_format` — store-master identity, `economics()`'s demarcation
+      exactly. Explicitly carries **no** volume/size tier (consumers derive volume
+      from observed units). Own module, no demand parameters, AST-clean, demand-free
+      import test, wheel-runtime-files rule honored. Consumer then re-pins to v0.3.0
+      (logged re-run). Same release dance as v0.2.0. See the store_card demarcation
+      entry in DECISIONS. The Method 1 spec (§3) does **not** wait on this and is
+      already committed.
+- [ ] **Method 1 — comparable-store baseline, end-to-end.** Pulled into this arc
+      2026-08-21 by explicit direction (was out-of-scope) because the two-method
+      deploy gate needs it. **Commit 1 (spec §3) landed 2026-08-21** — comparable
+      pool, per-week comparable-median baseline, `MIN_POOL` +
+      `insufficient_comparable_pool` rider, cross-banner justification measured,
+      weaknesses stated. **Pipeline blocked on v0.3.0** (`store_card()`). Then:
+      `method1.py` (same integer-cent discipline, exact reconciliation, all guards
+      green) → re-score the scorecard artifact with **both** methods (logged re-run)
+      → Scorecard view gets the **Method 0 / Method 1 toggle with the delta visible**.
+      The two-method public-deploy gate clears when both ship behind the toggle.
+      `MIN_POOL` and the volume band are set from the matched-pool distribution once
+      `store_card()` ships, tuned on pool size not error, logged before first scoring.
+- [ ] **Method 2 candidate — indexed diff-in-diff (logged, not scheduled).** Baseline
+      = test store's own pre-period × the control pool's during/pre velocity ratio.
+      Fully observed, no upstream release. A legitimately different standard method;
+      as its own pre-registered method later it strengthens the multi-method accuracy
+      story. Not the attribute-matched method §3 registers — parked here so it is a
+      candidate, not a rediscovered idea. See DECISIONS.
 - [ ] **Accuracy view, first pass** — score slice 1's estimates against
       `truth.load_truth()`, guarded by `assert_aligned_with_observed`. The
       one module that imports truth; exempt it by name in the CI gate.
@@ -272,12 +299,14 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
 
 ## Out of scope for this arc
 
-- **Event Anatomy and the second/third baseline methods.** The scope is now
+- **Event Anatomy and the third-plus baseline methods.** The scope is now
   three views — ROI Scorecard, Event Anatomy, Accuracy — not six. Baseline
   Builder, Lift Split, Net Lift and Portfolio were collapsed into Event
   Anatomy as segments of one waterfall; see DECISIONS.md. Event Anatomy is
-  the next arc. Comparable-store matching is real statistical work and gets
-  its own slice.
+  the next arc. **Method 1 (comparable-store) was pulled into this arc on
+  2026-08-21** by explicit direction — the two-method public-deploy gate needs
+  a second baseline, so it is now a task above, not out of scope. Method 2
+  (indexed diff-in-diff) and beyond remain future work.
 - **Editing `cinderhaven-promo-response`.** It is released at v0.1.0 and is
   a separate repo. A data gap found here is logged here and released there.
 - **Deployment and the public subdomain.** Nothing deploys until a view is

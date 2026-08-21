@@ -107,7 +107,7 @@ def _reject(token):
 
 
 def test_two_builds_are_byte_identical(tmp_path):
-    # Determinism (spec 5): no wall-clock, no unseeded value, ratios derived from
+    # Determinism (spec 6): no wall-clock, no unseeded value, ratios derived from
     # integer cents. Same code + same pinned package -> identical bytes.
     a = _build_to(tmp_path, "a.json").read_bytes()
     b = _build_to(tmp_path, "b.json").read_bytes()

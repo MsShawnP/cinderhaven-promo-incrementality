@@ -218,6 +218,53 @@ custom composite charts, which is precisely the waterfall.
 - **Do not:** import `constants` or `config` from estimation code. Do not compute
   margin from MSRP — manufacturer margin is wholesale − COGS.
 
+### 2026-08-21 — Method 1 is a cross-banner, identity-matched comparable-store baseline. It needs `store_card()` (v0.3.0).
+
+- **Decision:** Method 1 (spec §3, pre-registered 2026-08-21) is a comparable-store
+  baseline: for each promoted store-week, the counterfactual is the **median
+  velocity of comparable control stores in that same week**, where comparability is
+  defined on **observed store identity** — `region` and `store_format` from a new
+  upstream accessor `store_card()`, plus an observed volume band. Controls are drawn
+  **cross-banner**. The pipeline is **blocked on upstream v0.3.0** shipping
+  `store_card()`, same pattern as Method 0 blocked on `economics()` (v0.2.0).
+- **Why cross-banner, and why the store-card is needed — measured, not asserted:**
+  same-banner clean control pools are **empty for 40 of 131 events and < 5 for 106
+  of 131** (median 2), because promotions in this universe are **banner-wide** — a
+  promo covers essentially every store of its retailer carrying the SKU. A
+  same-banner comparable method would exclude ~80% of events. Valid cross-banner
+  matching requires store identity (region, format) that the observed layer does not
+  carry (`store_id` gives only the banner prefix; `economics()` is per SKU×retailer).
+  This is the STOP-AND-ASK trigger firing exactly as pre-authorized — improvising an
+  observed-only proxy or reaching into `constants` was declined in favor of the
+  proper upstream accessor.
+- **`store_card()` demarcation, verbatim (governs the v0.3.0 release):** the card
+  carries what a client's store master actually contains — geography and format
+  identity. **Volume tier is derived by the estimator from observed pre-period
+  velocity, never shipped on the card**; anything velocity-shaped stays off it,
+  because baseline velocity is on the protected side of the blindness line. That
+  keeps `store_card()` unambiguously on the identity side, same as `economics()`.
+  Own module, imports no demand parameters, AST-clean, demand-free import test.
+  Allowed surface becomes `load()`, `economics()`, `store_card()`, `testing`.
+- **Provisional constants, tuned on pool size not error:** `MIN_POOL` (the
+  minimum-comparable-pool floor, with exclusion reason `insufficient_comparable_pool`)
+  and the volume band cannot be set until `store_card()` ships the identity columns
+  to measure the matched-pool distribution. They will be tuned **against observed pool
+  size, never against truth/error**, and logged before first scoring — tuning a blind
+  estimator against the answer key is the one thing pre-registration forbids.
+- **Rejected as Method 1 — the indexed diff-in-diff (a Method 2 candidate, not a
+  fallback):** baseline = test store's own pre-period × the control pool's during/pre
+  velocity ratio. Fully observed (banner + velocity), no release needed. It is a
+  **legitimately different standard method**, and as its own pre-registered method
+  later it would strengthen the multi-method accuracy story. Its only sin here is
+  that it is not the attribute-matched comparable-store method §3 set out to register.
+  **Logged as a future Method 2 candidate**, not a rejected approach.
+- **Scope:** `docs/estimators.md` §3; Method 1 estimation code; the CI gate; the
+  upstream v0.3.0 release.
+- **Do not:** define comparability on same-banner controls only (the pools are
+  empty). Do not ship a volume/velocity tier on `store_card()`. Do not tune
+  `MIN_POOL` or the band against measured error. Do not implement Method 1 before
+  the consumer is pinned to a `store_card()`-bearing release.
+
 ### 2026-08-17 — Slice 1 ships Method 0, the naive baseline, labeled as such.
 
 - **Decision:** Baseline estimation is on the critical path of **every**
@@ -280,7 +327,7 @@ custom composite charts, which is precisely the waterfall.
   `baseline_exceeds_promoted` rather than shown as a >100% subsidy.
 - **Why this is a correction, not a re-run:** caught by the dimension/schema check
   **before any truth was loaded or any accuracy scored** — the pre-registration
-  ordering held. The §6 re-run discipline (before/after error, logged) applies to
+  ordering held. The §7 re-run discipline (before/after error, logged) applies to
   changes *after first scoring*; this is a pre-freeze fix. That the mixed-dimension
   bug's most absurd number (936%) landed on the story with the smallest subsidy
   base is confirmation the check caught a real defect, not cosmetics.
