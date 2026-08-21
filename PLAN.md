@@ -231,9 +231,18 @@ layer.
       `build_scorecard.py` (deterministic `scorecard/v1` artifact). 40 tests
       green, reconciliation exact (11,820,037 cents both ways), truth gate +
       import ban green, artifact byte-identical. §2.4 corrected to a volume-basis
-      giveaway share pre-freeze (DECISIONS). **Remaining for this slice: the
-      SvelteKit Scorecard VIEW** consuming `scorecard.json` — 30-second rule,
-      375px header — and its one-timed-session verification.
+      giveaway share pre-freeze (DECISIONS). The **SvelteKit Scorecard VIEW now
+      landed** (2026-08-21): the 30-second header (verdict, three numbers,
+      profit-tier chart) and the ranked event list (129 by net margin, lost-money
+      + seeded-story + phantom badges, 2 non-estimable shown unranked), on the
+      vendored Lailara brand frame with self-hosted fonts. Verified structurally —
+      both fonts load, no page horizontal scroll at 1280 or 375, header collapses
+      to one column on mobile, static build bakes real numbers into prerendered
+      HTML. **Remaining for this slice:** filters (deferred — cross-view state is
+      the Event Anatomy arc), and the one-timed-session 30-second verification with
+      a trade-marketing person (a human step, gated with public deploy). Screenshot
+      review still pending — the Browser pane wasn't displayable this session, so
+      the visual was verified via DOM, not a rendered image.
 - [ ] **Accuracy view, first pass** — score slice 1's estimates against
       `truth.load_truth()`, guarded by `assert_aligned_with_observed`. The
       one module that imports truth; exempt it by name in the CI gate.

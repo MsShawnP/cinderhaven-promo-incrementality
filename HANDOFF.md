@@ -299,3 +299,50 @@ choice (artifact is in canonical promo_id order); non-estimable events shown
 unranked and marked; every portfolio figure labeled "of 129 estimable events".
 Then the dependency-direction test, then Method 1 (comparable-store) to clear the
 two-method public-deploy gate.
+
+## 2026-08-21 — Scorecard view landed (header + ranked list); all pushed, CI green
+
+**What changed:** Built the SvelteKit ROI Scorecard view end to end and pushed
+everything. Method 0 pipeline (33d59f2/e08532c/9ee2b84) plus the view: a9fc411
+(header) and b2e3c4d (ranked list). All on main, CI green including the Cloudflare
+Pages deploy.
+
+**Why:** Closes slice 1's user-visible half — the 30-second verdict front door on
+the Method 0 artifact — on the vendored Lailara brand frame. "go — Scorecard view
+per PLAN."
+
+**State — the view (web/src/routes/+page.svelte):**
+- **Header (30-second surface):** eyebrow "ROI Scorecard · Method 0"; verdict
+  "64 of 129 promotions lost money."; three numbers (trade spend $104,425, net
+  incremental margin $118,200, portfolio ROI 1.13×); one chart — the 129 estimable
+  events by return tier, a red Tokyo "lost money" bar (64) against three teal
+  Hong-Kong profit tiers (39/17/9). DOM bars, not SVG (vector-crisp for print,
+  natively responsive — deviation from the SVG-charts rule, noted, to meet the
+  hard 375px constraint).
+- **Ranked list:** 129 estimable events by net margin; net/spend/ROI/giveaway per
+  row; lost-money rows carry a Tokyo leading rule + red ROI; the 4 seeded stories
+  and phantom/unplanned events badged (marked, NOT claimed "found"); 2 non-estimable
+  events listed unranked beneath. Filters DEFERRED (cross-view state = Event Anatomy
+  arc).
+- **Frame:** vendored lailara-frame.css + 8 self-hosted woff2 into web/static/lailara/;
+  brand header/footer in +layout.svelte; canvas on body. Skeleton demo moved to
+  /skeleton. Shared formatters in web/src/lib/format.js.
+- **Verified (DOM, not screenshot — see limitation):** both fonts load, palette
+  correct, no page horizontal scroll at 1280 or 375, header collapses to one column
+  on mobile, table scrolls inside its own container, production build bakes all real
+  numbers + 129 rows into prerendered HTML.
+
+**Limitation:** the Browser pane was not displayable this session (0-width /
+non-compositing), so no screenshot was captured. Everything was verified through
+read_page + computed styles + build output. **A human visual review at 1440 and
+375 is still owed** before this counts as design-gate-passed. Dev server: `web-dev`
+in .claude/launch.json → http://localhost:5173.
+
+**Untouched:** filters, the dependency-direction test (PLAN `[ ]`), Method 1
+(deploy gate needs two baseline methods), the accuracy view, the one-timed-session
+30-second verification with a trade-marketing person.
+
+**Next:** pick one — (a) the dependency-direction test (small, closes a PLAN item
+and a blindness guarantee), (b) Method 1 comparable-store baseline (unblocks the
+two-method public-deploy gate), or (c) a human design pass on the Scorecard once
+the Browser pane is viewable. Event Anatomy + filters are the following arc.
