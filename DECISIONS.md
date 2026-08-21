@@ -362,6 +362,26 @@ custom composite charts, which is precisely the waterfall.
   or the band against measured error. Do not drop the per-event relaxed share from
   the artifact — it is the accuracy view's regime handle.
 
+### 2026-08-21 — Scorecard re-scored with both methods (artifact scorecard/v2). Logged re-run.
+
+- **Decision:** Adding Method 1 re-scores the Scorecard, logged as a re-run per the
+  pre-registration rule. The artifact is bumped to **scorecard/v2**: a portfolio
+  header per method plus one record per event co-locating both methods' estimates,
+  so the front-end toggle and the Method 0 → Method 1 delta are a lookup.
+- **Method 0 is unchanged** — the shared-spine refactor was behavior-preserving, so
+  the v2 `method0` block reproduces v1's numbers exactly (portfolio ROI 1.132, net
+  incremental margin $118,200, 64 of 129 lost money). No before/after error to log:
+  no truth was scored, and Method 1 is a *new* method, not an edit to Method 0.
+- **Method 1's scorecard figures (blind, v0.3.0):** portfolio ROI **1.041** (vs
+  Method 0's 1.132 — less rosy, the comparable baseline captures the concurrent
+  trend Method 0 misses), net incremental margin $109,042, 129 estimable (a
+  different 129: rescues PRE-0054, drops PRE-0097), 64 lost money. These are the
+  numbers the toggle shows; whether either is closer to *truth* is the Accuracy
+  view's question, not asserted here.
+- **Scope:** `build_scorecard.py`; `tests/test_scorecard.py`; the front-end.
+- **Do not:** read the Method 1 vs Method 0 ROI gap as an accuracy result — it is a
+  difference between two blind estimates, pending truth scoring.
+
 ### 2026-08-17 — Slice 1 ships Method 0, the naive baseline, labeled as such.
 
 - **Decision:** Baseline estimation is on the critical path of **every**
