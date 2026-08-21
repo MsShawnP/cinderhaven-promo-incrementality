@@ -183,12 +183,15 @@ layer.
       shipped warm cache — without its own DECISIONS.md entry. A consumer that
       silently swallows an exception from its data package is the failure mode
       this project's premise argues against.
-- [ ] **Dependency-direction test** — assert that nothing outside the
-      accuracy module imports it, directly or transitively. The AST gate is
-      per-file; an estimator that imports the accuracy module reaches truth
-      while its own AST stays clean. See DECISIONS.md. Also worth checking
-      upstream whether `assert_no_truth_access` does transitive analysis —
-      currently unverified.
+- [x] **Dependency-direction test** — **done 2026-08-21**
+      (`tests/test_dependency_direction.py`). Asserts no file under `src/` except
+      the accuracy module imports it; since a direct-import scan over every file
+      leaves no first hop, that covers the transitive case too. Stood up now as a
+      forward guard (accuracy module doesn't exist yet), demonstrated-to-fail with
+      a permanent fixture (`violation_imports_accuracy.py`) — same discipline as
+      the truth gate before the first estimator. The AST gate is per-file; an
+      estimator importing the accuracy module reaches truth while its own AST
+      stays clean. See DECISIONS.md.
 - [x] **Walking skeleton — the stack experiment.** One hardcoded number,
       computed in Python, written as JSON by the real pipeline, rendered by
       the real front end, deployed to a real static host. Hours, not days.
