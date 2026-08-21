@@ -12,6 +12,12 @@ on:
 permissions:
   contents: read
 
+# Third-party actions are pinned to a full commit SHA, with the version in a
+# trailing comment. A tag like @v7 is mutable — whoever controls the action repo
+# can move it to different code, and this workflow holds a private-repo read
+# token and deploy credentials. The SHA freezes exactly what runs; bump the SHA
+# and the comment together (Dependabot understands this form). npx pins its own
+# tools by npm major (wrangler@4) and is not covered here.
 jobs:
   # ---------------------------------------------------------------------------
   # Job 1 — the truth gate. Pure AST parsing over src/. No data, by design.
@@ -28,9 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -111,9 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -191,13 +197,13 @@ jobs:
     needs: [truth-gate, data-contract]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
 
