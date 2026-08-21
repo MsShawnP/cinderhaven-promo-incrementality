@@ -288,6 +288,18 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
 - [ ] The estimator spec and implementation are **committed and tagged
       before any code in this repo loads truth.** The accuracy slice comes
       after, never alongside.
+- [ ] **The accuracy view is the repo's single first-contact with truth, and it
+      does not begin until EVERY registered baseline method is *implemented and
+      frozen* — not merely spec-tagged.** Added 2026-08-21. Spec-tagging bounds
+      the argument but does not close it: `MIN_POOL`, band widths, and pool
+      mechanics are real degrees of freedom left in a method's *implementation*.
+      If truth lands after Method 0 but before Method 1, Method 1's implementation
+      choices post-date seeing where Method 0 failed against truth — and a sharp
+      evaluator gets to say those choices were tuned to it. So no `truth.load_truth()`
+      call, not even to score Method 0 alone, until Method 1 (and any other method
+      shipping in the same accuracy pass) is built and frozen behind it. Saving a
+      day by scoring early would spend the exact blindness evidence the project
+      exists to accumulate.
 - [ ] Any estimator change after first scoring is a **logged re-run** — a
       DECISIONS.md entry with before/after error. Never a silent edit.
 - [ ] Each new baseline method re-scores the Scorecard as its own logged

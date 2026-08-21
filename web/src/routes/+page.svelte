@@ -84,7 +84,7 @@
 				<dt>Trade spend</dt>
 				<dd>{dollars(portfolio.total_accrued_spend_cents)}</dd>
 				<p class="stat-note">
-					what these promotions actually cost, across the {portfolio.n_estimable} measurable events
+					what these promotions actually cost, across the {portfolio.n_estimable} estimable events
 				</p>
 			</div>
 			<div class="stat">
