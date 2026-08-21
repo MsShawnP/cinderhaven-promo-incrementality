@@ -330,6 +330,38 @@ custom composite charts, which is precisely the waterfall.
 - **Do not:** derive format from `constants`/`config` or from truth. Do not change
   the mapping after first scoring without a logged re-run.
 
+### 2026-08-21 — Method 1 matches hierarchically (format where it helps, region+volume where it can't). §3 amended r2, pre-truth.
+
+- **Decision:** Method 1's comparable pool is matched by a **two-stratum hierarchy**,
+  tightest stratum that clears `MIN_POOL`: (1) region + format class + volume band;
+  (2) if that is `< MIN_POOL`, region + volume band with format class dropped. Below
+  the relaxed stratum, `insufficient_comparable_pool`. `MIN_POOL = 5`,
+  `VOLUME_BAND_FACTOR = 2`. Replaces the flat "region + format + band" match key of
+  the first §3 freeze.
+- **Why, measured on observed data before any truth access:** format class as a
+  *hard* filter starves the pool, because `club` (Costco) and `supercenter`
+  (Walmart) are **single-banner** format classes — "same format" collapses to "same
+  banner," the empty pool the whole method exists to route around. Region+format
+  clears `MIN_POOL` for only **33%** of the 4,070 store-events; region+volume clears
+  it for **95%**. The flat match left **57 of 131** events estimable and dropped
+  **all four seeded stories** (three are Walmart/supercenter). The hierarchy keeps
+  format where it separates multi-banner classes (`natural` vs `conventional`) and
+  degrades to region+volume exactly for the single-banner classes and nowhere else.
+- **The relaxation is recorded per store-event in the artifact** (`full` vs
+  `relaxed`), rolled up to a per-event relaxed share. It is an **observed** attribute,
+  hence a legitimate regime dimension for the Accuracy view — "does error grow where
+  matching relaxed?" — costing one boolean now versus an artifact migration later.
+- **Pre-registration integrity:** this diverges from the match key frozen at
+  `method1-preregistration`, so the amended spec is **re-tagged `method1-preregistration-r2`
+  before any Method 1 code that loads truth exists** — no truth has been scored, both
+  tags predate first truth access, and the evidence chain now contains the amendment
+  and its measured justification. Tuned against **pool size, never error**.
+- **Scope:** `docs/estimators.md` §3.3, §3.5; `method1.py`; the Scorecard artifact
+  (new relaxed-share field).
+- **Do not:** restore the flat format-as-hard-filter match. Do not tune `MIN_POOL`
+  or the band against measured error. Do not drop the per-event relaxed share from
+  the artifact — it is the accuracy view's regime handle.
+
 ### 2026-08-17 — Slice 1 ships Method 0, the naive baseline, labeled as such.
 
 - **Decision:** Baseline estimation is on the critical path of **every**

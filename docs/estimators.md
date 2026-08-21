@@ -301,22 +301,46 @@ The allowed surface becomes exactly `load()`, `economics()`, `store_card()`,
 `testing`. `config`, `constants`, `truth` remain banned; the AST gate and the
 supplementary import check both cover Method 1 code.
 
-### 3.3 Comparable pool
+### 3.3 Comparable pool — hierarchical matching (amended r2, pre-truth)
 
 For a promoted store-event — store `T`, event `E` (SKU `S`, retailer `R`, weeks
-`W = [start_week, end_week]`) — the comparable pool `C(T, E)` is the set of stores
-that:
+`W = [start_week, end_week]`) — a candidate control is any store that:
 
-- **carry SKU `S`** (have observed rows for it),
-- are **not running any promotion during `W`** — every `(store, S, w in W)` row has
+- **carries SKU `S`** (has observed rows for it),
+- is **not running any promotion during `W`** — every `(store, S, w in W)` row has
   `promo_id` null (a clean control, not merely not-running-*this*-event),
-- are **not** `T` and **not** among `E`'s promoted stores,
-- **match `T` on store identity:** same `region` (`store_card()`) + same **format
-  class** (the §3.2 JUDGMENT mapping) + observed volume within a band of `T`'s (§3.6).
+- is **not** `T` and **not** among `E`'s promoted stores.
 
-**Cross-banner is allowed and expected.** Same-banner control pools are empty for
-~80% of events (§3.7), so `C` is drawn across retailers; the identity match is what
-makes a cross-banner store a valid control.
+Among those candidates, the pool `C(T, E)` is matched to `T` on store identity by a
+**two-stratum hierarchy — the tightest available stratum that clears `MIN_POOL`:**
+
+1. **Full stratum:** same `region` (`store_card()`) **+** same **format class**
+   (the §3.2 JUDGMENT mapping) **+** observed volume within a band of `T`'s (§3.6).
+2. **Relaxed stratum** (only if the full pool is `< MIN_POOL`): same `region` +
+   observed volume band, **format class dropped**.
+
+If even the relaxed pool is `< MIN_POOL`, the store-event is excluded (§3.5).
+
+**Why the hierarchy, measured not assumed (r2 amendment):** format class as a *hard*
+filter starves the pool, because `club` (Costco) and `supercenter` (Walmart) are
+**single-banner** format classes — "same format" collapses to "same banner," which
+is the empty pool §3.7 is about. On this generation, region+format clears `MIN_POOL`
+for only **33%** of store-events; region+volume alone clears it for **95%**. Format
+class earns its place where it has power — separating `natural` (WF, Sprouts) from
+`conventional` (Kroger, Regional) — and is relaxed only where it cannot help. The
+hierarchy degrades to region+volume **exactly** for the single-banner classes and
+nowhere else.
+
+**The relaxation is recorded, per store-event, in the artifact** — `full` vs
+`relaxed` — and rolled up to a per-event **relaxed share**. It is an observed
+attribute, so it is a legitimate regime dimension for the Accuracy view later: *does
+Method 1's error grow where matching had to relax?* — a question worth being able to
+answer, costed at one boolean now rather than an artifact migration later.
+
+**Cross-banner is the point.** Same-banner control pools are empty for ~80% of
+events (§3.7), so `C` is drawn across retailers; the identity match — region, format
+class where it survives, volume band — is what makes a cross-banner store a valid
+control.
 
 ### 3.4 Baseline — the comparable median, per week
 
@@ -340,21 +364,23 @@ grain, round-half-even, and exact reconciliation are unchanged.
 
 A median over a thin pool is noise. Require at least `MIN_POOL` comparable stores:
 
-- If `|C(T, E)| < MIN_POOL`, the store-event is flagged **`insufficient_comparable_pool`**
-  and excluded from the incremental computation — never given a baseline read off
-  one or two stores.
+- If **even the relaxed stratum** (§3.3) has fewer than `MIN_POOL` controls, the
+  store-event is flagged **`insufficient_comparable_pool`** and excluded from the
+  incremental computation — never given a baseline read off one or two stores.
 - **Exclusion stays visible**, exactly as Method 0's `insufficient_pre_period`
   rider (§2.2): an event with no estimable store-event appears in the Scorecard
   **unranked**, marked *"not estimable by Method 1,"* and every Method 1 portfolio
   figure is labeled *"of N estimable events."* The reason code distinguishes it from
   Method 0's exclusion, so the two methods' coverage can be compared honestly.
 
-`MIN_POOL` and the volume band (§3.6) are **provisional pending the matched-pool
-distribution**, which cannot be measured until `store_card()` ships `region` and
-`store_format`. They will be set from that distribution and **tuned against pool
-size (observed), never against error (truth)** — tuning a blind estimator's knobs
-against the answer key is the one thing pre-registration exists to forbid. The
-chosen values are logged in DECISIONS.md before first scoring.
+**Values, set from the matched-pool distribution (r2, `store_card()` shipped):**
+`MIN_POOL = 5` and a volume band of **[v / 2, v × 2]** (`VOLUME_BAND_FACTOR = 2`).
+Set **against pool size (observed), never against error (truth)** — tuning a blind
+estimator's knobs against the answer key is the one thing pre-registration exists to
+forbid. Under the §3.3 hierarchy these clear `MIN_POOL` for **95%** of store-events,
+so coverage is driven by the hierarchy, not by starving the floor; `MIN_POOL = 5` is
+a stability floor for the median, not a coverage lever. Any later change to either
+value is a logged re-run.
 
 ### 3.6 Volume tier, and coverage versus Method 0
 
