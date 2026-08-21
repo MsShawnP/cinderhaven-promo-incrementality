@@ -243,9 +243,10 @@ layer.
       to one column on mobile, static build bakes real numbers into prerendered
       HTML. **Remaining for this slice:** filters (deferred — cross-view state is
       the Event Anatomy arc), and the one-timed-session 30-second verification with
-      a trade-marketing person (a human step, gated with public deploy). Screenshot
-      review still pending — the Browser pane wasn't displayable this session, so
-      the visual was verified via DOM, not a rendered image.
+      a trade-marketing person (a human step, gated with public deploy). **Phone
+      look passed 2026-08-21** — the 30-second/375px design gate is met (the Browser
+      pane wasn't compositable in-session, so the developer's own phone look stood
+      in for the screenshot); the external-ICP timed check remains separate and open.
 - [ ] **Upstream `cinderhaven-promo-response` v0.3.0 — `store_card()` accessor.**
       **Blocks Method 1's pipeline.** One row per `store_id`: `retailer_id`,
       `region`, `store_format` — store-master identity, `economics()`'s demarcation
@@ -346,11 +347,16 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
       pre-period average — no unlabeled naive numbers
 - [ ] The portfolio roll-up ties to both the sum of event nets and the
       row-level grain sum, asserted by a test rather than assumed
-- [ ] Scorecard first paint satisfies the 30-second rule — verdict line, one
+- [x] Scorecard first paint satisfies the 30-second rule — verdict line, one
       chart, three numbers — with no filter interaction required, and the
-      Scorecard header works fully at 375px
+      Scorecard header works fully at 375px. **Met 2026-08-21** — phone look
+      passed at 375px (the visual gate the DOM checks this session couldn't stand
+      in for).
 - [ ] The 30-second rule has been **verified in one timed session** with one
-      person who works in trade marketing — not asserted
+      person who works in trade marketing — not asserted. **Still open** — the
+      phone look was the developer's own; this is the separate external-ICP check
+      (see the project-level success definition: ≥3 people in the target ICP,
+      each passing the timed check), owed before public deploy.
 - [ ] **Public-facing copy has had a writing audit before deploy** — every
       on-screen sentence checked against the Economist voice: no overclaim
       ("the most optimistic read there is"), no undefined jargon reaching the
