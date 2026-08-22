@@ -503,6 +503,25 @@ custom composite charts, which is precisely the waterfall.
 Added 2026-08-17 during `/office-hours`. These entries govern what this
 tool is allowed to claim and how the claim is worded.
 
+### 2026-08-21 — The better baseline makes the book look worse. Note for the case study.
+
+- **Observation:** Method 0 (naive pre-period) puts portfolio ROI at **1.13×**;
+  Method 1 (comparable-store) puts it at **1.04×**. The stricter, more defensible
+  baseline makes the promo book look *worse*, not better — because the comparable
+  method catches the concurrent seasonal/market trend the naive pre-period average
+  credits to the promo.
+- **Why it is the thesis proving itself, unprompted:** every improvement in the
+  baseline pulls measured incrementality down. That is exactly what a skeptical CFO
+  suspects about their trade spend and exactly what no vendor will show — a vendor's
+  incentive runs the other way. The tool demonstrates the direction of the bias, on
+  data where the truth is knowable, without being asked to.
+- **Where it goes:** the case study on `lailarallc.com/work` (external to this repo),
+  and it informs the accuracy view's copy — "the naive method visibly losing" is the
+  anti-rigging exhibit, and this ROI gap is its portfolio-level headline. Not an
+  accuracy *result* yet (that needs truth scoring); it is a difference between two
+  blind estimates, and the accuracy view says which direction is right.
+- **Scope:** case study; accuracy view copy; positioning.
+
 ### 2026-08-17 — Synthetic data is the only publishable option, not a fallback.
 
 - **Decision:** Frame synthetic data as a strength, not an apology. Inherit
