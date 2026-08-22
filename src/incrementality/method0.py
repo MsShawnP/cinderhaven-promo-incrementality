@@ -47,7 +47,7 @@ def _row_estimates(events, delta, economics):
     sufficient["baseline_units"] = sufficient["pre_period_velocity"]
 
     promoted = delta[delta["promo_id"].notna()][
-        ["promo_id", "store_id", "sku", "observed_units", "complied"]
+        ["promo_id", "store_id", "sku", "week_ending", "observed_units", "complied"]
     ]
     rows = promoted.merge(
         sufficient[["promo_id", "store_id", "baseline_units"]],
@@ -55,11 +55,14 @@ def _row_estimates(events, delta, economics):
         how="inner",  # inner: drops rows from insufficient store-events
     )
     rows = attach_margin_cents(rows, events, economics)
+    # week_ending is carried so the accuracy view can join each scored store-week to
+    # truth at the same grain; it changes no estimate (spec accuracy §2).
     return rows[
         [
             "promo_id",
             "store_id",
             "sku",
+            "week_ending",
             "incremental_margin_cents",
             "baseline_units",
             "observed_units",

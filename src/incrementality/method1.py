@@ -162,6 +162,7 @@ def _comparable_rows(events, delta, store_card):
                         "promo_id": ev.promo_id,
                         "store_id": test_store,
                         "sku": ev.sku,
+                        "week_ending": r.week_ending,
                         "observed_units": r.observed_units,
                         "baseline_units": baseline,
                         "complied": r.complied,
@@ -171,7 +172,16 @@ def _comparable_rows(events, delta, store_card):
 
     return pd.DataFrame(
         out_rows,
-        columns=["promo_id", "store_id", "sku", "observed_units", "baseline_units", "complied", "relaxed"],
+        columns=[
+            "promo_id",
+            "store_id",
+            "sku",
+            "week_ending",
+            "observed_units",
+            "baseline_units",
+            "complied",
+            "relaxed",
+        ],
     )
 
 
@@ -194,11 +204,13 @@ def estimate():
     relaxed_share = per_store_event.groupby("promo_id")["relaxed"].mean()
 
     rows = attach_margin_cents(rows, events, economics)
+    # week_ending carried for the accuracy join (spec accuracy §2); no estimate changes.
     rows = rows[
         [
             "promo_id",
             "store_id",
             "sku",
+            "week_ending",
             "incremental_margin_cents",
             "baseline_units",
             "observed_units",
