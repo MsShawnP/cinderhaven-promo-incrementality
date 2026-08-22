@@ -155,6 +155,15 @@
 			</p>
 		</figure>
 
+		<!-- The proof behind the numbers, one click deep — not the front door. -->
+		<a class="accuracy-link" href="/accuracy">
+			<span class="accuracy-link-lead">How wrong are these numbers?</span>
+			<span class="accuracy-link-sub"
+				>See both methods scored against known truth — the error, by regime, including where
+				it is large. →</span
+			>
+		</a>
+
 		<!-- Ranked event list for the active method, with the other method's ROI per
 		     row so the method delta is visible event by event. -->
 		<section class="ranked">
@@ -428,6 +437,34 @@
 		color: var(--ll-london-35);
 		margin: var(--ll-space-lg) 0 0;
 		max-width: var(--ll-body-max-width);
+	}
+
+	/* Link into the accuracy view — the proof behind the numbers */
+	.accuracy-link {
+		display: block;
+		margin: var(--ll-space-2xl) 0 0;
+		padding: var(--ll-space-lg);
+		border: 1px solid var(--ll-chicago-20);
+		border-radius: var(--ll-radius);
+		text-decoration: none;
+		background: var(--ll-chicago-95);
+	}
+	.accuracy-link:hover {
+		background: var(--ll-chicago-85);
+	}
+	.accuracy-link-lead {
+		display: block;
+		font-family: var(--ll-serif);
+		font-weight: 700;
+		font-size: clamp(1.125rem, 2.5vw, 1.25rem);
+		color: var(--ll-chicago-20);
+		margin: 0 0 var(--ll-space-xxs);
+	}
+	.accuracy-link-sub {
+		display: block;
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--ll-london-20);
 	}
 
 	/* Ranked event list */
