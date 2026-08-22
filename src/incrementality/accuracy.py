@@ -145,8 +145,10 @@ def _headline(scored):
     defined = scored[scored["pct_defined"]]
     below = scored[~scored["pct_defined"]]
     headline = {
-        "median_abs_pct_error": round(float(defined["signed_pct_error"].abs().median()), 2),
-        "median_signed_pct_error": round(float(defined["signed_pct_error"].median()), 2),
+        # One decimal everywhere — false-precision asymmetry reads sloppy on a
+        # measurement page (copy-audit 2026-08-22).
+        "median_abs_pct_error": round(float(defined["signed_pct_error"].abs().median()), 1),
+        "median_signed_pct_error": round(float(defined["signed_pct_error"].median()), 1),
         "n_scored": len(defined),
         "n_below_floor": len(below),
     }
@@ -168,8 +170,8 @@ def _regime(scored_with_features, feature):
             {
                 "label": str(label),
                 "n_events": len(group),
-                "median_abs_pct_error": round(float(group["signed_pct_error"].abs().median()), 2),
-                "median_signed_pct_error": round(float(group["signed_pct_error"].median()), 2),
+                "median_abs_pct_error": round(float(group["signed_pct_error"].abs().median()), 1),
+                "median_signed_pct_error": round(float(group["signed_pct_error"].median()), 1),
             }
         )
     return buckets
@@ -201,7 +203,7 @@ def _story_lines(events, scored0, scored1):
         def _pct(scored_indexed, pid=pid):
             if pid not in scored_indexed.index or not bool(scored_indexed.loc[pid, "pct_defined"]):
                 return None
-            return round(float(scored_indexed.loc[pid, "signed_pct_error"]), 2)
+            return round(float(scored_indexed.loc[pid, "signed_pct_error"]), 1)
 
         lines.append(
             {

@@ -12,8 +12,10 @@
 	const m0 = methods.method0.headline;
 	const m1 = methods.method1.headline;
 
-	const pct = (x) => (x === null || x === undefined ? '—' : `${x}%`);
-	const signed = (x) => (x === null || x === undefined ? '—' : `${x > 0 ? '+' : ''}${x}%`);
+	// toFixed(1) so trailing zeros show — JSON drops 22.0 to 22, and one decimal
+	// everywhere is the rule on a measurement page (copy-audit).
+	const pct = (x) => (x === null || x === undefined ? '—' : `${x.toFixed(1)}%`);
+	const signed = (x) => (x === null || x === undefined ? '—' : `${x > 0 ? '+' : ''}${x.toFixed(1)}%`);
 
 	const STORY_LABELS = {
 		pure_subsidy: 'Pure subsidy',
@@ -39,6 +41,13 @@
 		return labels.map((label) => ({ label, m0: b0[label], m1: b1[label] }));
 	}
 	const relaxRegime = methods.method1.regimes.match_relaxed_share ?? [];
+
+	// Estimable = scored (measurable true lift) + below-floor (near-zero true lift).
+	const estimable0 = m0.n_scored + m0.n_below_floor;
+	const estimable1 = m1.n_scored + m1.n_below_floor;
+	// Relaxation biases, read from the table so the prose can't drift from it.
+	const relaxFully = relaxRegime.find((b) => b.label === 'fully relaxed');
+	const relaxMixed = relaxRegime.find((b) => b.label === 'mixed');
 </script>
 
 <div class="lailara-container accuracy">
@@ -80,12 +89,21 @@
 				<p class="bias">Bias {signed(m1.median_signed_pct_error)} · {m1.n_scored} events scored</p>
 			</div>
 		</div>
+		<p class="excluded ll-measure">
+			Scored covers the estimable events with a measurable true lift — {m0.n_scored} of
+			{estimable0} for Method&nbsp;0, {m1.n_scored} of {estimable1} for Method&nbsp;1. The
+			rest have true incremental below one unit — phantom and negligible-effect promotions,
+			where a percentage of almost nothing is undefined — so they are set aside from the
+			median, not hidden. The four seeded stories are included in these figures and also
+			broken out below.
+		</p>
+
 		<p class="read ll-measure">
-			Both methods over-credit promotions — the sign of the bias is positive for each.
-			The comparable-store method, the more defensible one, is <strong>more</strong>
-			biased, not less: the better baseline does not flatter the promo book, it indicts
-			it further. A demonstration engineered to make the naive method lose would not show
-			this. Large error is the finding, not a blemish to sand off.
+			Both methods over-credit promotions — the bias is positive for each. And the more
+			defensible comparable-store method over-credits by more, not less. Two conclusions
+			follow, both honest: the true promo book is worse than either method shows, and a
+			better baseline is not automatically a better-calibrated one. A demonstration
+			engineered to make the naive method lose would show neither.
 		</p>
 	</section>
 
@@ -151,6 +169,12 @@
 						</tbody>
 					</table>
 				</div>
+				{#if feature === 'promo_type'}
+					<p class="regime-note">
+						Coupon events have small true lifts, so percent error is measured against small
+						denominators; the metric is stressed here, not just the method.
+					</p>
+				{/if}
 			</div>
 		{/each}
 
@@ -160,7 +184,10 @@
 				<p class="section-sub ll-measure">
 					Method 1 matches comparable stores by region, format class and volume; where the
 					in-format pool is too thin it relaxes to region and volume alone. This cut asks
-					whether the relaxation costs accuracy — and it does.
+					whether the relaxation costs accuracy — and it does, though not where you'd look
+					first: median error holds, but fully-relaxed events run
+					{signed(relaxFully?.median_signed_pct_error)} hot against
+					{signed(relaxMixed?.median_signed_pct_error)} for mixed.
 				</p>
 				<div class="lailara-table-wrap">
 					<table class="acc-table">
@@ -300,6 +327,20 @@
 		line-height: 1.6;
 		color: var(--ll-london-20);
 		margin: 0;
+	}
+	.excluded {
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--ll-london-35);
+		margin: 0 0 var(--ll-space-base);
+	}
+	.regime-note {
+		font-size: 12px;
+		font-style: italic;
+		line-height: 1.5;
+		color: var(--ll-london-35);
+		margin: var(--ll-space-sm) 0 0;
+		max-width: var(--ll-body-max-width);
 	}
 	.acc-table {
 		width: 100%;
