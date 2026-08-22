@@ -440,3 +440,50 @@ name (`src/incrementality/accuracy.py`). Headline error over the full population
 the four seeded stories marked and reported separately; the background distribution
 shown alongside them; `match_relaxed_share` available as a Method 1 regime cut. The
 dependency-direction guard fires the moment that module lands.
+
+## 2026-08-21 — Accuracy view shipped: the repo's first and only truth contact
+
+**What changed:** The accuracy view, end to end, as the single clean first-contact
+with truth — both methods frozen behind it. (1) Pre-registered the scoring metrics
+in `docs/accuracy-spec.md` and tagged `accuracy-preregistration` **before**
+`accuracy.py` existed (metric-shopping after seeing results is the same sin as
+tuning after seeing truth). (2) `accuracy.py` — the one by-name-exempt module that
+imports `truth`; `assert_aligned_with_observed` first, then scores Method 0 and
+Method 1 against `truth.load_truth()`. (3) Both estimators now carry `week_ending`
+(additive, no estimate change) so scoring joins each scored store-week to truth at
+the same grain — error measures accuracy, not coverage. (4) `accuracy/v1` artifact
+(error metrics only, schema-tested). (5) The `/accuracy` view, one click from the
+Scorecard, both methods side by side, claim language verbatim.
+
+**The findings (honest, non-trivial):** both methods ~**26% median absolute error**
+on incremental units. Method 1 is **more** upward-biased (**+22%**) than Method 0
+(**+12%**) — the better baseline does not dominate on this metric, the most credible
+possible result (a rigged demo would show the naive method losing badly). The
+match-relaxation regime pays off: **fully-relaxed +22.6% bias vs mixed +15.7%** —
+error grows where the match relaxed. Retailer error spans **14%–39%**. The four
+stories are scored separately (pure_subsidy M0 −36%/M1 +9%; clean_winner M0 −15%/M1
++25%).
+
+**Blindness ledger — closed and demonstrated.** The truth gate PASSES with
+`accuracy.py` exempt by name and FAILS without the exemption (proving the exemption
+is load-bearing, not vacuous). Import ban and dependency-direction green (nothing
+imports `accuracy`). Git history: `method1-preregistration`,
+`method1-preregistration-r2`, `accuracy-preregistration` all predate the first
+`truth.load_truth()` call. The artifact carries no truth token (raw-bytes test) and
+no reconstructable value.
+
+**State — all pushed (a182318 … 5ac9d81), 68 Python tests + front-end build green,
+ruff clean, artifacts byte-identical.** CI watched on the accuracy-view push (the
+deploy job runs the accuracy build, so CI loads truth cold for the first time).
+Three views now live behind the two-method gate: Scorecard (toggle), and Accuracy
+(one click deep). `accuracy.json` gitignored, wired into `build.sh` step [3/4].
+
+**Owed before "done" (DoD): the copy audit.** Stopping here per instruction — the
+accuracy view's copy (and the Scorecard copy) freezes for the writing audit before
+this counts as deploy-ready. Also still open: the human 375px/30-second timed check
+with a trade-marketing person, and the external platform session (stale `421beef`,
+v0.3.0 canonical paragraph) — both yours.
+
+**Next:** the copy audit (freeze + your review), then — if wanted — Event Anatomy
+(the next arc: per-event waterfall, the baseline-method toggle inside the view), and
+filters (cross-view state). The estimator/accuracy spine is complete.
