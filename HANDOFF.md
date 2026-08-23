@@ -521,3 +521,15 @@ SVG/D3 per the DOM-bars boundary, story/phantom annotations inline (Clean winner
 (retailer/line/type/status) persistent via URL state — the SvelteKit rationale
 cashing in. 30-second rule does not apply (exploration surface, desktop-first).
 Copy freezes for audit before deploy.
+
+## 2026-08-22 — /accuracy 375px gate met; Event Anatomy arc opened (blocked on a data-boundary question)
+
+**Gate:** The `/accuracy` phone look passed — 375px gate met (Shawn, human check).
+Both deployed surfaces (Scorecard header + Accuracy) now clear the 375px bar.
+
+**New arc requested:** Event Anatomy (deep-linkable `/event/<promo_id>`, waterfall,
+M0/M1 toggle inside, story/phantom annotations) + cross-view filters (URL state).
+Before building I flagged a data-boundary question — see the session log — because
+the requested waterfall lists `dip` and `transfer` segments, which are
+blindness-protected truth quantities the estimators are forbidden to see and the
+current Method 0/1 do not produce. Resolution pending Shawn's answer.
