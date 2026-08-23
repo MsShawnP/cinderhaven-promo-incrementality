@@ -180,6 +180,39 @@ custom composite charts, which is precisely the waterfall.
   beats view count — one anatomy view with a working method toggle is
   deeper than four shallow pages.
 
+### 2026-08-22 — Event Anatomy is a three-bar observed waterfall. Dip and transfer are the NEXT estimation arc, not truth on this page.
+
+- **Decision:** The Event Anatomy waterfall shows **exactly what a blind estimator
+  knows**: `gross promoted volume → subsidized baseline (giveaway) → net incremental
+  lift` — three bars, from observed + estimated data only, with the M0/M1 toggle and
+  margin/accrued cost alongside. **Dip and transfer are NOT bars on this page.** They
+  are the demand response an estimator must never see (CLAUDE.md), so putting them on
+  an observed-only page would either require truth (a leak) or fabricate them.
+- **How the flaw surfaced:** the requested waterfall listed `dip` and `transfer`
+  segments; the blindness boundary caught that they are protected truth quantities
+  the estimators legitimately do not produce. The discipline working — the anatomy
+  view was one step from quietly becoming a truth leak. Showing only what can be
+  defended is the house position.
+- **Option B is the planned NEXT estimation arc, not a rejection.** Observed-only
+  **pantry-load** and **cannibalization** estimators are the original brainstorm
+  tools **1c / 1d**. Post-event **dip** (observed shortfall below baseline in the
+  weeks *after* the promo) and **sibling-delta transfer** (other SKUs' shortfall
+  during the promo) **are estimable from observed data** — no truth needed. They
+  will arrive with their **own pre-registration tags**, their **own accuracy
+  scoring**, and the headline change (**net → net-of-dip**) recorded as a **logged
+  re-run**. A's three-bar waterfall then gains its fourth and fifth segments
+  honestly, as estimates that can be scored — not as a fudge.
+- **Story-event annotations — the one rule for the anatomy narrative:** they may
+  describe the story's **design intent from public upstream documentation** (the
+  event is *named* `pantry_trap`, and the package's public docs say what that
+  archetype represents), **never truth values** ("the true dip was X units" is
+  banned — that is the /accuracy view's job, and even there only as error, never as
+  a truth value). Truth stays one click away.
+- **Scope:** Event Anatomy view; the anatomy artifact; the next estimation arc.
+- **Do not:** put a dip or transfer bar on the anatomy page from truth. Do not quote
+  a truth value in a story annotation. Do not change the Scorecard's net number to
+  net-of-dip until the dip estimator ships as a logged re-run.
+
 ### 2026-08-19 — Blindness protects the demand response, not the price card. Economics via a blessed accessor.
 
 - **Decision:** Estimation code's **allowed surface is exactly** `pr.load()`,

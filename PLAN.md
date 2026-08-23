@@ -7,31 +7,47 @@ session. For session-by-session state, see HANDOFF.md.
 
 ## Goal
 
-**This arc: choose the stack and prove the spine.** End with a logged stack
-decision and one view — the ROI Scorecard — running end-to-end on real data,
-with the truth gate green in CI.
+**This arc (opened 2026-08-22): Event Anatomy + cross-view filters.** The spine —
+ROI Scorecard, Accuracy, both baseline methods — is built, audited, and deployed
+(see Arc history). This arc adds the second view and the cross-view state the
+SvelteKit choice was made for.
 
-The project is **three views** — ROI Scorecard, Event Anatomy, Accuracy. This
-arc builds the first and a first pass at the third. Event Anatomy is the next
-arc.
+The project is **three views** — ROI Scorecard, Event Anatomy, Accuracy. The first
+and third are live; this arc builds the second and wires the three together.
 
-## Why this arc, why now
+## Event Anatomy — the three-bar observed waterfall (DECISIONS 2026-08-22)
 
-The data package shipped at v0.1.0 with a causal promo signal and quarantined
-ground truth, so the riskiest unknown ("does the data support the claims?")
-is already a settled fact. The next riskiest unknown is the stack: this tool's
-value is a per-event decomposition and an accuracy view, and the wrong stack
-makes both expensive. Deciding it after building two views is how a rewrite
-happens.
+Per-event, deep-linkable (`/event/PRE-0002`), **observed + estimated only**. The
+waterfall is **gross promoted volume → subsidized baseline (giveaway) → net
+incremental lift** — the three bars a blind estimator can defend — with the M0/M1
+toggle and margin/accrued cost alongside, in SVG (exploration surface; the DOM-bars
+rule was a Scorecard-header responsiveness exception). Dip and transfer are **not**
+bars here (protected truth); they are the **next** estimation arc (Option B, tools
+1c/1d). The event's truth-scored error appears **only** as a link to `/accuracy`,
+never inline. Story/phantom events carry narrative annotations describing **design
+intent from public upstream docs — never truth values**.
 
-Proving one view end-to-end before the rest is what keeps that decision
-honest. A stack chosen on paper and never exercised is still an unknown.
+## Cross-view filters
 
-**What this arc does not produce: client-facing value.** Tasks 1–4 yield an
-ROI scorecard, and every vendor has one. Nothing differentiates this project
-until the accuracy view lands, and the two-method deploy gate pushes public
-launch past this arc entirely. That is an accepted sequencing cost, recorded
-so it is a decision rather than a discovery.
+retailer / product line / promo type / plan status, persistent across the Scorecard
+and Anatomy via **URL state** — the SvelteKit rationale cashing in. The 30-second
+rule does **not** apply (exploration surface, desktop-first, graceful on mobile).
+
+## Tasks — this arc
+
+- [ ] **Anatomy artifact** — `build_anatomy.py` writes `anatomy.json`: per event,
+      per method, the volume decomposition (gross / subsidized baseline / net
+      incremental) plus margin, accrued cost, ROI, giveaway share, and observed
+      meta (weeks, depth, funding, story/phantom). Blind (no truth); schema test;
+      wired into `build.sh`.
+- [ ] **Event Anatomy view** — `/event/[promo_id]` prerendered for all 131
+      (`entries()`), the SVG waterfall, M0/M1 toggle, margin/cost, story/phantom
+      annotations, and a `/accuracy` link for the error. Linked from the Scorecard
+      ranked-list rows.
+- [ ] **Cross-view filters** — retailer/line/type/status in URL state, shared
+      store, applied to the Scorecard ranked list (and the anatomy's event
+      navigation). Deep-linkable, persistent across the two views.
+- [ ] **Copy freezes for audit before deploy** (DoD rule). Commit at boundaries.
 
 ## Business question this arc answers
 
@@ -426,7 +442,26 @@ When an arc completes, archive its goal, completion date, and outcome
 here. Then start a new arc above. Provides continuity without bloating
 the active plan.
 
-<!-- No completed arcs yet. -->
+### Arc 1 — Choose the stack and prove the spine (2026-08-17 → 2026-08-22, COMPLETE)
+
+**Outcome:** All three deploy-gated deliverables shipped and live on `.pages.dev`.
+ROI Scorecard (Method 0/1 toggle, ranked list), Accuracy view (estimate vs truth,
+both methods, audited copy), and both baseline methods (M0 pre-period, M1
+comparable-store) behind the two-method public-deploy gate. Blindness ledger closed
+and demonstrated: truth gate proven load-bearing, `config`/`constants` import ban,
+dependency-direction sink — all green; three pre-registration tags
+(`method1-preregistration`, `-r2`, `accuracy-preregistration`) predate the first
+`truth.load_truth()`. Stack decided (SvelteKit + static + Cloudflare Pages), §2.4
+giveaway share corrected, upstream re-pinned through v0.1.1 → v0.2.1 → v0.3.0
+(economics(), store_card()). Copy audit closed. Open human items (ICP timed check)
+tracked, not blocking.
+
+### Next arc (after this one) — Option B estimators: observed-only dip + transfer (tools 1c/1d)
+
+Post-event pantry-load **dip** and sibling-delta **transfer**, estimable from
+observed data, each with its own pre-registration tag and accuracy scoring; the
+headline moves net → net-of-dip as a logged re-run, and the anatomy waterfall gains
+its 4th and 5th bars honestly. See DECISIONS 2026-08-22.
 
 ---
 
