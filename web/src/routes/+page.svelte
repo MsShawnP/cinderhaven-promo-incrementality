@@ -192,7 +192,7 @@
 								<td class="col-rank">{i + 1}</td>
 								<td class="col-promo">
 									<span class="promo-head">
-										<span class="promo-id">{e.promo_id}</span>
+										<a class="promo-id" href="/event/{e.promo_id}">{e.promo_id}</a>
 										{#if STORY_LABELS[e.story_tag]}
 											<span class="badge badge-story">{STORY_LABELS[e.story_tag]}</span>
 										{/if}
@@ -252,7 +252,7 @@
 					<ul>
 						{#each unranked as e (e.promo_id)}
 							<li>
-								<span class="promo-id">{e.promo_id}</span>
+								<a class="promo-id" href="/event/{e.promo_id}">{e.promo_id}</a>
 								<span class="promo-meta"
 									>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type} ·
 									{dollars(e.accrued_cost_cents)} spend</span
@@ -569,6 +569,11 @@
 	.promo-id {
 		font-weight: 600;
 		color: var(--ll-london-5);
+		text-decoration: none;
+	}
+	a.promo-id:hover {
+		color: var(--ll-chicago-20);
+		text-decoration: underline;
 	}
 	.promo-meta {
 		display: block;
