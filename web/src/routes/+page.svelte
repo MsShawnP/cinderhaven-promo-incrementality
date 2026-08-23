@@ -6,10 +6,44 @@
 	//
 	// Imported at build time. The Python pipeline writes this file; a missing file
 	// fails the build loudly rather than shipping stale numbers (build contract).
+	import { onMount } from 'svelte';
+
+	import { replaceState } from '$app/navigation';
+
 	import scorecard from '$lib/data/scorecard.json';
 	import { dollars, roiText, pct } from '$lib/format.js';
+	import { FILTER_KEYS, parseFilters, matches, anyActive, optionsFor, toQuery } from '$lib/filters.js';
 
 	const { portfolios, events } = scorecard;
+
+	// Cross-view filters, carried in the URL so they persist across the Scorecard and
+	// the event pages. They narrow the ranked list only — the verdict header and the
+	// distribution chart stay portfolio-wide (the 30-second read is the whole book).
+	//
+	// The URL is read CLIENT-SIDE only: a prerendered page cannot depend on the query
+	// string (the same static file serves every query), so filters default to empty in
+	// the prerendered HTML and are applied from the URL after hydration.
+	let filters = $state({ retailer: '', line: '', type: '', status: '' });
+	const filterQuery = $derived(toQuery(filters));
+	const filterOptions = optionsFor(events);
+	const FILTER_LABELS = { retailer: 'Retailer', line: 'Product line', type: 'Promo type', status: 'Plan status' };
+	const retailerLabel = (v) => v.replace('RET-', '');
+
+	onMount(() => {
+		filters = parseFilters(new URLSearchParams(window.location.search));
+	});
+
+	function syncUrl() {
+		replaceState(window.location.pathname + toQuery(filters), {});
+	}
+	function setFilter(key, value) {
+		filters = { ...filters, [key]: value };
+		syncUrl();
+	}
+	function clearFilters() {
+		filters = { retailer: '', line: '', type: '', status: '' };
+		syncUrl();
+	}
 
 	const METHOD_SHORT = { method0: 'Method 0', method1: 'Method 1' };
 	const METHOD_TAG = {
@@ -68,11 +102,13 @@
 	};
 	const ranked = $derived(
 		events
-			.filter((e) => e[selected].estimable)
+			.filter((e) => e[selected].estimable && matches(e, filters))
 			.slice()
 			.sort((a, b) => b[selected].net_margin_cents - a[selected].net_margin_cents)
 	);
-	const unranked = $derived(events.filter((e) => !e[selected].estimable));
+	const unranked = $derived(events.filter((e) => !e[selected].estimable && matches(e, filters)));
+	const totalEstimable = $derived(events.filter((e) => e[selected].estimable).length);
+	const filtersActive = $derived(anyActive(filters));
 
 	// Table annotations, for the active method. Net-dip (spec 2.4): a giveaway share
 	// > 1 means sales fell below the baseline during the promo — flagged, not a broken
@@ -173,6 +209,31 @@
 				break-even — margin under spend — are marked in the ROI column.
 			</p>
 
+			<!-- Cross-view filters (URL state). Narrow the list; the verdict stays whole. -->
+			<div class="filters" role="group" aria-label="Filter promotions">
+				{#each FILTER_KEYS as key (key)}
+					<label class="filter">
+						<span class="filter-label">{FILTER_LABELS[key]}</span>
+						<select value={filters[key]} onchange={(ev) => setFilter(key, ev.currentTarget.value)}>
+							<option value="">All</option>
+							{#each filterOptions[key] as opt (opt)}
+								<option value={opt}>{key === 'retailer' ? retailerLabel(opt) : opt}</option>
+							{/each}
+						</select>
+					</label>
+				{/each}
+				{#if filtersActive}
+					<button class="clear" onclick={clearFilters}>Clear filters</button>
+				{/if}
+			</div>
+			{#if filtersActive}
+				<p class="filter-count">
+					Showing {ranked.length} of {totalEstimable} estimable{unranked.length
+						? ` · ${unranked.length} unranked`
+						: ''}.
+				</p>
+			{/if}
+
 			<div class="lailara-table-wrap">
 				<table class="event-table">
 					<thead>
@@ -192,7 +253,7 @@
 								<td class="col-rank">{i + 1}</td>
 								<td class="col-promo">
 									<span class="promo-head">
-										<a class="promo-id" href="/event/{e.promo_id}">{e.promo_id}</a>
+										<a class="promo-id" href="/event/{e.promo_id}{filterQuery}">{e.promo_id}</a>
 										{#if STORY_LABELS[e.story_tag]}
 											<span class="badge badge-story">{STORY_LABELS[e.story_tag]}</span>
 										{/if}
@@ -252,7 +313,7 @@
 					<ul>
 						{#each unranked as e (e.promo_id)}
 							<li>
-								<a class="promo-id" href="/event/{e.promo_id}">{e.promo_id}</a>
+								<a class="promo-id" href="/event/{e.promo_id}{filterQuery}">{e.promo_id}</a>
 								<span class="promo-meta"
 									>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type} ·
 									{dollars(e.accrued_cost_cents)} spend</span
@@ -474,6 +535,56 @@
 		border-top: 1px solid var(--ll-london-85);
 		font-family: var(--ll-sans);
 	}
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--ll-space-base);
+		align-items: flex-end;
+		margin: 0 0 var(--ll-space-base);
+	}
+	.filter {
+		display: flex;
+		flex-direction: column;
+		gap: var(--ll-space-xxs);
+	}
+	.filter-label {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: var(--ll-london-35);
+	}
+	.filter select {
+		font-family: var(--ll-sans);
+		font-size: 14px;
+		height: 36px;
+		padding: 0 var(--ll-space-sm);
+		border: 1px solid var(--ll-london-85);
+		border-radius: var(--ll-radius);
+		background: #fff;
+		color: var(--ll-london-20);
+	}
+	.clear {
+		font-family: var(--ll-sans);
+		font-size: 14px;
+		font-weight: 600;
+		height: 36px;
+		padding: 0 var(--ll-space-base);
+		border: 1px solid var(--ll-chicago-20);
+		border-radius: var(--ll-radius);
+		background: transparent;
+		color: var(--ll-chicago-20);
+		cursor: pointer;
+	}
+	.clear:hover {
+		background: var(--ll-chicago-95);
+	}
+	.filter-count {
+		font-size: 13px;
+		color: var(--ll-london-35);
+		margin: 0 0 var(--ll-space-base);
+	}
+
 	.ranked-title {
 		font-family: var(--ll-serif);
 		font-weight: 700;

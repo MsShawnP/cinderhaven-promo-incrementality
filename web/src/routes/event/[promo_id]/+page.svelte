@@ -6,10 +6,19 @@
 	// estimation arc). Story annotations describe design intent from public upstream
 	// docs, never truth values; the truth-scored error lives one click away at
 	// /accuracy. See DECISIONS 2026-08-22.
+	import { onMount } from 'svelte';
+
 	import { dollars, roiText, pct } from '$lib/format.js';
 
 	let { data } = $props();
-	const e = data.event;
+	const e = $derived(data.event);
+
+	// Carry any active cross-view filter back to the Scorecard. The query is read
+	// client-side only — a prerendered page cannot depend on url.search.
+	let backHref = $state('/');
+	onMount(() => {
+		backHref = '/' + window.location.search;
+	});
 
 	let method = $state('method1'); // comparable-store first — the more defensible read
 	const m = $derived(e[method]);
@@ -102,7 +111,7 @@
 
 <div class="lailara-container anatomy">
 	<p class="eyebrow">Event Anatomy</p>
-	<a class="back" href="/">← Back to the Scorecard</a>
+	<a class="back" href={backHref}>← Back to the Scorecard</a>
 
 	<h1 class="title">{e.promo_id}</h1>
 	<p class="meta">
