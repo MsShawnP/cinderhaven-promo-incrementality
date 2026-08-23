@@ -533,3 +533,41 @@ Before building I flagged a data-boundary question — see the session log — b
 the requested waterfall lists `dip` and `transfer` segments, which are
 blindness-protected truth quantities the estimators are forbidden to see and the
 current Method 0/1 do not produce. Resolution pending Shawn's answer.
+
+## 2026-08-22 — Event Anatomy + cross-view filters built (Option A); frozen for copy audit
+
+**What changed:** The second view and the cross-view state, three boundaries, all
+pushed. (1) `build_anatomy.py` → `anatomy/v1` artifact: per event, per method, the
+three-bar volume decomposition (gross promoted → subsidized baseline → net
+incremental lift, net derived from the rounded pair so it reconciles on screen) plus
+margin/cost/ROI/giveaway and observed meta. Blind (truth gate passes over it), schema
+test forbids truth tokens, wired into build.sh. (2) `/event/[promo_id]` view —
+prerendered for all 131 via entries(), SVG waterfall, M0/M1 toggle updating the bars,
+margin/cost alongside, story/phantom annotations describing DESIGN INTENT from public
+upstream docs (never truth values), and a `/accuracy` link for the error (never
+inline). Scorecard rows link to event pages. (3) Cross-view filters
+(retailer/line/type/status) in URL state — narrow the list only, not the verdict;
+read client-side (a prerendered page can't depend on url.search) and synced via
+replaceState; event links + the event back-link carry the filter.
+
+**Design boundary that shaped it (DECISIONS 2026-08-22):** the requested waterfall
+listed dip and transfer segments — protected truth the blind estimators don't
+produce. Option A ships the three bars the estimator can defend; dip/transfer are the
+NEXT estimation arc (Option B, tools 1c/1d), logged with their own pre-registration +
+accuracy scoring and a net→net-of-dip re-run.
+
+**State — all pushed, 75 Python tests + front-end build green, ruff clean, artifacts
+byte-identical, no console errors, no page h-scroll.** Verified live: toggle
+reactivity, clean_winner's 91%-giveaway paradox, phantom-as-noise ($0 cost, null
+ROI), non-estimable paths, filter 129→19 + deep-link + clear, cross-view back-link
+persistence, all 131 event pages prerender. CI deploy watched (build.sh now runs
+build_anatomy; prerenders 131 event pages — first time in CI).
+
+**Owed before "done" (DoD): the copy audit.** Stopping here per instruction. New copy
+to freeze: the anatomy narrative (story/phantom annotations, waterfall caption/
+footnote, the /accuracy link copy) and the filter labels. Also still open (Shawn):
+the ICP timed check against the finished tool.
+
+**Next arc:** Option B — observed-only dip + transfer estimators (tools 1c/1d), each
+pre-registered and accuracy-scored; the anatomy waterfall then gains its 4th and 5th
+bars honestly.
