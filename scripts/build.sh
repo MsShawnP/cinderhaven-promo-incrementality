@@ -24,11 +24,14 @@ python -m incrementality.build_skeleton
 echo "[2/4] pipeline: ROI Scorecard artifact (Python, Method 0 + Method 1)"
 python -m incrementality.build_scorecard
 
-echo "[3/4] pipeline: Accuracy artifact (Python, scores both methods vs truth)"
+echo "[3/5] pipeline: Accuracy artifact (Python, scores both methods vs truth)"
 # accuracy.py is the one module that reads truth; it publishes error metrics only.
 python -m incrementality.accuracy
 
-echo "[4/4] front end: static build (SvelteKit adapter-static)"
+echo "[4/5] pipeline: Event Anatomy artifact (Python, observed decomposition)"
+python -m incrementality.build_anatomy
+
+echo "[5/5] front end: static build (SvelteKit adapter-static)"
 npm --prefix web run build
 
 echo "done — static site at web/build/"
