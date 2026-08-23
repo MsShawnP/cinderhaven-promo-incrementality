@@ -487,3 +487,37 @@ v0.3.0 canonical paragraph) — both yours.
 **Next:** the copy audit (freeze + your review), then — if wanted — Event Anatomy
 (the next arc: per-event waterfall, the baseline-method toggle inside the view), and
 filters (cross-view state). The estimator/accuracy spine is complete.
+
+## 2026-08-22 — Arc complete: spine deployed with audited copy
+
+**What changed:** Copy audit closed (5f6a00f) and deployed green — four fixes plus
+the coupon footnote: bias paragraph de-conflated (ROI story separated from the
+per-event bias story), exclusion accounting stated on-page (scored = estimable −
+below-floor near-zero-lift events; stories included and also broken out), the
+match-relaxation intro corrected to match its own table (median holds ~26%, only
+bias worsens: +22.6% fully-relaxed vs +15.7% mixed), decimals standardized to one
+place everywhere (`toFixed(1)` in the view, `round(...,1)` in the artifact), and a
+digital_coupon footnote (small true lifts → stressed denominator, not a broken
+method). Prose reads its numbers from the artifact so copy can't drift from data.
+
+**State — the three-view spine is DONE and deployed on `.pages.dev`:** ROI Scorecard
+(Method 0/1 toggle, delta visible), Event-anatomy-of-the-portfolio ranked list, and
+the Accuracy proof page (estimate vs truth, both methods side by side, audited copy).
+Blindness ledger closed and demonstrated: truth gate proven load-bearing, import ban,
+dependency-direction all green; three pre-registration tags predate the first
+`truth.load_truth()`. 68 Python tests + front-end build green, artifacts byte-identical.
+
+**Open — all on Shawn's plate, none blocking:** (1) the platform session (push
+`421beef`, paste the v0.3.0 canonical paragraph — a separate repo / outward publish,
+oldest open item); (2) the human 375px/30-second phone look at `/accuracy`; (3) the
+ICP timed check against the finished tool.
+
+**Next arc (prompt staged by Shawn):** Event Anatomy — deep-linkable per-event page
+(`/event/PRE-0002`), full waterfall (gross → subsidized baseline → dip → transfer →
+net lift) with margin/cost alongside, M0/M1 toggle inside the view, observed-only
+(truth error appears ONLY as a link to `/accuracy`, never inline), waterfall in
+SVG/D3 per the DOM-bars boundary, story/phantom annotations inline (Clean winner's
+91%-giveaway paradox gets its explanation here). Plus cross-view filters
+(retailer/line/type/status) persistent via URL state — the SvelteKit rationale
+cashing in. 30-second rule does not apply (exploration surface, desktop-first).
+Copy freezes for audit before deploy.
