@@ -35,19 +35,19 @@ rule does **not** apply (exploration surface, desktop-first, graceful on mobile)
 
 ## Tasks — this arc
 
-- [ ] **Anatomy artifact** — `build_anatomy.py` writes `anatomy.json`: per event,
+- [x] **Anatomy artifact** — `build_anatomy.py` writes `anatomy.json`: per event,
       per method, the volume decomposition (gross / subsidized baseline / net
       incremental) plus margin, accrued cost, ROI, giveaway share, and observed
       meta (weeks, depth, funding, story/phantom). Blind (no truth); schema test;
       wired into `build.sh`.
-- [ ] **Event Anatomy view** — `/event/[promo_id]` prerendered for all 131
+- [x] **Event Anatomy view** — `/event/[promo_id]` prerendered for all 131
       (`entries()`), the SVG waterfall, M0/M1 toggle, margin/cost, story/phantom
       annotations, and a `/accuracy` link for the error. Linked from the Scorecard
       ranked-list rows.
-- [ ] **Cross-view filters** — retailer/line/type/status in URL state, shared
+- [x] **Cross-view filters** — retailer/line/type/status in URL state, shared
       store, applied to the Scorecard ranked list (and the anatomy's event
       navigation). Deep-linkable, persistent across the two views.
-- [ ] **Copy freezes for audit before deploy** (DoD rule). Commit at boundaries.
+- [x] **Copy freezes for audit before deploy** (DoD rule). Commit at boundaries.
 
 ## Business question this arc answers
 
@@ -455,6 +455,17 @@ dependency-direction sink — all green; three pre-registration tags
 giveaway share corrected, upstream re-pinned through v0.1.1 → v0.2.1 → v0.3.0
 (economics(), store_card()). Copy audit closed. Open human items (ICP timed check)
 tracked, not blocking.
+
+### Arc 2 — Event Anatomy + cross-view filters (2026-08-22, COMPLETE build-wise)
+
+**Outcome:** The second view shipped and deployed. Deep-linkable `/event/<id>` with
+the three-bar observed waterfall (gross → subsidized baseline → net incremental
+lift), M0/M1 toggle, margin/cost, and story/phantom design-intent annotations;
+`anatomy/v1` artifact (blind, schema-tested). Cross-view filters
+(retailer/line/type/status) **and** the active method carried in URL state, persisting
+Scorecard ↔ Anatomy. Two copy audits; the dip/transfer blindness boundary resolved as
+Option A (three bars a blind estimator can defend), with Option B logged as the next
+arc. Open, non-blocking: the human ICP timed check against the finished tool.
 
 ### Next arc (after this one) — Option B estimators: observed-only dip + transfer (tools 1c/1d)
 

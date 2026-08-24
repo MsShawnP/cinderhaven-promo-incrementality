@@ -815,6 +815,39 @@ project-specific choices on top of it.]
   do not let the Scorecard header inherit the exploration surfaces' mobile
   allowances. It is the one component with no degradation budget.
 
+### 2026-08-22 — Frozen prose never quotes a number that toggles.
+
+- **Decision:** Any static on-screen text (story annotations, captions, framing
+  paragraphs) must read true under **every** interactive state — method toggle,
+  filter, method-dependent stat. Where a design fact wants a number, either the
+  number is invariant across states, or the prose describes the intent qualitatively
+  and points at the live figure ("the giveaway figure above is what the selected
+  method estimates").
+- **Why:** the anatomy story annotations quoted `subsidized_cost_share`, which
+  toggles M0↔M1 (e.g. 63% vs 40% for the same event) and clashed with the fixed
+  wording ("most" beside "40%"). Frozen prose plus a toggling number is a guaranteed
+  contradiction on screen — the copy audit caught it. Prose that reads its numbers
+  from the artifact can't drift; prose that hard-codes them lies the moment the state
+  changes.
+- **Scope:** all view copy; every page with a toggle or filter.
+- **Do not:** interpolate a method-dependent (or filter-dependent) figure into text
+  that is meant to be a fixed statement. Verify each annotation under both toggles.
+
+### 2026-08-22 — On a prerendered page, the query string is client-only state; path carries server-rendered state.
+
+- **Decision:** With `adapter-static` (`prerender = true`), a component must **not**
+  read `url.searchParams` / `url.search` server-side — SvelteKit throws at build. Read
+  the query in `onMount` (client) only, default to the unfiltered state in the
+  prerendered HTML, and write back with `replaceState`. State that must render
+  server-side goes in the **route path**, not the query.
+- **Why:** the prerendered HTML is one static file served for every query, so it
+  cannot depend on the query. This is why per-event pages are `/event/[promo_id]`
+  (path — prerenderable via `entries()`) while cross-view filters and the active
+  method are query params (client-only). See FAILURES.md 2026-08-22.
+- **Scope:** all prerendered routes; any cross-view URL state.
+- **Do not:** access `$page.url.searchParams` in a component on a prerendered route.
+  Do not put prerender-visible content behind a query param.
+
 ---
 
 ## Output Formats

@@ -37,6 +37,34 @@ quarto" or "scope, scrollytelling, decoration"]
 
 ## Entries
 
+### 2026-08-22 — Reading `url.searchParams` in a component broke the prerender build
+
+**Attempted:** Cross-view filters read from the URL via `$page.url.searchParams`
+(Scorecard) and `$page.url.search` (event page), computed reactively so the list
+filtered as the query changed.
+
+**Why it didn't work:** `export const prerender = true` (required by
+adapter-static) forbids reading the query string during SSR/prerender — the same
+static file is served for every query, so the HTML cannot depend on it. The build
+died: `Error: Cannot access url.searchParams on a page with prerendering enabled`,
+`[500] GET /`.
+
+**What we did instead:** read the URL **client-side only** — filters/method default
+to empty/Method-0 in the prerendered HTML, and `onMount` reads
+`new URLSearchParams(window.location.search)` after hydration; changes are written
+back with `replaceState`. A brief unfiltered flash before hydration is acceptable on
+an exploration surface.
+
+**The lesson:** on a prerendered page, treat the query string as client-only state.
+Anything that must render server-side belongs in the route params (path), not the
+query — which is exactly why the per-event pages are `/event/[promo_id]` (path,
+prerenderable via `entries()`) while filters are query (client-only).
+
+**Status:** Resolved; both surfaces refactored to `onMount` reads.
+
+**Tags:** sveltekit, prerender, adapter-static, url-searchparams, client-side,
+cross-view-filters, near-miss
+
 ### 2026-08-19 — First method0 giveaway share divided retail dollars by manufacturer cost
 
 **Attempted:** Implement §2.4 `subsidized_cost_share` literally as written —

@@ -571,3 +571,26 @@ the ICP timed check against the finished tool.
 **Next arc:** Option B — observed-only dip + transfer estimators (tools 1c/1d), each
 pre-registered and accuracy-scored; the anatomy waterfall then gains its 4th and 5th
 bars honestly.
+
+## 2026-08-23 21:55 — /wrap
+
+**Started from:** Method 0 spine frozen; session opened on the Method 0 module and
+grew to the full three-view tool.
+
+**Did:** Method 1 comparable-store baseline (store_card() v0.3.0, §3 pre-registered
+with the format-class JUDGMENT mapping, M0/M1 toggle). Accuracy view — metrics
+pre-registered before the repo's first truth access; accuracy.py the single
+by-name-exempt truth door; error-only artifact; /accuracy view. Platform canon
+bumped to v0.3.0. Event Anatomy — three-bar observed waterfall, deep-linkable
+/event/<id>, M0/M1 toggle, story/phantom annotations; cross-view filters carrying
+BOTH filters and active method in URL state. Two copy audits; all fixes deployed.
+
+**State:** All three views live + audited on .pages.dev, wired with URL-persistent
+filters + method. 75 Python tests + front-end build green, ruff clean, all
+blindness guards green, three pre-registration tags predate first truth. Tree
+clean, all pushed.
+
+**Next:** Option B — observed-only dip + transfer estimators (tools 1c/1d), each
+pre-registered with its own tag and accuracy scoring; the waterfall gains its 4th
+and 5th bars and the headline moves net → net-of-dip as a logged re-run. Plus the
+human ICP timed check (Shawn's).

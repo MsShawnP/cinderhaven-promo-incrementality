@@ -38,8 +38,23 @@ def _int(v):
     return None if pd.isna(v) else int(v)
 
 
-def _float(v):
+def _units(v):
+    """Volume quantities for the waterfall bars, rounded to one decimal.
+
+    The page derives net = gross − baseline from this rounded pair so the three
+    bars reconcile to the displayed decimal. This rounding is a *display* choice
+    for the bar quantities only — never applied to a stat the Scorecard also
+    renders (roi, giveaway share), which must carry full precision so the shared
+    view formatters produce the identical string on both pages.
+    """
     return None if pd.isna(v) else round(float(v), 1)
+
+
+def _float(v):
+    # Full precision, matching build_scorecard._float. A stat shown on both the
+    # Scorecard and the anatomy page must be the *same float*, or the two views
+    # disagree after formatting — the one class of bug this tool cannot ship.
+    return None if pd.isna(v) else float(v)
 
 
 def _bool(v):
@@ -76,8 +91,8 @@ def _method_block(result, volumes):
         # Round gross and baseline, then derive net from the rounded pair so the
         # waterfall reconciles exactly on screen (gross − baseline = net to the
         # displayed decimal), never off by a rounding cent.
-        gross = _float(vol["gross_promoted_units"]) if vol is not None else None
-        baseline = _float(vol["subsidized_baseline_units"]) if vol is not None else None
+        gross = _units(vol["gross_promoted_units"]) if vol is not None else None
+        baseline = _units(vol["subsidized_baseline_units"]) if vol is not None else None
         net = round(gross - baseline, 1) if vol is not None else None
         block[promo_id] = {
             "estimable": _bool(ev["estimable"]),
