@@ -12,9 +12,13 @@
 
 	import scorecard from '$lib/data/scorecard.json';
 	import { dollars, roiText, pct } from '$lib/format.js';
-	import { FILTER_KEYS, parseFilters, matches, anyActive, optionsFor, toQuery } from '$lib/filters.js';
+	import { FILTER_KEYS, parseFilters, matches, anyActive, optionsFor } from '$lib/filters.js';
 
 	const { portfolios, events } = scorecard;
+
+	// Active baseline method — Method 0 leads (naive, shown first); the toggle switches
+	// to Method 1 and everything follows. Declared early: the URL helpers below read it.
+	let selected = $state('method0');
 
 	// Cross-view filters, carried in the URL so they persist across the Scorecard and
 	// the event pages. They narrow the ranked list only — the verdict header and the
@@ -24,17 +28,30 @@
 	// string (the same static file serves every query), so filters default to empty in
 	// the prerendered HTML and are applied from the URL after hydration.
 	let filters = $state({ retailer: '', line: '', type: '', status: '' });
-	const filterQuery = $derived(toQuery(filters));
 	const filterOptions = optionsFor(events);
 	const FILTER_LABELS = { retailer: 'Retailer', line: 'Product line', type: 'Promo type', status: 'Plan status' };
 	const retailerLabel = (v) => v.replace('RET-', '');
 
+	// The URL carries BOTH the filters and the active method, so a Scorecard row opens
+	// its event page on the same method it was showing (a 4.27× row → a 4.27× page),
+	// and returning restores the toggle. Read client-side only.
+	function currentQuery() {
+		const params = new URLSearchParams();
+		for (const key of FILTER_KEYS) if (filters[key]) params.set(key, filters[key]);
+		params.set('method', selected);
+		return '?' + params.toString();
+	}
+	const stateQuery = $derived(currentQuery());
+
 	onMount(() => {
-		filters = parseFilters(new URLSearchParams(window.location.search));
+		const sp = new URLSearchParams(window.location.search);
+		filters = parseFilters(sp);
+		const m = sp.get('method');
+		if (m === 'method0' || m === 'method1') selected = m;
 	});
 
 	function syncUrl() {
-		replaceState(window.location.pathname + toQuery(filters), {});
+		replaceState(window.location.pathname + currentQuery(), {});
 	}
 	function setFilter(key, value) {
 		filters = { ...filters, [key]: value };
@@ -44,6 +61,10 @@
 		filters = { retailer: '', line: '', type: '', status: '' };
 		syncUrl();
 	}
+	function selectMethod(key) {
+		selected = key;
+		syncUrl();
+	}
 
 	const METHOD_SHORT = { method0: 'Method 0', method1: 'Method 1' };
 	const METHOD_TAG = {
@@ -51,9 +72,6 @@
 		method1: 'Method 1 · comparable-store'
 	};
 
-	// Which method the header, chart and list reflect. Method 0 leads (naive, shown
-	// first); the toggle switches to Method 1 and everything follows.
-	let selected = $state('method0');
 	const otherKey = $derived(selected === 'method0' ? 'method1' : 'method0');
 	const active = $derived(portfolios[selected]);
 	const other = $derived(portfolios[otherKey]);
@@ -130,7 +148,7 @@
 					aria-selected={selected === key}
 					class="toggle-btn"
 					class:active={selected === key}
-					onclick={() => (selected = key)}
+					onclick={() => selectMethod(key)}
 				>
 					{METHOD_TAG[key]}
 				</button>
@@ -253,7 +271,7 @@
 								<td class="col-rank">{i + 1}</td>
 								<td class="col-promo">
 									<span class="promo-head">
-										<a class="promo-id" href="/event/{e.promo_id}{filterQuery}">{e.promo_id}</a>
+										<a class="promo-id" href="/event/{e.promo_id}{stateQuery}">{e.promo_id}</a>
 										{#if STORY_LABELS[e.story_tag]}
 											<span class="badge badge-story">{STORY_LABELS[e.story_tag]}</span>
 										{/if}
@@ -313,7 +331,7 @@
 					<ul>
 						{#each unranked as e (e.promo_id)}
 							<li>
-								<a class="promo-id" href="/event/{e.promo_id}{filterQuery}">{e.promo_id}</a>
+								<a class="promo-id" href="/event/{e.promo_id}{stateQuery}">{e.promo_id}</a>
 								<span class="promo-meta"
 									>{e.retailer_id.replace('RET-', '')} · {e.sku} · {e.promo_type} ·
 									{dollars(e.accrued_cost_cents)} spend</span

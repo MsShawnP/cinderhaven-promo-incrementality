@@ -13,14 +13,19 @@
 	let { data } = $props();
 	const e = $derived(data.event);
 
-	// Carry any active cross-view filter back to the Scorecard. The query is read
-	// client-side only — a prerendered page cannot depend on url.search.
+	// The active baseline method is part of the cross-view URL state: a Scorecard row
+	// opens its event page on the SAME method it was showing, so a 4.27× row never
+	// lands on a 7.20× page unexplained. Default matches the Scorecard's Method 0 lead.
+	// Both the method and the filter are read client-side only — a prerendered page
+	// cannot depend on url.search.
+	let method = $state('method0');
 	let backHref = $state('/');
 	onMount(() => {
+		const sp = new URLSearchParams(window.location.search);
+		const urlMethod = sp.get('method');
+		if (urlMethod === 'method0' || urlMethod === 'method1') method = urlMethod;
 		backHref = '/' + window.location.search;
 	});
-
-	let method = $state('method1'); // comparable-store first — the more defensible read
 	const m = $derived(e[method]);
 
 	const fmtUnits = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
@@ -80,23 +85,25 @@
 	);
 
 	// --- story / phantom narrative — design intent only, never truth ----------
-	const givePct = $derived(m.subsidized_cost_share === null ? null : Math.round(m.subsidized_cost_share * 100));
+	// Static prose: it must read true under BOTH method toggles, so it never quotes
+	// a giveaway/ROI figure (those toggle). The design intent is fixed; the numbers
+	// on screen above are what the selected method estimates.
 	const STORY = $derived({
 		clean_winner: {
 			title: 'Clean winner — design intent',
-			body: `A promotion built to genuinely work: modest lift, trivial spend, strong return. The paradox on display — about ${givePct}% of the discounted volume would have sold anyway, yet the ROI is high because the trade cost was tiny. A high giveaway share is not automatically a bad buy; what matters is what the spend bought relative to what it cost.`
+			body: 'A promotion built to genuinely work: modest lift, trivial spend, strong return. The paradox by design — a majority of the discounted volume would have sold anyway, yet the return is high because the trade cost was tiny. A high giveaway share is not automatically a bad buy; what matters is what the spend bought relative to what it cost. The giveaway figure above is what the selected method estimates.'
 		},
 		pure_subsidy: {
 			title: 'Pure subsidy — design intent',
-			body: `A promotion built so that most of the discounted volume needed no discount. Roughly ${givePct}% of the trade spend subsidized baseline that would have sold anyway — dollars spent to move volume already moving.`
+			body: 'A promotion built so that a majority of the discounted volume needed no discount by design — trade dollars spent to move volume that was already moving. The giveaway figure above is what the selected method estimates.'
 		},
 		pantry_trap: {
 			title: 'Pantry trap — design intent',
-			body: `A promotion built to borrow from the future: shoppers pantry-load during the deal, then buy less after. That post-promo dip is not netted out of the bars above — the estimator scores only the promo weeks. The dip becomes its own estimated bar in the next method arc; for now, the accuracy view shows how far the estimate lands from truth.`
+			body: 'A promotion built to borrow from the future: shoppers pantry-load during the deal, then buy less after. That post-promo dip is not netted out of the bars above — these methods score only the promo weeks. The dip arrives as its own estimated bar in a later release; for now, the accuracy view shows how far the estimate lands from truth.'
 		},
 		hero_cannibal: {
 			title: 'Hero cannibal — design intent',
-			body: `A promotion built so the hero SKU's lift partly transfers from its own shelf-mates — cannibalization, not net new volume. The bars above cannot separate transfer from true lift. That split becomes its own estimated bar in the next method arc; the accuracy view scores the gap today.`
+			body: "A promotion built so the hero SKU's lift partly transfers from its own shelf-mates — cannibalization, not net new volume. The bars above do not separate transfer from true lift. That split arrives as its own estimated bar in a later release; the accuracy view scores the gap today."
 		}
 	}[e.story_tag]);
 
@@ -133,7 +140,8 @@
 				<h2>Where the promoted volume came from</h2>
 				<p class="chart-sub">
 					Units over the promo weeks, {method === 'method0' ? 'Method 0' : 'Method 1'} baseline. The
-					middle bar is volume that would have sold anyway; only the last bar is caused by the promo.
+					middle bar is volume that would have sold anyway; only the last bar is what the estimator
+					credits to the promo.
 				</p>
 			</figcaption>
 
@@ -152,8 +160,9 @@
 
 			<p class="footnote">
 				Gross promoted volume minus the subsidized baseline the estimator would have expected leaves
-				net incremental lift. Dip (pantry-load) and transfer (cannibalization) are not shown — a blind
-				estimator cannot see them; they arrive as their own bars in the next method arc.
+				net incremental lift. Dip (pantry-load) and transfer (cannibalization) are not shown — these
+				methods don't yet estimate them; both are estimable from observed data and arrive as their own
+				bars in a later release.
 			</p>
 		</figure>
 
@@ -176,6 +185,10 @@
 				<dd>{pct(m.subsidized_cost_share)}{#if m.baseline_exceeds_promoted}<sup class="mark">†</sup>{/if}</dd>
 			</div>
 		</dl>
+		<p class="give-note">
+			Giveaway share is measured over complying stores only, while the bars show all promoted
+			volume — so dividing the two bars above will not reproduce it exactly.
+		</p>
 		{#if m.baseline_exceeds_promoted}
 			<p class="dip-note">
 				† Giveaway over 100%: sales during the promo fell below the baseline — a dip the naive baseline
@@ -364,6 +377,7 @@
 		font-size: 0.7em;
 	}
 	.dip-note,
+	.give-note,
 	.not-estimable {
 		font-size: 13px;
 		line-height: 1.5;
