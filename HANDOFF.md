@@ -594,3 +594,22 @@ clean, all pushed.
 pre-registered with its own tag and accuracy scoring; the waterfall gains its 4th
 and 5th bars and the headline moves net → net-of-dip as a logged re-run. Plus the
 human ICP timed check (Shawn's).
+
+## 2026-08-24 15:32
+
+**What changed:** Marked the arc DoD item "30-second rule verified in one timed
+session with a trade-marketing person" as **met** (PLAN.md); project-level ≥3-ICP
+bar updated to **1 of 3**.
+
+**Why:** ICP timed check passed — one trade-marketing person, 30-second
+comprehension confirmed against the live flagship `liftmath.lailarallc.com`.
+
+**State:** Arc DoD 30-second-timed item cleared; project-level success item stands
+at 1/3 (two more ICP passes owed). Precedes this session's two shipped changes,
+both pushed and deploying: the cross-view consistency fix (in wrap commit 96a3a07)
+and the trade-spend scoping line + v0.4.0 follow-up decision (fbea78c). Tree
+otherwise clean.
+
+**Next:** two more ICP timed passes for the project-level bar; and — before the
+final copy audit and public relaunch — the upstream v0.4.0 realistic-cost release
+(DECISIONS 2026-08-23), which re-scores every headline number as a logged re-run.

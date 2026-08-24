@@ -368,11 +368,12 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
       Scorecard header works fully at 375px. **Met 2026-08-21** — phone look
       passed at 375px (the visual gate the DOM checks this session couldn't stand
       in for).
-- [ ] The 30-second rule has been **verified in one timed session** with one
-      person who works in trade marketing — not asserted. **Still open** — the
-      phone look was the developer's own; this is the separate external-ICP check
-      (see the project-level success definition: ≥3 people in the target ICP,
-      each passing the timed check), owed before public deploy.
+- [x] The 30-second rule has been **verified in one timed session** with one
+      person who works in trade marketing — not asserted. **Met 2026-08-23** — one
+      trade-marketing person, 30-second comprehension confirmed against the live
+      flagship `liftmath.lailarallc.com` (not `.pages.dev`). This clears the arc
+      bar (one timed session); the project-level ≥3-ICP bar below now stands at
+      **1 of 3**.
 - [ ] **Public-facing copy has had a writing audit before deploy** — every
       on-screen sentence checked against the Economist voice: no overclaim
       ("the most optimistic read there is"), no undefined jargon reaching the
@@ -405,7 +406,9 @@ wrong. This is the external done.
 
 - [ ] Case study live on `lailarallc.com/work`, with the tool linked from it
 - [ ] Tool shown live to **≥3 people in the target ICP** — trade marketing or
-      finance at specialty food brands — each passing the timed 30-second check
+      finance at specialty food brands — each passing the timed 30-second check.
+      **1 of 3 as of 2026-08-23** (one trade-marketing person, confirmed on the
+      live flagship). Two more owed.
 - [ ] Tool used as the demo in **every** promo-related sales conversation in
       the window
 
