@@ -148,6 +148,22 @@
 	const hasZeroPhantom = $derived(ranked.some(isZeroPhantom));
 </script>
 
+<svelte:head>
+	<link rel="canonical" href="https://liftmath.lailarallc.com/" />
+	<title>Lift Math — ROI Scorecard</title>
+	<meta property="og:title" content="Lift Math — ROI Scorecard" />
+	<!-- The figure here is read from the artifact, not written down. A hardcoded
+	     count is exactly what went stale in this page's own lede. -->
+	<meta
+		property="og:description"
+		content="Trade-promotion incrementality, scored against known truth. {active.n_lost_money} of {active.n_estimable} promotions lost money under {METHOD_SHORT[selected]} — and the estimator's own error is on the page."
+	/>
+	<meta
+		name="description"
+		content="Portfolio trade spend, net incremental margin, and how many promotions did not pay back — under two baseline methods, both scored against known truth."
+	/>
+</svelte:head>
+
 <div class="lailara-container">
 	<section class="scorecard">
 		<p class="eyebrow">ROI Scorecard</p>
@@ -223,8 +239,8 @@
 			<p class="footnote">
 				{active.n_events - active.n_estimable} of {active.n_events} events not estimable by
 				{METHOD_SHORT[selected]}, shown unranked below and excluded from these totals. Method 0
-				(naive pre-period) and Method 1 (comparable-store) are the two baselines on this site —
-				neither is the verdict — toggle to compare.
+				(naive pre-period) and Method 1 (comparable-store) are the two baselines on this site.
+				Neither is the verdict — toggle to compare.
 			</p>
 		</figure>
 

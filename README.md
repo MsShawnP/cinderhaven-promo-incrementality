@@ -1,4 +1,6 @@
-# Cinderhaven Promo Incrementality
+# Lift Math
+
+**Live:** https://liftmath.lailarallc.com
 
 Most trade-promotion tools report incremental lift and ask you to trust the
 number. There is no way to check: the counterfactual — what would have sold
@@ -16,8 +18,13 @@ actually was, by regime, including where the error is large.
 Measured error describes this estimator under a realistic, fully-known
 world. It is not a prediction of error on any other dataset.
 
-**Status:** all three views built, tested and deployed. Upstream data package
-pinned at v0.4.0. Next arc: observed-only dip and transfer estimators, which add
+**Status:** launched. Three views built, audited and deployed; upstream data
+package pinned at v0.4.0. The repository keeps its original name,
+`cinderhaven-promo-incrementality`; **Lift Math** is the tool's public name.
+
+Roadmap, in order: upstream v0.5.0 (calendar density — raises promoted volume
+from ~1% toward a real brand's 20–40%, which changes unit truth and so is its own
+re-validation release), then observed-only dip and transfer estimators, which add
 the waterfall's fourth and fifth bars. See PLAN.md.
 
 ## Cinderhaven context

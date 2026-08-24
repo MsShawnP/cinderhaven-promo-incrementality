@@ -20,7 +20,7 @@
 	<header class="lailara-header">
 		<div class="lailara-nav-inner">
 			<a class="lailara-wordmark" href="https://lailarallc.com">Lailara</a>
-			<span class="lailara-tool-name">Promo Incrementality</span>
+			<span class="lailara-tool-name">Lift Math</span>
 		</div>
 	</header>
 

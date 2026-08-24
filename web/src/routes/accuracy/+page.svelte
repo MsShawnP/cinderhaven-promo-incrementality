@@ -50,6 +50,20 @@
 	const relaxMixed = relaxRegime.find((b) => b.label === 'mixed');
 </script>
 
+<svelte:head>
+	<link rel="canonical" href="https://liftmath.lailarallc.com/accuracy" />
+	<title>Lift Math — Accuracy</title>
+	<meta
+		name="description"
+		content="How wrong the estimators actually are: error by regime against quarantined ground truth the estimation code provably never saw."
+	/>
+	<meta property="og:title" content="Lift Math — Accuracy" />
+	<meta
+		property="og:description"
+		content="How wrong the estimators actually are — error by regime, scored against ground truth the estimation code provably never saw."
+	/>
+</svelte:head>
+
 <div class="lailara-container accuracy">
 	<p class="eyebrow">Accuracy · estimate vs truth</p>
 	<a class="back" href="/">← Back to the Scorecard</a>

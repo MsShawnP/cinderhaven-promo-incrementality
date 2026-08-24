@@ -4,6 +4,12 @@ Tier: Heavy
 
 ## What this project is
 
+**Public name: Lift Math**, at `liftmath.lailarallc.com`. The repository keeps
+its original name, `cinderhaven-promo-incrementality`; the two are not the same
+string and should not be "corrected" into each other. Lailara LLC is the maker,
+Lift Math is the tool — that split is what the header, footer and OG tags encode.
+
+
 A trade-promotion incrementality tool for the Cinderhaven universe: **three
 linked views** on one promo-event spine, each with a distinct persuasive job.
 

@@ -7,6 +7,12 @@
 	const fmt = new Intl.NumberFormat('en-US');
 </script>
 
+<svelte:head>
+	<title>Lift Math — build probe</title>
+	<!-- Internal: the walking-skeleton artifact check, not a public view. -->
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <div class="lailara-container">
 	<section class="skeleton">
 		<p class="eyebrow">Walking skeleton — pipeline proof, not a deliverable</p>

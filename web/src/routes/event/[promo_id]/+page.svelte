@@ -116,6 +116,20 @@
 	);
 </script>
 
+<svelte:head>
+	<link rel="canonical" href="https://liftmath.lailarallc.com/event/{e.promo_id}" />
+	<title>Lift Math — {e.promo_id}</title>
+	<meta
+		name="description"
+		content="Event anatomy for {e.promo_id}: gross promoted volume, subsidized baseline, and net incremental — under both baseline methods."
+	/>
+	<meta property="og:title" content="Lift Math — {e.promo_id}" />
+	<meta
+		property="og:description"
+		content="Event anatomy for {e.promo_id} — gross promoted volume, subsidized baseline, and net incremental, under both baseline methods."
+	/>
+</svelte:head>
+
 <div class="lailara-container anatomy">
 	<p class="eyebrow">Event Anatomy</p>
 	<a class="back" href={backHref}>← Back to the Scorecard</a>

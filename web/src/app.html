@@ -3,7 +3,20 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Cinderhaven Promo Incrementality</title>
+		<!-- Site-wide invariants only. Per-page tags (page title, description,
+		     canonical link, og:title, og:description) live in each route's
+		     svelte:head block. They must NOT be repeated here: this block renders
+		     before the SvelteKit head placeholder, so a page title set here would
+		     win and silently kill every route title, and a canonical link here
+		     would claim the site root on every page.
+
+		     No og:image: the site has no card artwork yet, and pointing at a file
+		     that does not exist renders a broken card, which is worse than a
+		     text-only one. -->
+		<meta property="og:site_name" content="Lailara LLC" />
+		<meta property="og:type" content="website" />
+		<meta name="twitter:card" content="summary" />
+
 		<!-- Vendored Lailara brand frame (tokens, self-hosted fonts, page shell).
 		     Never live-linked — see web/static/lailara/. -->
 		<link rel="stylesheet" href="/lailara/lailara-frame.css" />
