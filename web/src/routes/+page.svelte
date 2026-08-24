@@ -73,6 +73,13 @@
 	};
 
 	const otherKey = $derived(selected === 'method0' ? 'method1' : 'method0');
+	// How many of THIS method's non-estimable events the other method can score.
+	// Derived, never written down: the two methods exclude different events
+	// (Method 1 gains one and loses another), so a hardcoded "some" or "one"
+	// goes stale the moment either estimator's coverage shifts.
+	const crossEstimable = $derived(
+		events.filter((e) => !e[selected].estimable && e[otherKey].estimable).length
+	);
 	const active = $derived(portfolios[selected]);
 	const other = $derived(portfolios[otherKey]);
 
@@ -189,7 +196,7 @@
 		<p class="scope-note ll-measure">
 			Trade spend here is the scan-promoted event slice of the trade book — accrued cost on promo
 			events only, not all-in trade spend. It excludes slotting, off-invoice allowances and
-			deductions, and it covers a dataset where roughly one per cent of volume runs on promotion,
+			deductions, and it covers a dataset where roughly one percent of volume runs on promotion,
 			so the portfolio total is small by construction. Read the per-event economics, not the
 			portfolio dollars.
 		</p>
@@ -217,7 +224,7 @@
 				{active.n_events - active.n_estimable} of {active.n_events} events not estimable by
 				{METHOD_SHORT[selected]}, shown unranked below and excluded from these totals. Method 0
 				(naive pre-period) and Method 1 (comparable-store) are the two baselines on this site —
-				toggle to compare. Treat them as floors, not the verdict.
+				neither is the verdict — toggle to compare.
 			</p>
 		</figure>
 
@@ -337,8 +344,13 @@
 						{selected === 'method0'
 							? 'with too little pre-period history for a naive baseline'
 							: 'with too few comparable control stores for a trustworthy median'}. Excluded from
-						the totals above and shown here — the denominator is never hidden. Some are estimable
-						under {METHOD_SHORT[otherKey]}; toggle to see.
+						the totals above and shown here — the denominator is never hidden.
+						{#if crossEstimable === 1}One of these is estimable under {METHOD_SHORT[otherKey]};
+							toggle to see.{:else if crossEstimable}{crossEstimable} of these are estimable under
+							{METHOD_SHORT[otherKey]}; toggle to see.{:else}None of these is estimable under
+							{METHOD_SHORT[otherKey]} either.{/if}
+						{METHOD_SHORT[otherKey]} excludes a different set, not a subset — the two methods
+						fail on different events.
 					</p>
 					<ul>
 						{#each unranked as e (e.promo_id)}
