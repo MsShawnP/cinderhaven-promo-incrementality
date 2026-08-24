@@ -10,12 +10,22 @@
 		     win and silently kill every route title, and a canonical link here
 		     would claim the site root on every page.
 
-		     No og:image: the site has no card artwork yet, and pointing at a file
-		     that does not exist renders a broken card, which is worse than a
-		     text-only one. -->
+		     og:image is site-wide and absolute: scrapers do not resolve relative
+		     URLs, and they cache the image aggressively, so the card deliberately
+		     carries no figure — a number baked into it would be served stale from
+		     a scraper's cache long after a re-pin moved it. Source of truth for the
+		     PNG is web/card-source/card.html. -->
 		<meta property="og:site_name" content="Lailara LLC" />
 		<meta property="og:type" content="website" />
-		<meta name="twitter:card" content="summary" />
+		<meta property="og:image" content="https://liftmath.lailarallc.com/og-card.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta
+			property="og:image:alt"
+			content="Lift Math — trade-promotion incrementality, scored against known truth. Lailara LLC."
+		/>
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content="https://liftmath.lailarallc.com/og-card.png" />
 
 		<!-- Vendored Lailara brand frame (tokens, self-hosted fonts, page shell).
 		     Never live-linked — see web/static/lailara/. -->

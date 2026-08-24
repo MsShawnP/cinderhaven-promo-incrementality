@@ -32,6 +32,11 @@ ROOT = Path(__file__).resolve().parent.parent
 SURFACES = sorted(
     [p for p in (ROOT / "web" / "src").rglob("*") if p.suffix in {".svelte", ".js", ".ts"}]
     + [ROOT / "README.md"]
+    # The social card is a published surface too: it renders to og-card.png and
+    # is what a scraper shows. It carries no figure by design (scrapers cache the
+    # image, so a number here outlives the re-pin that moved it) and this keeps
+    # that true.
+    + [ROOT / "web" / "card-source" / "card.html", ROOT / "web" / "src" / "app.html"]
 )
 
 #: A percentage within ~60 characters of trade-spend vocabulary. The window is
