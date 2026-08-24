@@ -182,6 +182,12 @@
 			</div>
 		</dl>
 
+		<p class="scope-note ll-measure">
+			Trade spend here is the scan-promoted event slice of the trade book — promo events only,
+			not all-in trade spend. It excludes slotting, off-invoice allowances, and deductions, which
+			is why it sits far below the 11–20%-of-revenue all-in trade figures cited elsewhere.
+		</p>
+
 		<!-- One chart: where the estimable promotions landed under the active method. -->
 		<figure class="chart">
 			<figcaption>
@@ -417,7 +423,7 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: var(--ll-space-lg);
-		margin: 0 0 var(--ll-space-3xl);
+		margin: 0 0 var(--ll-space-base);
 		padding: var(--ll-space-lg) 0;
 		border-top: 1px solid var(--ll-london-85);
 		border-bottom: 1px solid var(--ll-london-85);
@@ -458,6 +464,15 @@
 		color: var(--ll-london-20);
 		margin: var(--ll-space-xs) 0 0;
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* Scoping caveat under the three numbers — what "trade spend" does and doesn't cover. */
+	.scope-note {
+		font-size: 12px;
+		font-style: italic;
+		line-height: 1.5;
+		color: var(--ll-london-35);
+		margin: 0 0 var(--ll-space-3xl);
 	}
 
 	/* One chart — DOM bars */

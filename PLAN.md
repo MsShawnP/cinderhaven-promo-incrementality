@@ -434,6 +434,16 @@ unowned.
 **Secondary dependency: a portfolio link.** The tool has to be reachable from
 `lailarallc.com` for any of the controlled success items to be achievable.
 
+**Pre-launch upstream dependency: `cinderhaven-promo-response` v0.4.0 — realistic
+trade cost (decided 2026-08-23, DECISIONS).** The flagship's headline stake is
+currently ~$100K on a ~$40M brand because `promo_cost` is a flat $200–$5K draw. v0.4.0
+derives it from per-unit trade rates (~$0.50–$1.50/unit) → a ~$1–2M promo book → "≈$1.5M
+of trade, roughly half wasted." A data-repo release (rate draws by funding mechanism,
+criterion-6 recalibration against the 71% anchor, cited rates), then a consumer re-pin +
+logged re-run re-scoring all three artifacts. **Sequence before the final copy audit and
+public launch** — every headline number changes. Unit-truth and the blindness ledger are
+untouched; only the economics rescale. Likely its own short arc. ~1 day of engine time.
+
 ---
 
 ## Arc history

@@ -848,6 +848,42 @@ project-specific choices on top of it.]
 - **Do not:** access `$page.url.searchParams` in a component on a prerendered route.
   Do not put prerender-visible content behind a query param.
 
+### 2026-08-23 — Trade spend is the promo-event slice, not all-in trade; realistic scaling is an upstream release.
+
+- **Decision:** The Scorecard's "Trade spend" is the **scan-promoted event slice** of
+  the trade book — accrued cost on promo events only. It excludes slotting, off-invoice
+  allowances, and deductions, so it sits far below the 11–20%-of-revenue all-in trade
+  figures cited in industry sources. A scoping line on the Scorecard now says so.
+- **Follow-up — upstream v0.4.0, before public launch (decided 2026-08-23):** the
+  scoping line explains the small number; it does not fix that the flagship's headline
+  stake is ~$100K on a ~$40M brand — a figure a CEO shrugs at. The real fix is a data
+  package release: derive `promo_cost` from **realistic per-unit trade rates** (order
+  $0.50–$1.50/unit scan-backs, drawn by funding mechanism) instead of the original
+  $200–$5K flat draw. Against these same volumes that puts the two-year promo book
+  around **$1–2M**, and the demo reads "≈$1.5M of trade, roughly half wasted" — a number
+  that books a call.
+- **Scope of the upstream release (a `cinderhaven-promo-response` session, NOT this repo):**
+  per-unit rate draws by funding mechanism; **recalibrate plausibility criterion 6
+  against the 71%-don't-break-even anchor** (realistic rates should land near it
+  naturally — a synergy, since higher costs push more events below break-even toward the
+  NIQ anchor CLAUDE.md already cites); canonical-figure updates; tag v0.4.0. Then here:
+  re-pin (logged re-run) and **re-score every artifact** — Scorecard, Anatomy, Accuracy.
+- **What the re-run does and doesn't move:** `promo_cost` is observed accrued cost, not a
+  demand-response parameter, so **unit truth is unchanged** — the Accuracy view's unit
+  error (≈26% median, the biases) does not move. Only the economics rescale: ROI,
+  net-margin-vs-spend, scan-funded giveaway base, and the lost-money count (which rises
+  toward ~71%). No estimator change, no new pre-registration, blindness ledger untouched.
+  A clean logged re-run with before/after in this file.
+- **Sequencing (important):** the re-score must land **before** the final copy audit and
+  before public launch — every headline number changes, so auditing copy first means
+  auditing it twice. The interim scoping line ships now; it is superseded by the v0.4.0
+  numbers, not additive to them.
+- **Open caveat:** the $0.50–$1.50/unit range is a modeling assumption. The upstream
+  release must **cite it** (trade-rate source), per the package's plausibility
+  discipline — not assert it.
+- **Do not:** rescale `promo_cost` / accrued cost in THIS repo to "look realistic."
+  The fix is upstream; here it is only ever a re-pin + logged re-run.
+
 ---
 
 ## Output Formats
