@@ -14,8 +14,8 @@
 	const e = $derived(data.event);
 
 	// The active baseline method is part of the cross-view URL state: a Scorecard row
-	// opens its event page on the SAME method it was showing, so a 4.27× row never
-	// lands on a 7.20× page unexplained. Default matches the Scorecard's Method 0 lead.
+	// opens its event page on the SAME method it was showing, so a Method 0 row never
+	// lands on a Method 1 page unexplained. Default matches the Scorecard's Method 0 lead.
 	// Both the method and the filter are read client-side only — a prerendered page
 	// cannot depend on url.search.
 	let method = $state('method0');
@@ -95,7 +95,7 @@
 		},
 		pure_subsidy: {
 			title: 'Pure subsidy — design intent',
-			body: 'A promotion built so that a majority of the discounted volume needed no discount by design — trade dollars spent to move volume that was already moving. The giveaway figure above is what the selected method estimates.'
+			body: 'A promotion built so that a large share of the discounted volume needed no discount by design — trade dollars spent to move volume that was already moving. It is the profitable-but-wasteful exhibit: it clears its cost, and a vendor scorecard would call it a winner, while much of the spend bought nothing incremental. Return on trade spend alone hides that; giveaway share is what exposes it. Both figures above are what the selected method estimates.'
 		},
 		pantry_trap: {
 			title: 'Pantry trap — design intent',

@@ -14,16 +14,32 @@ requires-python = ">=3.11"
 # store_format), the accessor Method 1's comparable-store matching consumes. Same
 # demarcation as economics(): identity a client hands a vendor, not demand
 # response. Data-neutral for the observed layer — 131 events / 1,340,462 rows /
-# the eight observed columns are unchanged; store_card() is additive. Re-pin
-# logged as a re-run in DECISIONS.md. Resolve with `git rev-parse v0.3.0^{commit}`
-# — NOT `git rev-parse v0.3.0`, which returns the annotated tag object.
+# the eight observed columns are unchanged; store_card() is additive.
+#
+# v0.4.0 (2026-08-24) re-derives the trade rate: it is now drawn per event as a
+# negotiated allowance against wholesale instead of `msrp * depth *
+# DISCOUNT_ABSORPTION * coefficient`, which billed an event more for being
+# deeply discounted (upstream corr(depth, cost per unit) 0.784 -> 0.177).
+# `promo_cost` and `accrued_cost` both move, so every cost, ROI and giveaway
+# figure this tool publishes moves with them.
+#
+# THE ACCURACY ARTIFACT DOES NOT MOVE, and that is a property of the upstream
+# change rather than a hope: trade cost feeds no demand term, and upstream draws
+# the rate on its own named RNG stream so it cannot perturb a placement draw.
+# `promo_scan_delta` and `promo_scan_truth` are bit-identical to v0.3.0 —
+# canonical hashes 26b67ed0… and 51b9503c… unchanged, asserted by an upstream
+# test. Unit-level error and bias therefore stay valid without re-scoring.
+#
+# Re-pin logged as a re-run in DECISIONS.md. Resolve with
+# `git rev-parse v0.4.0^{commit}` — NOT `git rev-parse v0.4.0`, which returns
+# the annotated tag object.
 dependencies = [
-    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@6556460000d56fd2df1c89c59f592f363b93245c",
+    "cinderhaven-promo-response @ git+https://github.com/MsShawnP/cinderhaven-promo-response@6399990fdc4fabb2b21c1c5e84db29b610e7731f",
 ]
 
 # Local iteration off a working tree is a hand-run command, never a manifest
 # entry:  pip install -e ../cinderhaven-promo-response
-# Putting that path here would make "pinned at v0.2.1" describe this machine
+# Putting that path here would make "pinned at v0.4.0" describe this machine
 # rather than anything CI can reproduce.
 
 [project.optional-dependencies]

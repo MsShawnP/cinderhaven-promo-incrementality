@@ -104,7 +104,7 @@ not a set of pages with widgets.
 **Constraints**
 
 - Python engine — fixed, see DECISIONS.md. Not revisitable.
-- `cinderhaven-promo-response` pinned at v0.1.0, public API only.
+- `cinderhaven-promo-response` pinned at v0.4.0 (commit `6399990`), public API only.
 - Static hosting. Lailara design system governs all visual output.
 - Timeline **open-ended** — done when it's good. The only budget risk is
   stalling out, not overrunning a date.
@@ -336,7 +336,7 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
   2026-08-21** by explicit direction — the two-method public-deploy gate needs
   a second baseline, so it is now a task above, not out of scope. Method 2
   (indexed diff-in-diff) and beyond remain future work.
-- **Editing `cinderhaven-promo-response`.** It is released at v0.1.0 and is
+- **Editing `cinderhaven-promo-response`.** It is released at v0.4.0 and is
   a separate repo. A data gap found here is logged here and released there.
 - **Deployment and the public subdomain.** Nothing deploys until a view is
   worth looking at. The Lailara design system and the deployed-UI gate in
@@ -435,14 +435,28 @@ unowned.
 `lailarallc.com` for any of the controlled success items to be achievable.
 
 **Pre-launch upstream dependency: `cinderhaven-promo-response` v0.4.0 — realistic
-trade cost (decided 2026-08-23, DECISIONS).** The flagship's headline stake is
-currently ~$100K on a ~$40M brand because `promo_cost` is a flat $200–$5K draw. v0.4.0
-derives it from per-unit trade rates (~$0.50–$1.50/unit) → a ~$1–2M promo book → "≈$1.5M
-of trade, roughly half wasted." A data-repo release (rate draws by funding mechanism,
-criterion-6 recalibration against the 71% anchor, cited rates), then a consumer re-pin +
-logged re-run re-scoring all three artifacts. **Sequence before the final copy audit and
-public launch** — every headline number changes. Unit-truth and the blindness ledger are
-untouched; only the economics rescale. Likely its own short arc. ~1 day of engine time.
+trade cost. DONE 2026-08-24, and it did not do what this entry predicted.** Shipped
+upstream and re-pinned here at commit `6399990`. The release fixed a real defect — the
+trade rate was `msrp * depth * DISCOUNT_ABSORPTION * coefficient`, which billed an event
+more for being deeply discounted (upstream corr(depth, cost per unit) 0.784 → 0.177) —
+and per-event economics are now defensible.
+
+**Both of this entry's predictions were wrong, in opposite directions, and the reason
+matters more than the entry did.** It predicted a ~$1–2M promo book and a lost-money
+count *rising* toward the 71% anchor. Actual: portfolio spend **$80,448.79** (M0), and the
+count **fell**, 64 → 45 of 129. The premise was that per-unit rates were too low. They
+were already about right — upstream measured the pre-existing scan rate at a median
+$0.76/unit, 19.1% of wholesale, inside the very band this entry proposed. What is short is
+**promoted volume**: ~1% of units run on promotion against a real brand's 20–40%. No rate
+inside any defensible band closes that — at $1.50 on every promoted unit the ceiling is
+0.18% of revenue. The "roughly $1.5M of trade, roughly half wasted" headline this entry
+was written to enable **is not reachable by a cost change** and must not be quoted.
+
+**Carried forward to upstream v0.5.0 (calendar density).** Generating 30–45x more promoted
+volume changes unit truth, so it invalidates every accuracy number computed against this
+generation and is its own re-validation epoch — deliberately not folded into a rate
+release. Until it lands, this tool leads with counts and per-event economics, never
+portfolio dollars and never a trade-spend-to-revenue ratio (see DECISIONS).
 
 ---
 

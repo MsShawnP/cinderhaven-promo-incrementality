@@ -10,8 +10,8 @@ test, not a snapshot of whatever the code did.
 Deliberately NOT asserted: that Method 0 "finds" the four seeded stories on the
 Scorecard. Method 0 is the naive estimator; whether its biased baseline recovers
 ``pure_subsidy`` (its volume share is 62.5% against a 60.2% median — barely above)
-is the Accuracy view's question, scored against truth, in the next arc. Asserting
-it here would over-claim the naive estimator.
+is the Accuracy view's question, scored against truth there and not here.
+Asserting it in this file would over-claim the naive estimator.
 """
 
 import pytest

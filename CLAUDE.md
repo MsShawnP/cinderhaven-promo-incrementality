@@ -13,8 +13,9 @@ linked views** on one promo-event spine, each with a distinct persuasive job.
    CFO in 30 seconds: verdict line, one chart, three numbers. Exploration is
    opt-in depth after the verdict, never a prerequisite for it.
 2. **Event Anatomy** — the explanation. Click any event for the full
-   decomposition: gross → subsidized baseline → dip → transfer → net, with
-   the baseline-method toggle and the transfer panel inside the view. This
+   decomposition: gross promoted → subsidized baseline → net incremental,
+   with the baseline-method toggle inside the view. Dip and transfer are a
+   later estimation arc, not shipped bars. This
    answers the objection that actually happens in the room — *"that August
    BOGO was my call, I know it worked, your tool says it lost money"* — which
    accuracy-in-general cannot.
@@ -23,7 +24,7 @@ linked views** on one promo-event spine, each with a distinct persuasive job.
    reported by regime, seeded stories marked and separated, naive estimator
    shown losing.
 
-It consumes `cinderhaven-promo-response` v0.1.0 and adds no data of its own.
+It consumes `cinderhaven-promo-response` v0.4.0 and adds no data of its own.
 
 Scope was six views until 2026-08-17. Baseline Builder, Lift Split, Net Lift
 and Portfolio were the same decomposition at four zoom levels and collapsed
@@ -57,7 +58,7 @@ deployed to **Cloudflare Pages**, renders the three views.
   `cinderhaven_promo_response.testing.assert_no_truth_access` parses source
   with `ast` and can only audit `.py` files. Estimation code in any other
   language makes the project's central credibility claim unenforceable.
-- **The data dependency is `cinderhaven-promo-response>=0.1.0`**, pinned,
+- **The data dependency is `cinderhaven-promo-response` v0.4.0**, pinned,
   consumed through its public API only. See "Consumer contract" below.
 - **SvelteKit was chosen for one narrow reason:** the requirements are
   router-shaped — persistent cross-view filters, deep-linkable events,
@@ -78,7 +79,7 @@ deployed to **Cloudflare Pages**, renders the three views.
   **equality**, no float tolerance. Round-half-even, not half-up: across
   1,340,462 rows half-up biases totals upward; half-even does not.
 
-## Consumer contract — cinderhaven-promo-response v0.1.0
+## Consumer contract — cinderhaven-promo-response v0.4.0
 
 This is the whole interface. Do not reach around it.
 
@@ -309,7 +310,7 @@ FAILURES.md as relevant.
   completing existing ones — the plan is growing instead of
   shrinking.
 - Specific to this project: **changing the data package is scope creep.**
-  `cinderhaven-promo-response` is released at v0.1.0 and is a separate
+  `cinderhaven-promo-response` is released at v0.4.0 and is a separate
   repo. If this tool needs something the data doesn't have, that is a
   finding to log here and a release to plan there — not an edit made from
   this session.

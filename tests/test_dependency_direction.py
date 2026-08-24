@@ -12,10 +12,10 @@ than the accuracy module itself) imports the accuracy module directly, then
 nothing reaches it transitively either — there is no first hop. So a per-file
 direct-import scan is the complete guarantee.
 
-The accuracy module does not exist yet; it is a later slice. This guard stands
-up **now**, demonstrated-to-fail, so it is already in place the moment that
-module lands — the same discipline that stood up the truth gate before the first
-estimator existed.
+This guard was stood up **before** the accuracy module existed,
+demonstrated-to-fail, so it was already in place the moment that module landed —
+the same discipline that stood up the truth gate before the first estimator
+existed. The module now exists and is the live sink this guard protects.
 """
 
 import ast

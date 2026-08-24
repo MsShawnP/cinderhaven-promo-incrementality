@@ -9,16 +9,16 @@ it produces is scored against the truth it was blind to.
 Three linked views on one promo-event spine. **ROI Scorecard** is the
 verdict — portfolio spend, net incremental margin, ROI, and how many of 131
 promotions lost money. **Event Anatomy** is the explanation — the full
-decomposition of any single event, gross through subsidized baseline, dip
-and transfer, to net. **Accuracy** is the proof — how wrong the estimator
+decomposition of any single event, gross promoted through subsidized baseline
+to net incremental. **Accuracy** is the proof — how wrong the estimator
 actually was, by regime, including where the error is large.
 
 Measured error describes this estimator under a realistic, fully-known
 world. It is not a prediction of error on any other dataset.
 
-**Status:** planning complete, no code written. Stack decided; the current arc
-is the repo skeleton, the truth gate in CI, and the ROI Scorecard end-to-end.
-See PLAN.md.
+**Status:** all three views built, tested and deployed. Upstream data package
+pinned at v0.4.0. Next arc: observed-only dip and transfer estimators, which add
+the waterfall's fourth and fifth bars. See PLAN.md.
 
 ## Cinderhaven context
 
@@ -26,7 +26,7 @@ Built on the Cinderhaven synthetic dataset — a ~$25M specialty food brand,
 50 SKUs across 5 product lines and 6 contracted retailers. Data is synthetic;
 methodology and deliverables are real.
 
-The promo signal comes from `cinderhaven-promo-response` v0.1.0, an additive,
+The promo signal comes from `cinderhaven-promo-response` v0.4.0, an additive,
 seed-locked overlay: a curated promo-event calendar, a promo-responsive scan
 series, and a quarantined ground-truth table. It never alters canonical.
 
@@ -34,7 +34,15 @@ series, and a quarantined ground-truth table. It never alters canonical.
 
 <!-- Filled in as views ship. Do not write claims here ahead of the code. -->
 
-Nothing yet.
+- **ROI Scorecard** — portfolio spend, net incremental margin, return on trade
+  spend, and how many promotions did not pay back, under two baseline methods.
+- **Event Anatomy** — a deep-linkable page per event with a three-bar volume
+  decomposition: gross promoted, subsidized baseline, net incremental.
+- **Accuracy** — the estimator's own error against quarantined ground truth,
+  by regime, including where the error is large.
+
+Figures are rendered from artifacts the pipeline computes; no number in this
+README or in the views is hand-entered.
 
 ## Stack
 
@@ -42,8 +50,8 @@ Nothing yet.
   `cinderhaven_promo_response.testing.assert_no_truth_access` parses source
   with `ast` and can only audit `.py` files, so estimation code in another
   language would make the blindness claim unenforceable.
-- **`cinderhaven-promo-response>=0.1.0`**, pinned, consumed through its
-  public API only.
+- **`cinderhaven-promo-response` v0.4.0**, pinned by commit SHA, consumed
+  through its public API only.
 - **SvelteKit + D3**, static via `adapter-static`, on **Cloudflare Pages**.
 
 The pipeline writes small precomputed artifacts; the 1,340,462 scan rows
@@ -112,9 +120,9 @@ no stale artifact ships. Output lands in `web/build/`.
 ```
 
 `tests/test_data_contract.py` calls `pr.load()` (~8.5s cold, ~0.6s warm) and
-asserts the consumer contract. It passes cold since the pin moved to
-`cinderhaven-promo-response` v0.1.1, which fixed the v0.1.0 first-call crash
-(see FAILURES.md). The truth gate is pure AST parsing over `src/` and needs no
+asserts the consumer contract against the pinned upstream version. It has passed
+cold since v0.1.1 fixed the v0.1.0 first-call crash (see FAILURES.md); the pin has
+since moved to v0.4.0. The truth gate is pure AST parsing over `src/` and needs no
 data.
 
 ---

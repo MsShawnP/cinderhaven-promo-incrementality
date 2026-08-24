@@ -10,7 +10,7 @@ the test, and they move only on a logged MIN_POOL/band re-run.
 
 Deliberately NOT asserted: that Method 1 recovers the seeded stories' *truth*.
 Whether its comparable baseline is closer to truth than Method 0's is the Accuracy
-view's question, scored against truth, next. Here we assert only that the stories
+view's question, scored against truth there. Here we assert only that the stories
 are estimable (the flat-match failure they exposed does not return).
 """
 

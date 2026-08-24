@@ -33,7 +33,7 @@
 	const retailerLabel = (v) => v.replace('RET-', '');
 
 	// The URL carries BOTH the filters and the active method, so a Scorecard row opens
-	// its event page on the same method it was showing (a 4.27× row → a 4.27× page),
+	// its event page on the same method it was showing (a Method 0 row → a Method 0 page),
 	// and returning restores the toggle. Read client-side only.
 	function currentQuery() {
 		const params = new URLSearchParams();
@@ -78,9 +78,13 @@
 
 	const ledeText = $derived(
 		selected === 'method0'
-			? 'Method 0 is the most forgiving measure available — each promotion judged against the eight weeks before it. Even so, half these events didn’t pay back. The portfolio clears ' +
+			? 'Method 0 is the most forgiving measure available — each promotion judged against the eight weeks before it. Even so, ' +
+					active.n_lost_money +
+					' of ' +
+					active.n_estimable +
+					' didn’t pay back. The portfolio clears ' +
 					roiText(active.portfolio_roi) +
-					' only because a thin tail of winners carries a middle that didn’t.'
+					' on the dollar, and the return is uneven — most of the net margin comes from a small number of events.'
 			: 'Method 1 judges each promotion against comparable stores that didn’t run it — the stricter, concurrent test Method 0 is blind to. It clears ' +
 					roiText(active.portfolio_roi) +
 					' on the dollar. Toggle to Method 0 to see how much the naive pre-period read flatters the same promotions.'
@@ -183,9 +187,11 @@
 		</dl>
 
 		<p class="scope-note ll-measure">
-			Trade spend here is the scan-promoted event slice of the trade book — promo events only,
-			not all-in trade spend. It excludes slotting, off-invoice allowances, and deductions, which
-			is why it sits far below the 11–20%-of-revenue all-in trade figures cited elsewhere.
+			Trade spend here is the scan-promoted event slice of the trade book — accrued cost on promo
+			events only, not all-in trade spend. It excludes slotting, off-invoice allowances and
+			deductions, and it covers a dataset where roughly one per cent of volume runs on promotion,
+			so the portfolio total is small by construction. Read the per-event economics, not the
+			portfolio dollars.
 		</p>
 
 		<!-- One chart: where the estimable promotions landed under the active method. -->

@@ -23,7 +23,9 @@ from cinderhaven_promo_response.testing import (
 # the accuracy view grows past one module, each file is named on its own line.
 # The friction is the point — an exemption should cost a visible line.
 #
-# The file below does not exist yet; the accuracy view is a later slice.
+# The file below is the shipped Accuracy view — the one module allowed to read
+# truth. It was listed here before it existed, and the entry did not change when
+# it landed; that is the point of naming a file rather than globbing a directory.
 ACCURACY_VIEW = ("src/incrementality/accuracy.py",)
 
 FIXTURES = "tests/fixtures"

@@ -626,6 +626,97 @@ as the headline. The mediocre middle is the honest denominator.
 
 ---
 
+### 2026-08-24 — Re-pinned upstream to v0.4.0 (`6399990`). Logged re-run: economics move, accuracy does not.
+
+- **Decision:** pin `cinderhaven-promo-response` at commit
+  `6399990fdc4fabb2b21c1c5e84db29b610e7731f` (tag v0.4.0, peeled) and re-score
+  all four artifacts. Upstream re-derived the trade rate: it is now drawn per
+  event as a negotiated allowance against wholesale instead of
+  `msrp * depth * DISCOUNT_ABSORPTION * coefficient`, which billed an event more
+  for being deeply discounted (upstream corr(depth, cost per unit) 0.784 → 0.177).
+
+- **What moved.** Portfolio spend $104,425.13 → **$80,448.79** (M0) and
+  $104,734.12 → **$80,849.74** (M1). Return on trade spend 1.13× → **1.47×** (M0),
+  1.04× → **1.35×** (M1). Lost-money count 64 → **45** of 129 (M0), 64 → **48**
+  (M1). Every story ROI moved; `pure_subsidy` flipped `lost_money` **True → False**
+  on both methods (M0 0.55× → 1.03×, M1 0.93× → 1.74×), and `clean_winner` fell
+  (M0 4.27× → 1.99×) because its coupon rate rose under the new band.
+
+- **What did not move, verified rather than asserted.** The v0.3.0 artifacts were
+  snapshotted before installing and diffed after: `accuracy.json` differs in
+  **exactly one leaf**, the `package_version` stamp. Every error and bias number
+  is byte-identical. `net_incremental_margin_cents` is unchanged in the scorecard
+  too, and every `subsidized_cost_share` is unchanged — giveaway share is a volume
+  ratio and is independent of cost. Upstream's guarantee (`promo_scan_delta` and
+  `promo_scan_truth` bit-identical, asserted by its own test) therefore holds at
+  this repo's own artifact level. **No re-scoring of accuracy was required and
+  none was done.**
+
+- **Scope:** `pyproject.toml`, `tests/test_data_contract.py`, all four artifacts,
+  and the copy amendments below.
+
+- **Do not:** re-score or re-pre-register the Accuracy view on a cost-only
+  upstream release. Trade cost feeds no demand term; treating it as if it did
+  would invite a re-run that manufactures the appearance of a changed result.
+
+### 2026-08-24 — No portfolio trade-spend-to-revenue ratio on any published surface, enforced by a test.
+
+- **Decision:** the tool carries no trade-spend-as-percentage-of-revenue claim.
+  Upstream pins spend ÷ total revenue at **0.0693%** as a locked figure explicitly
+  marked *not a gate*, and spend ÷ promoted revenue at **6.7148%** as the one
+  defensible ratio. Neither is quotable here as a headline. Counts and per-event
+  economics carry the story until upstream v0.5.0.
+- **Why:** only ~1% of the dataset's volume runs on promotion against a real
+  brand's 20–40%, so the portfolio total is small by construction. No rate inside
+  any defensible band closes that gap — at $1.50 on every promoted unit the
+  ceiling is 0.18% of revenue.
+- **Enforced, not just logged:** `tests/test_no_portfolio_spend_ratio.py` scans
+  every `.svelte`/`.js`/`.ts` under `web/src` plus README.md, and is
+  demonstrated-to-fail against the exact sentence that shipped in v0.3.0 copy —
+  *"sits far below the 11–20%-of-revenue all-in trade figures cited elsewhere."*
+  A note in this file would not have caught that; it survived a full copy audit.
+  The scan requires spend vocabulary near the percentage, because an earlier draft
+  flagged `width: 100%` three lines from the word "sales".
+- **Do not:** add an of-revenue comparison to explain why the number is small.
+  That framing was the defect. Explain the scope and the density instead.
+
+### 2026-08-24 — `pure_subsidy` is the profitable-but-wasteful exhibit, stated in this tool's own figures.
+
+- **Decision:** annotate `pure_subsidy` as a promotion a vendor scorecard calls a
+  winner while roughly half its trade dollars bought volume that was already
+  moving. ROI alone hides the waste; giveaway share exposes it.
+- **The numbers are this tool's, not upstream's.** Upstream's amendment quotes
+  1.43× / 3.17× and $1,569 vs $24 — those are **5-seed means over ground truth**.
+  This tool publishes **seed-42 blind estimates**, and they are method-dependent:
+  `pure_subsidy` returns **1.03×** (M0) / **1.74×** (M1) against `clean_winner`'s
+  **1.99×** / **3.35×**, and wastes **75×** (M0) / **59×** (M1) more trade spend.
+  Quoting the upstream figures on this surface would assert numbers this tool's
+  own pipeline contradicts.
+- **Withdrawn upstream, and withdrawn here:** `pure_subsidy` is no longer
+  described as losing money, worst-ROI, or bottom-two. It scores profitable on
+  both methods. Upstream withdrew those claims as artifacts of the old cost
+  formula; see its SPEC §7 derivation table.
+- **Do not:** copy a figure from the upstream repo's prose into this tool's copy.
+  Every number on a published surface is artifact-fed or it does not ship.
+
+### 2026-08-24 — The 2026-08-23 trade-spend scoping decision was superseded, and both its predictions were wrong.
+
+- The entry below (*"Trade spend is the promo-event slice"*) predicted that
+  deriving `promo_cost` from per-unit rates would produce a **$1–2M** promo book
+  and push the lost-money count **up** toward the 71% anchor. Actual: **$80,448.79**
+  and the count **fell**, 64 → 45 of 129.
+- **Why it was wrong:** the premise was that per-unit rates were too low. They were
+  already about right — upstream measured the pre-existing scan rate at a median
+  $0.76/unit, 19.1% of wholesale, inside the very band the entry proposed. The
+  shortfall is **promoted volume**, not rate.
+- **Consequence:** the *"roughly $1.5M of trade, roughly half wasted"* headline
+  that entry was written to enable is unreachable by any cost change and is
+  withdrawn. The interim scoping line survives but with its cause corrected — it
+  blamed instrument scope (slotting, allowances, deductions) when the dominant
+  cause is calendar density, by roughly 30–45x.
+- **Do not:** treat the superseded entry as live guidance. It is kept for the
+  reasoning trail, not the plan.
+
 ## Data & Schema
 
 ### 2026-08-17 — Pin the upstream package version.
