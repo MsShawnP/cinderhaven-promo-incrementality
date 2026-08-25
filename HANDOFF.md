@@ -613,3 +613,39 @@ otherwise clean.
 **Next:** two more ICP timed passes for the project-level bar; and — before the
 final copy audit and public relaunch — the upstream v0.4.0 realistic-cost release
 (DECISIONS 2026-08-23), which re-scores every headline number as a logged re-run.
+
+## 2026-08-25 17:24 — /wrap
+
+**Started from:** Three-view spine complete/deployed; a re-audit had caught Anatomy
+and Scorecard disagreeing on the same event+method (PRE-0002 M0 0.55×/63% vs
+0.60×/60%).
+
+**Did:**
+- Fixed the cross-view consistency bug: `build_anatomy._float` pre-rounded `roi` and
+  `subsidized_cost_share` to one decimal while the Scorecard carries them full
+  precision → different numbers on two pages, and Anatomy self-contradicting its own
+  exact margin/cost. Split the converter (`_units` rounds the bars only; `_float`
+  full precision for stats).
+- Added `test_cross_view_consistency.py` — every event × method × shared-stat,
+  anatomy ≡ scorecard emitted value, exact.
+- Added the Scorecard trade-spend scoping line (promo-event slice, not all-in trade);
+  logged the v0.4.0 realistic-cost follow-up (DECISIONS + PLAN).
+- Marked the ICP 30-second DoD item met (project-level 1 of 3).
+
+**Sibling surfaces:** anatomy float rounding — reassigned all per-method float stats
+(`gross`/`baseline`→`_units`, `net`→derived, `roi`/`subsidized_cost_share`→full
+precision, `discount_depth_pct`→full precision); all shared stats now enforced
+exhaustively by the new test (131×2×stats), so future drift fails CI. Scorecard scope
+line — single surface; Anatomy has its own give-note, unaffected.
+
+**State:** 78 Python tests + front-end build green, ruff clean, blindness guards
+green. All pushed; `origin/main` at `c0ffeef` (fixes in `96a3a07` + `fbea78c`, ICP
+log `c0ffeef`). **Project moved `active/` → `published/` this session** (publish flow,
+concurrent session) — same repo, tree clean. This wrap commit adds FAILURES/DECISIONS/
+HANDOFF only.
+
+**Next:** two more ICP timed passes; then the upstream **v0.4.0 realistic-cost
+release** (separate `cinderhaven-promo-response` session) sequenced before the final
+copy audit and public relaunch. Also open: Option B dip/transfer estimators (next
+estimation arc). **Watch:** a second live session shares this checkout — close it
+before more work to avoid muddy commits.

@@ -975,6 +975,28 @@ project-specific choices on top of it.]
 - **Do not:** rescale `promo_cost` / accrued cost in THIS repo to "look realistic."
   The fix is upstream; here it is only ever a re-pin + logged re-run.
 
+### 2026-08-24 — Every stat shown on two views is one value in the artifact; rounding lives at the display layer only.
+
+- **Decision:** A figure the front end renders on more than one surface (roi,
+  giveaway share, margin, cost — Scorecard *and* Anatomy) is carried at **full
+  precision** in the artifacts and rounded **once**, at display time, by the shared
+  `format.js` helpers. An artifact writer must not pre-round a cross-view stat. Any
+  intentional artifact-level rounding (the anatomy waterfall bars, where net is
+  derived from the rounded pair to reconcile on screen) uses a **separate** converter
+  (`_units`) and applies only to fields with no second surface.
+- **Why:** the two views read the same value through the same formatters; if one
+  artifact pre-rounds and another doesn't, the same event renders different numbers on
+  different pages — fatal for a tool whose entire thesis is measuring when two numbers
+  that should agree don't. See FAILURES.md 2026-08-24.
+- **Scope:** every artifact writer (`build_scorecard`, `build_anatomy`, any future
+  one) and every stat with more than one render site.
+- **Enforcement:** `tests/test_cross_view_consistency.py` — every event × method ×
+  shared-stat, anatomy value ≡ scorecard emitted value, exact; the stat set is derived
+  live from the artifacts so a newly shared field is checked automatically.
+- **Do not:** round a cross-view stat inside an artifact writer. Do not compare
+  estimator outputs to prove consistency — compare the **emitted artifact values**,
+  the only thing that catches converter drift.
+
 ---
 
 ## Output Formats

@@ -219,4 +219,42 @@ the upstream calibration bug taught (retail margin ≠ manufacturer margin, ~2.8
 
 **Tags:** modeling, roi, manufacturer-margin, subsidy, pre-registration, near-miss
 
+### 2026-08-24 — Anatomy pre-rounded cross-view stats, so two pages showed different ROI for the same event
+
+**Attempted:** `build_anatomy._float` rounded *every* float to one decimal — a
+choice that is correct for the waterfall bar quantities (net is derived from the
+rounded gross/baseline pair so the three bars reconcile on screen), but it was
+also applied to `roi` and `subsidized_cost_share`.
+
+**Why it didn't work:** the Scorecard carries those stats full-precision and the
+shared view formatters round at display time (`roi.toFixed(2)`,
+`Math.round(share*100)`). Pre-rounding in the artifact double-quantized them:
+PRE-0002 M0 `roi` 0.5500704 → 0.6 rendered "0.60×" in Anatomy while the Scorecard
+rendered "0.55×"; giveaway 0.6250662 → 0.6 (60%) vs 63%. `net_margin_cents` /
+`accrued_cost_cents` stayed exact (`_int`), so the Anatomy page even contradicted
+*itself* — $5,049/$9,180 = 0.55 printed above a 0.60 ROI. For a tool whose thesis
+is "two numbers that should agree, don't," this is the one class of bug it cannot
+ship.
+
+**What we tried instead:** split the converter — `_units` keeps the 1-decimal
+rounding for the bar quantities only; `_float` returns full precision, matching
+`build_scorecard._float`, for the stats. Added `test_cross_view_consistency.py`:
+every event × method × shared-stat, anatomy value ≡ scorecard emitted value,
+exact — comparing the *emitted artifact values* (the only thing that catches
+converter drift; both artifacts build from the same estimators, so comparing
+estimator outputs would have missed it). Fix landed across commits `96a3a07`
+(swept into a concurrent session's wrap, message silent on it) and is guarded
+going forward by the new test.
+
+**Lesson:** rounding is a *display* decision and belongs at the display layer, once.
+An artifact consumed by shared formatters must carry full precision, or two
+surfaces reading the same value render it differently. The measurement (the test
+comparing emitted values) was again the right place to look — same instinct as the
+upstream "suspect the measurement" rule.
+
+**Status:** Resolved; guarded by test_cross_view_consistency.py (78 tests green).
+
+**Tags:** rounding, cross-view-consistency, artifact-converter, anatomy, scorecard,
+display-layer, determinism
+
 [New entries get added here, most recent at the top]
