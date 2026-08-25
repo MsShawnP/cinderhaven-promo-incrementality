@@ -649,3 +649,40 @@ release** (separate `cinderhaven-promo-response` session) sequenced before the f
 copy audit and public relaunch. Also open: Option B dip/transfer estimators (next
 estimation arc). **Watch:** a second live session shares this checkout — close it
 before more work to avoid muddy commits.
+
+## 2026-08-24 — Launched as Lift Math; upstream v0.4.0 re-pin + copy audit + social card
+
+**Started from:** Three views live on `.pages.dev`, pinned to upstream v0.3.0
+(`6556460`).
+
+**Did:**
+- **Re-pinned to v0.4.0** (`6399990`) and logged the re-run. Economics moved:
+  portfolio spend $104,425.13 → **$80,448.79** (M0), return 1.13x → **1.47x**,
+  lost-money **64 → 45** of 129 (M0) / 48 (M1). `pure_subsidy` flipped to
+  profitable on both methods.
+- **Verified the accuracy invariant rather than citing it:** snapshotted the
+  v0.3.0 artifacts before installing and diffed after. `accuracy.json` differs
+  in **exactly one leaf**, the `package_version` stamp. No re-score done or
+  needed.
+- **Copy audit** — 4-surface adversarial sweep, 55 raw → **35 confirmed, 20
+  refuted**, all 35 fixed. Added `tests/test_no_portfolio_spend_ratio.py`,
+  demonstrated-to-fail against the exact banned sentence that had shipped.
+- **Launched as Lift Math** — per-route titles, meta/OG block, custom domain
+  `liftmath.lailarallc.com` attached via API, README to launched state.
+- **Social card** — 1200x630 `og-card.png` rendered by headless Chrome from
+  `web/card-source/card.html` against the real vendored brand fonts and palette.
+  No new dependency (Pillow and Playwright both rejected).
+
+**State:** Launched and live at https://liftmath.lailarallc.com — card serving,
+`summary_large_image`, 92 tests, ruff clean, all my work pushed.
+
+**Not mine, left alone:** the working tree carries another session's uncommitted
+cross-view-consistency work (DECISIONS +22, FAILURES +38, HANDOFF +36) plus
+commit `c0ffeef`. I appended this entry but did **not** commit — committing
+another session's in-flight state under my message would mix the two.
+
+**Next:** Platform repo — push `421beef`, paste the v0.4.0 canonical paragraph.
+Then upstream **v0.5.0 (calendar density)** *before* Option B, so dip/transfer
+estimators pre-register against the final generation instead of re-scoring
+twice. Before posting anywhere: run the URL through LinkedIn Post Inspector and
+X's card validator once — they cache hard on first fetch.
