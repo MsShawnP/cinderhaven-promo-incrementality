@@ -404,7 +404,7 @@ wrong. This is the external done.
 
 **Controlled — these are the bar for "worth building":**
 
-- [ ] Case study live on `lailarallc.com/work`, with the tool linked from it
+- [x] Case study live on `lailarallc.com/work`, with the tool linked from it. **Live and verified end-to-end 2026-08-26** (case study up for days; the tool now links to it from every page footer and the Scorecard CTA).
 - [ ] Tool shown live to **≥3 people in the target ICP** — trade marketing or
       finance at specialty food brands — each passing the timed 30-second check.
       **1 of 3 as of 2026-08-23** (one trade-marketing person, confirmed on the
@@ -427,12 +427,7 @@ failure mode for this project is not shipping something wrong — it is not
 shipping. The project-level success definition above is the countermeasure;
 it exists to supply an external "done," not to measure marketing.
 
-**External dependency: the case study on `lailarallc.com/work`.** The tool is
-the product and carries no narrative wrapper of its own, by decision. The case
-study is what frames it and where its traffic comes from. It lives outside this
-repo and outside this task list — and if it is never written, the flagship does
-not function regardless of how good the tool is. Named here so it does not go
-unowned.
+**External dependency — the case study on `lailarallc.com/work`: RESOLVED 2026-08-26.** It is live and verified end-to-end; the tool links to it from every page footer and the Scorecard CTA. The flagship's narrative wrapper is in place — no longer an open dependency.
 
 **Secondary dependency: a portfolio link.** The tool has to be reachable from
 `lailarallc.com` for any of the controlled success items to be achievable.

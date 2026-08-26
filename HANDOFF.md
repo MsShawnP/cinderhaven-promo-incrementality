@@ -686,3 +686,13 @@ Then upstream **v0.5.0 (calendar density)** *before* Option B, so dip/transfer
 estimators pre-register against the final generation instead of re-scoring
 twice. Before posting anywhere: run the URL through LinkedIn Post Inspector and
 X's card validator once — they cache hard on first fetch.
+
+## 2026-08-26 15:35
+
+**What changed:** Shipped three UI batches live and closed the case-study PLAN dependency: (1) measure unify + table-header alignment, (2) "so what" bridge + footer case-study link, (3) re-vendor frame v1.5.0 with the canonical .ll-column measure and tool-local table classes.
+
+**Why:** Heading and lede now share one right edge, table headers align to their columns, a cold visitor has a path from tool to narrative, and the ad-hoc vendored-frame drift is erased against the released v1.5.0 tag.
+
+**State:** Live + verified on liftmath.lailarallc.com (origin main a8eeea6): hero heading==lede edge, --ll-content-measure 720px, wordmark 26/20px, real bold, tables aligned (numeric right / text left / none centered), bridge + footer case-study link on all pages, zero drift tokens. CI green (truth-gate, data-contract, Cloudflare deploy). /work/lift-math live (200) so the case-study external dependency is RESOLVED in PLAN. Untouched: estimators, accuracy scoring, Option B.
+
+**Next:** Two more ICP timed passes (project bar 1 of 3); then upstream v0.5.0 (calendar density) before Option B dip/transfer, per PLAN.
