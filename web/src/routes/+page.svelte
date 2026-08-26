@@ -182,9 +182,11 @@
 			{/each}
 		</div>
 
-		<h1 class="verdict">{active.n_lost_money} of {active.n_estimable} promotions lost money.</h1>
+		<div class="ll-column">
+			<h1 class="verdict">{active.n_lost_money} of {active.n_estimable} promotions lost money.</h1>
 
-		<p class="lede ll-measure">{ledeText}</p>
+			<p class="lede">{ledeText}</p>
+		</div>
 
 		<!-- Three numbers: the CFO header for the active method, each with the other
 		     method's value beneath it so the delta is visible without toggling. -->
@@ -302,13 +304,13 @@
 				<table class="event-table">
 					<thead>
 						<tr>
-							<th class="col-rank ll-num" scope="col">#</th>
-							<th class="col-promo ll-text" scope="col">Promotion</th>
-							<th class="col-num ll-num" scope="col">Net margin</th>
-							<th class="col-num ll-num" scope="col">Trade spend</th>
-							<th class="col-num ll-num" scope="col">ROI</th>
-							<th class="col-num ll-num" scope="col">{METHOD_SHORT[otherKey]} ROI</th>
-							<th class="col-num ll-num" scope="col">Giveaway</th>
+							<th class="col-rank" scope="col">#</th>
+							<th class="col-promo" scope="col">Promotion</th>
+							<th class="col-num" scope="col">Net margin</th>
+							<th class="col-num" scope="col">Trade spend</th>
+							<th class="col-num" scope="col">ROI</th>
+							<th class="col-num" scope="col">{METHOD_SHORT[otherKey]} ROI</th>
+							<th class="col-num" scope="col">Giveaway</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -453,7 +455,6 @@
 		letter-spacing: -0.02em;
 		color: var(--ll-london-5);
 		margin: 0 0 var(--ll-space-base);
-		max-width: var(--content-measure);
 	}
 
 	.lede {
@@ -757,6 +758,9 @@
 		color: var(--ll-london-35);
 		font-variant-numeric: tabular-nums;
 		width: 2.5rem;
+	}
+	.col-promo {
+		text-align: left;
 	}
 	.event-table tbody td:first-child {
 		border-left: 3px solid transparent;

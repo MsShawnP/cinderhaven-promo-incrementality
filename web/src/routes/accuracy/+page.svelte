@@ -68,23 +68,25 @@
 	<p class="eyebrow">Accuracy · estimate vs truth</p>
 	<a class="back" href="/">← Back to the Scorecard</a>
 
-	<h1 class="title">How wrong are these numbers?</h1>
+	<div class="ll-column">
+		<h1 class="title">How wrong are these numbers?</h1>
 
-	<p class="framing ll-measure">
-		Every incrementality tool asserts accuracy. This one measures it. The two baselines
-		are scored against <strong>known ground truth</strong> — the error is shown, by
-		regime, including where it is large. That is the whole claim, and it is a narrow one:
-		<em>this is the error a standard method makes under a realistic, fully-known world.</em>
-		It is not a prediction of the error on your data.
-	</p>
+		<p class="framing">
+			Every incrementality tool asserts accuracy. This one measures it. The two baselines
+			are scored against <strong>known ground truth</strong> — the error is shown, by
+			regime, including where it is large. That is the whole claim, and it is a narrow one:
+			<em>this is the error a standard method makes under a realistic, fully-known world.</em>
+			It is not a prediction of the error on your data.
+		</p>
 
-	<p class="framing ll-measure">
-		The estimators are <strong>provably blind</strong> — enforced in code, not promised.
-		An AST gate runs over every estimation file on every push; the generator's own
-		coefficients are banned from the estimation path; and the git history shows both
-		methods frozen and tagged <em>before</em> this page's code first read truth. The
-		blindness claim is scoped exactly there — to the code — and nowhere wider.
-	</p>
+		<p class="framing">
+			The estimators are <strong>provably blind</strong> — enforced in code, not promised.
+			An AST gate runs over every estimation file on every push; the generator's own
+			coefficients are banned from the estimation path; and the git history shows both
+			methods frozen and tagged <em>before</em> this page's code first read truth. The
+			blindness claim is scoped exactly there — to the code — and nowhere wider.
+		</p>
+	</div>
 
 	<!-- Headline: both methods side by side. Method 0 is never shown alone. -->
 	<section class="headline">
@@ -133,9 +135,9 @@
 			<table class="acc-table">
 				<thead>
 					<tr>
-						<th class="ll-text" scope="col">Story</th>
-						<th class="col-num ll-num" scope="col">Method 0 error</th>
-						<th class="col-num ll-num" scope="col">Method 1 error</th>
+						<th scope="col">Story</th>
+						<th class="col-num" scope="col">Method 0 error</th>
+						<th class="col-num" scope="col">Method 1 error</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -167,9 +169,9 @@
 					<table class="acc-table">
 						<thead>
 							<tr>
-								<th class="ll-text" scope="col">{name}</th>
-								<th class="col-num ll-num" scope="col">Method 0</th>
-								<th class="col-num ll-num" scope="col">Method 1</th>
+								<th scope="col">{name}</th>
+								<th class="col-num" scope="col">Method 0</th>
+								<th class="col-num" scope="col">Method 1</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -207,10 +209,10 @@
 					<table class="acc-table">
 						<thead>
 							<tr>
-								<th class="ll-text" scope="col">Match stratum</th>
-								<th class="col-num ll-num" scope="col">Median error</th>
-								<th class="col-num ll-num" scope="col">Bias</th>
-								<th class="col-num ll-num" scope="col">Events</th>
+								<th scope="col">Match stratum</th>
+								<th class="col-num" scope="col">Median error</th>
+								<th class="col-num" scope="col">Bias</th>
+								<th class="col-num" scope="col">Events</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -270,7 +272,6 @@
 		letter-spacing: -0.02em;
 		color: var(--ll-london-5);
 		margin: 0 0 var(--ll-space-lg);
-		max-width: var(--content-measure);
 	}
 	.framing {
 		font-size: 17px;
@@ -368,9 +369,13 @@
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		color: var(--ll-london-35);
+		text-align: left;
 		padding: 0 var(--ll-space-base) var(--ll-space-sm);
 		border-bottom: 2px solid var(--ll-london-5);
 		white-space: nowrap;
+	}
+	.acc-table thead th.col-num {
+		text-align: right;
 	}
 	.acc-table tbody td {
 		padding: var(--ll-space-sm) var(--ll-space-base);

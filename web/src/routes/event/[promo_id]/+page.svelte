@@ -134,13 +134,15 @@
 	<p class="eyebrow">Event Anatomy</p>
 	<a class="back" href={backHref}>← Back to the Scorecard</a>
 
-	<h1 class="title">{e.promo_id}</h1>
-	<p class="meta">
-		{RETAILER(e.retailer_id)} · {e.sku} · {e.promo_type} · {e.discount_depth_pct}% off ·
-		{e.n_weeks} {e.n_weeks === 1 ? 'week' : 'weeks'} · {e.start_week} to {e.end_week} · {e.funding_mechanism}
-		{#if e.plan_status !== 'executed'}<span class="badge badge-status">{e.plan_status}</span>{/if}
-		{#if e.story_tag}<span class="badge badge-story">{e.story_tag.replace('_', ' ')}</span>{/if}
-	</p>
+	<div class="ll-column">
+		<h1 class="title">{e.promo_id}</h1>
+		<p class="meta">
+			{RETAILER(e.retailer_id)} · {e.sku} · {e.promo_type} · {e.discount_depth_pct}% off ·
+			{e.n_weeks} {e.n_weeks === 1 ? 'week' : 'weeks'} · {e.start_week} to {e.end_week} · {e.funding_mechanism}
+			{#if e.plan_status !== 'executed'}<span class="badge badge-status">{e.plan_status}</span>{/if}
+			{#if e.story_tag}<span class="badge badge-story">{e.story_tag.replace('_', ' ')}</span>{/if}
+		</p>
+	</div>
 
 	<!-- Baseline-method toggle inside the view. -->
 	<div class="toggle" role="group" aria-label="Baseline method">
@@ -270,7 +272,6 @@
 		letter-spacing: -0.02em;
 		color: var(--ll-london-5);
 		margin: 0 0 var(--ll-space-xs);
-		max-width: var(--content-measure);
 	}
 	.meta {
 		font-size: 14px;
