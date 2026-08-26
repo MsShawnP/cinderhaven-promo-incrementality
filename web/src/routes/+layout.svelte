@@ -13,6 +13,16 @@
 			margin: 0;
 			background-color: #f5f3ee;
 		}
+
+		/* One shared right boundary for text. The display headline block and
+		   every prose/footnote block wrap at the same edge, so a lede never
+		   ends short of the H1 above it. Aliases the design-system body measure
+		   (720px, lailara-frame.css) as a single source of truth. px not ch on
+		   purpose: the frame forbids ch for measure (Source Sans's "0" glyph is
+		   ~0.5em, so ch counts render ~half their nominal width). */
+		:root {
+			--content-measure: var(--ll-body-max-width);
+		}
 	</style>
 </svelte:head>
 

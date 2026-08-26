@@ -291,13 +291,13 @@
 				<table class="event-table">
 					<thead>
 						<tr>
-							<th class="col-rank" scope="col">#</th>
-							<th class="col-promo" scope="col">Promotion</th>
-							<th class="col-num" scope="col">Net margin</th>
-							<th class="col-num" scope="col">Trade spend</th>
-							<th class="col-num" scope="col">ROI</th>
-							<th class="col-num" scope="col">{METHOD_SHORT[otherKey]} ROI</th>
-							<th class="col-num" scope="col">Giveaway</th>
+							<th class="col-rank ll-num" scope="col">#</th>
+							<th class="col-promo ll-text" scope="col">Promotion</th>
+							<th class="col-num ll-num" scope="col">Net margin</th>
+							<th class="col-num ll-num" scope="col">Trade spend</th>
+							<th class="col-num ll-num" scope="col">ROI</th>
+							<th class="col-num ll-num" scope="col">{METHOD_SHORT[otherKey]} ROI</th>
+							<th class="col-num ll-num" scope="col">Giveaway</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -442,7 +442,7 @@
 		letter-spacing: -0.02em;
 		color: var(--ll-london-5);
 		margin: 0 0 var(--ll-space-base);
-		max-width: 15em;
+		max-width: var(--content-measure);
 	}
 
 	.lede {
@@ -681,7 +681,6 @@
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		color: var(--ll-london-35);
-		text-align: left;
 		padding: 0 var(--ll-space-base) var(--ll-space-sm);
 		border-bottom: 2px solid var(--ll-london-5);
 		white-space: nowrap;

@@ -480,3 +480,12 @@
 .ll-measure-narrow  { max-width: var(--ll-body-max-width-narrow); }
 .ll-measure-wide    { max-width: var(--ll-body-max-width-wide); }
 .ll-measure-display { max-width: var(--ll-display-max-width); }
+
+/* -- Table cell alignment ---------------------------------------
+   A column header aligns with its values: numeric columns right-
+   align the <th> and every <td>; text columns left-align both.
+   Put the same class on the header cell and the body cells of a
+   column so a browser's centered-<th> default can never sit over
+   aligned numbers. */
+.ll-num  { text-align: right; font-variant-numeric: tabular-nums; }
+.ll-text { text-align: left; }

@@ -270,6 +270,7 @@
 		letter-spacing: -0.02em;
 		color: var(--ll-london-5);
 		margin: 0 0 var(--ll-space-xs);
+		max-width: var(--content-measure);
 	}
 	.meta {
 		font-size: 14px;

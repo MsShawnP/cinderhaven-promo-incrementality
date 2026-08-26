@@ -133,9 +133,9 @@
 			<table class="acc-table">
 				<thead>
 					<tr>
-						<th scope="col">Story</th>
-						<th class="col-num" scope="col">Method 0 error</th>
-						<th class="col-num" scope="col">Method 1 error</th>
+						<th class="ll-text" scope="col">Story</th>
+						<th class="col-num ll-num" scope="col">Method 0 error</th>
+						<th class="col-num ll-num" scope="col">Method 1 error</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -167,9 +167,9 @@
 					<table class="acc-table">
 						<thead>
 							<tr>
-								<th scope="col">{name}</th>
-								<th class="col-num" scope="col">Method 0</th>
-								<th class="col-num" scope="col">Method 1</th>
+								<th class="ll-text" scope="col">{name}</th>
+								<th class="col-num ll-num" scope="col">Method 0</th>
+								<th class="col-num ll-num" scope="col">Method 1</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -207,10 +207,10 @@
 					<table class="acc-table">
 						<thead>
 							<tr>
-								<th scope="col">Match stratum</th>
-								<th class="col-num" scope="col">Median error</th>
-								<th class="col-num" scope="col">Bias</th>
-								<th class="col-num" scope="col">Events</th>
+								<th class="ll-text" scope="col">Match stratum</th>
+								<th class="col-num ll-num" scope="col">Median error</th>
+								<th class="col-num ll-num" scope="col">Bias</th>
+								<th class="col-num ll-num" scope="col">Events</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -270,6 +270,7 @@
 		letter-spacing: -0.02em;
 		color: var(--ll-london-5);
 		margin: 0 0 var(--ll-space-lg);
+		max-width: var(--content-measure);
 	}
 	.framing {
 		font-size: 17px;
@@ -367,7 +368,6 @@
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		color: var(--ll-london-35);
-		text-align: left;
 		padding: 0 var(--ll-space-base) var(--ll-space-sm);
 		border-bottom: 2px solid var(--ll-london-5);
 		white-space: nowrap;
