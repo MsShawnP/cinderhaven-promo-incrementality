@@ -37,6 +37,32 @@ quarto" or "scope, scrollytelling, decoration"]
 
 ## Entries
 
+### 2026-08-26 — PowerShell string-building mangled CRLF Svelte edits
+
+**Attempted:** Insert multi-line markup/CSS into the CRLF `.svelte` files via
+PowerShell — an array `-join "\`r\`n"` of `+`-concatenated elements, and
+`.Replace(token, [char]0x2014)` to substitute glyphs (en/em dash, curly quote,
+arrow).
+
+**Why it didn't work:** The `-join` collapsed the bridge markup onto one line
+(newlines lost), and `.Replace(string, char)` bound the `(char, char)` overload
+— so the `~EN~`/`~EM~` glyph tokens were written literally. Root cause: these
+files are CRLF with no `.gitattributes`, and the built-in Edit tool cannot match
+them (it failed on every `.svelte` attempt), so all edits went through PowerShell
+where the string/encoding quirks bit. Separately, `.` matches `\r` in .NET regex,
+so `(?m)^(?=.)` re-indentation tabbed the "blank" lines (trailing-tab cleanup).
+
+**What we did instead:** single-quoted here-string with `~T2~`/`~EM~` tokens,
+normalize `\n`→`\r\n`, then token-substitute with explicit `([char]0x2014).ToString()`
+glyphs; assert `loneLF=0` after every write. Lesson: check the file's EOL *first*
+before editing these files.
+
+**Status:** Resolved
+
+**Tags:** powershell, crlf, svelte, string-encoding, editing, tooling
+
+---
+
 ### 2026-08-22 — Reading `url.searchParams` in a component broke the prerender build
 
 **Attempted:** Cross-view filters read from the URL via `$page.url.searchParams`

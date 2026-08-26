@@ -997,6 +997,26 @@ project-specific choices on top of it.]
   estimator outputs to prove consistency — compare the **emitted artifact values**,
   the only thing that catches converter drift.
 
+### 2026-08-26 - Consume the Lailara frame via tagged re-vendor; table alignment is tool-local.
+
+- **Decision:** Lift Math vendors `lailara-frame.css` + fonts **from a git tag** of
+  the `lailara-frame` repo (v1.5.0), byte-for-byte - never hand-edited in place.
+  Measure adopts the canonical `.ll-column` wrapper + `--ll-content-measure` (720px)
+  so a heading and its lede share one right edge. Table-header alignment is
+  **tool-local** (`col-num` / `col-rank` / `col-promo` here): the frame ships no
+  table utility classes, so each tool owns its own alignment (numeric right, text
+  left, no centered headers).
+- **Why:** an earlier pass added ad-hoc `.ll-num` / `.ll-text` to the vendored frame
+  and a local `--content-measure` alias. That is drift - the vendored file no longer
+  matched any release. The fix for drift is to make the edit official upstream (frame
+  v1.5.0) and re-vendor against the tag, not to keep local edits. Sourcing from the
+  tag (never a working tree) means the vendored copy is provably a release.
+- **Scope:** `web/static/lailara/` and every page's measure/table CSS.
+- **Do not:** hand-edit the vendored frame CSS, alias `--content-measure` locally, or
+  invent `.ll-num`/`.ll-text`-style frame table classes. If the frame needs a change,
+  ship it upstream, tag it, and re-vendor. See the lailara-frame repo's
+  MEASURE_TABLE_RETROFIT.md.
+
 ---
 
 ## Output Formats

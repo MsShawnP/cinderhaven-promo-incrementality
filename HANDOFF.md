@@ -696,3 +696,13 @@ X's card validator once — they cache hard on first fetch.
 **State:** Live + verified on liftmath.lailarallc.com (origin main a8eeea6): hero heading==lede edge, --ll-content-measure 720px, wordmark 26/20px, real bold, tables aligned (numeric right / text left / none centered), bridge + footer case-study link on all pages, zero drift tokens. CI green (truth-gate, data-contract, Cloudflare deploy). /work/lift-math live (200) so the case-study external dependency is RESOLVED in PLAN. Untouched: estimators, accuracy scoring, Option B.
 
 **Next:** Two more ICP timed passes (project bar 1 of 3); then upstream v0.5.0 (calendar density) before Option B dip/transfer, per PLAN.
+
+## 2026-08-26 17:41 — /wrap
+
+**Started from:** Three-view tool live on frame v1.1.0; a complaint that display headings and prose wrapped at different widths.
+
+**Did:** Shipped three UI batches live and verified on liftmath.lailarallc.com — (1) measure unify + table-header alignment; (2) "so what" bridge + footer case-study link; (3) re-vendor frame v1.5.0 (canonical .ll-column / --ll-content-measure; tool-local table classes; drops the ad-hoc .ll-num/.ll-text and local --content-measure alias). Deploy went out even though GitHub's status page still showed an Actions outage — the runs API was the real signal. Closed the now-live /work/lift-math PLAN dependency; /log checkpoint (bc98d27).
+
+**State:** Live + verified (origin main a8eeea6, plus local docs commits): hero heading==lede edge, --ll-content-measure 720px, wordmark 26/20px, real bold, tables aligned (numeric right / text left / none centered), bridge + footer link on all pages, zero drift tokens. CI green (truth-gate, data-contract, deploy). Untouched: estimators, accuracy scoring, Option B.
+
+**Next:** Separate note-to-self runs tomorrow as written — verify the 0.6356 truth loss rate + 48/129 M1 lost-money against the truth artifacts before restoring, not from prose. Project: two more ICP timed passes (bar 1/3), then upstream v0.5.0 (calendar density) before Option B dip/transfer.
