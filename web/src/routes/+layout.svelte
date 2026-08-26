@@ -44,6 +44,9 @@
 				Built by <a href="https://lailarallc.com">Lailara LLC</a> — data hygiene and
 				analytics consulting for specialty food brands scaling into national retail.
 			</p>
+			<p class="lailara-footer-cta">
+				<a href="https://lailarallc.com/work/lift-math">Read the Lift Math case study →</a>
+			</p>
 			<p class="lailara-footer-note">
 				Data is synthetic; methodology and deliverables are real.
 			</p>

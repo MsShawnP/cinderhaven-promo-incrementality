@@ -209,6 +209,17 @@
 			</div>
 		</dl>
 
+		<!-- "So what" bridge: why a checkable promo book matters, and the path to
+		     the engagement. Static copy, frozen for audit. -->
+		<section class="bridge">
+			<p class="bridge-p ll-measure">Specialty food brands commit 15–20% of revenue to trade promotion, and the industry’s own benchmark says roughly seven in ten events don’t pay back. The reports brands receive almost never say so — because nobody can check them. This page is what checkable looks like: a full promo book, measured honestly, on a realistic $25M brand — with the measurement’s own error published one click away.</p>
+			<p class="bridge-p ll-measure">The engagement version runs this same measurement on your promotion calendar and your POS data — and tells you which of your events would survive it.</p>
+			<div class="bridge-cta">
+				<a class="cta cta-primary" href="https://lailarallc.com/contact">Run this on your book →</a>
+				<a class="cta cta-secondary" href="https://lailarallc.com/work/lift-math">Read the case study →</a>
+			</div>
+		</section>
+
 		<p class="scope-note ll-measure">
 			Trade spend here is the scan-promoted event slice of the trade book — accrued cost on promo
 			events only, not all-in trade spend. It excludes slotting, off-invoice allowances and
@@ -507,6 +518,51 @@
 		line-height: 1.5;
 		color: var(--ll-london-35);
 		margin: 0 0 var(--ll-space-3xl);
+	}
+
+	/* "So what" bridge: the pitch under the numbers, before the chart. */
+	.bridge {
+		margin: var(--ll-space-lg) 0 var(--ll-space-3xl);
+	}
+	.bridge-p {
+		font-size: 16px;
+		line-height: 1.6;
+		color: var(--ll-london-20);
+		margin: 0 0 var(--ll-space-base);
+	}
+	.bridge-cta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--ll-space-md);
+		margin-top: var(--ll-space-lg);
+	}
+	.cta {
+		display: inline-block;
+		font-family: var(--ll-sans);
+		font-size: 15px;
+		font-weight: 600;
+		padding: 10px 18px;
+		border-radius: var(--ll-radius);
+		border: 1px solid var(--ll-chicago-20);
+		text-decoration: none;
+	}
+	.cta-primary {
+		background: var(--ll-chicago-20);
+		color: #fff;
+	}
+	.cta-primary:hover {
+		background: var(--ll-chicago-10);
+	}
+	.cta-secondary {
+		background: transparent;
+		color: var(--ll-chicago-20);
+	}
+	.cta-secondary:hover {
+		background: var(--ll-chicago-95);
+	}
+	.cta:focus-visible {
+		outline: 2px solid var(--ll-london-5);
+		outline-offset: 2px;
 	}
 
 	/* One chart — DOM bars */
