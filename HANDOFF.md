@@ -716,3 +716,13 @@ X's card validator once — they cache hard on first fetch.
 **State:** origin -> org (fetch+push), org/main == local 185b39f, liftmath.lailarallc.com 200. Migration session re-ran ci.yml green (promo read 6399990 via org PAT; CF deploy on org token). Deploy pipeline healthy under the org. Doctrine: never create repo-level Actions secrets — if a secret is missing the repo is not in the org yet.
 
 **Next:** Nothing blocking. Resume project work — two more ICP timed passes (bar 1/3), then upstream v0.5.0 (calendar density) before Option B dip/transfer.
+
+## 2026-08-27 16:24 — owner decisions: ICP bar closed, v0.5.0 roadmap active
+
+**What changed:** Recorded two owner decisions in PLAN. (1) The project-level >=3-ICP success bar is CLOSED as an **owner close** — 1 of 3 passes run (2026-08-23), remaining 2 waived by Shawn; recorded as an owner close, NOT 3/3 completed. (2) v0.5.0 (calendar-density epoch) is now ACTIVE (started today in the data repo); this repo's part follows as one re-validation arc.
+
+**Why:** Owner set the roadmap. v0.5.0 changes unit truth (~30–45x promoted volume), so it re-validates every headline number.
+
+**State:** PLAN updated — ICP item + arc cross-ref closed; v0.5.0 dependency marked active with this repo's task list; Arc history re-sequenced to v0.5.0 re-validation then Option B. No code touched. The prior HANDOFF "two more ICP passes" Next line is superseded by this.
+
+**Next (this repo, after the data-repo v0.5.0 release):** re-pin → full re-score as a logged re-run (before/after error in DECISIONS; every headline number moves) → copy re-audit → revisit the no-portfolio-% constraint once spend-to-revenue is realistic → then Option B.

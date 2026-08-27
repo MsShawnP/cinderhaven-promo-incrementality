@@ -372,8 +372,8 @@ actually honored. Full reasoning in DECISIONS.md, external-validity entry.
       person who works in trade marketing — not asserted. **Met 2026-08-23** — one
       trade-marketing person, 30-second comprehension confirmed against the live
       flagship `liftmath.lailarallc.com` (not `.pages.dev`). This clears the arc
-      bar (one timed session); the project-level ≥3-ICP bar below now stands at
-      **1 of 3**.
+      bar (one timed session); the project-level ≥3-ICP bar below was **closed by
+      owner decision 2026-08-27** at 1 of 3 (2 waived).
 - [ ] **Public-facing copy has had a writing audit before deploy** — every
       on-screen sentence checked against the Economist voice: no overclaim
       ("the most optimistic read there is"), no undefined jargon reaching the
@@ -405,10 +405,11 @@ wrong. This is the external done.
 **Controlled — these are the bar for "worth building":**
 
 - [x] Case study live on `lailarallc.com/work`, with the tool linked from it. **Live and verified end-to-end 2026-08-26** (case study up for days; the tool now links to it from every page footer and the Scorecard CTA).
-- [ ] Tool shown live to **≥3 people in the target ICP** — trade marketing or
+- [x] Tool shown live to **≥3 people in the target ICP** — trade marketing or
       finance at specialty food brands — each passing the timed 30-second check.
-      **1 of 3 as of 2026-08-23** (one trade-marketing person, confirmed on the
-      live flagship). Two more owed.
+      **CLOSED by owner decision 2026-08-27 — 1 of 3 passes run (one trade-marketing
+      person, 2026-08-23, on the live flagship); the remaining 2 waived by Shawn.
+      Recorded as an owner close, not as 3 passes completed.**
 - [ ] Tool used as the demo in **every** promo-related sales conversation in
       the window
 
@@ -450,11 +451,18 @@ inside any defensible band closes that — at $1.50 on every promoted unit the c
 0.18% of revenue. The "roughly $1.5M of trade, roughly half wasted" headline this entry
 was written to enable **is not reachable by a cost change** and must not be quoted.
 
-**Carried forward to upstream v0.5.0 (calendar density).** Generating 30–45x more promoted
-volume changes unit truth, so it invalidates every accuracy number computed against this
-generation and is its own re-validation epoch — deliberately not folded into a rate
-release. Until it lands, this tool leads with counts and per-event economics, never
-portfolio dollars and never a trade-spend-to-revenue ratio (see DECISIONS).
+**Upstream v0.5.0 (calendar density) — ACTIVE, started 2026-08-27 in the data repo.**
+Generating 30–45x more promoted volume changes unit truth, so it invalidates every
+accuracy number computed against this generation and is its own re-validation epoch —
+deliberately not folded into a rate release. Until it lands, this tool leads with counts
+and per-event economics, never portfolio dollars and never a trade-spend-to-revenue ratio
+(see DECISIONS).
+
+**This repo's part comes after the data-repo release, as one re-validation arc (see Arc
+history):** re-pin to v0.5.0 — full re-score as a **logged re-run** (every headline
+number moves) — **copy re-audit** of every surface that quotes a number — **revisit
+the no-portfolio-% constraint** once spend-to-revenue is realistic (DECISIONS 2026-08-24;
+it holds until then).
 
 ---
 
@@ -489,7 +497,17 @@ Scorecard ↔ Anatomy. Two copy audits; the dip/transfer blindness boundary reso
 Option A (three bars a blind estimator can defend), with Option B logged as the next
 arc. Open, non-blocking: the human ICP timed check against the finished tool.
 
-### Next arc (after this one) — Option B estimators: observed-only dip + transfer (tools 1c/1d)
+### Next arc — v0.5.0 calendar-density re-validation epoch (active roadmap, owner 2026-08-27)
+
+Upstream v0.5.0 raises promoted volume ~30–45x, which changes unit truth and invalidates
+every accuracy number scored against the current generation — so it is a re-validation
+epoch, not a patch. This repo's sequence, once the data repo releases v0.5.0: re-pin —
+full re-score as a **logged re-run** (before/after error in DECISIONS; every headline number
+moves) — **copy re-audit** (each on-screen figure re-checked against the new artifacts)
+— **revisit the no-portfolio-% / trade-spend-to-revenue constraint** now that
+spend-to-revenue is realistic (DECISIONS 2026-08-24). **Then Option B.**
+
+### Then — Option B estimators: observed-only dip + transfer (tools 1c/1d)
 
 Post-event pantry-load **dip** and sibling-delta **transfer**, estimable from
 observed data, each with its own pre-registration tag and accuracy scoring; the
