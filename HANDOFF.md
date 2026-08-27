@@ -706,3 +706,13 @@ X's card validator once — they cache hard on first fetch.
 **State:** Live + verified (origin main a8eeea6, plus local docs commits): hero heading==lede edge, --ll-content-measure 720px, wordmark 26/20px, real bold, tables aligned (numeric right / text left / none centered), bridge + footer link on all pages, zero drift tokens. CI green (truth-gate, data-contract, deploy). Untouched: estimators, accuracy scoring, Option B.
 
 **Next:** Separate note-to-self runs tomorrow as written — verify the 0.6356 truth loss rate + 48/129 M1 lost-money against the truth artifacts before restoring, not from prose. Project: two more ICP timed passes (bar 1/3), then upstream v0.5.0 (calendar density) before Option B dip/transfer.
+
+## 2026-08-27 14:03 — org migration close-out
+
+**What changed:** Repo transferred MsShawnP -> lailarallc org (fleet personal->org migration, run by the migration session); local git remote repointed to lailarallc/cinderhaven-promo-incrementality.
+
+**Why:** The freshly-rolled Cloudflare token is org-level only — every repo-level CF copy is dead, which is what broke the deploy on the personal repo (auth 9109). Org ownership lets CI use the org CLOUDFLARE_API_TOKEN + org-level PROMO_RESPONSE_READ.
+
+**State:** origin -> org (fetch+push), org/main == local 185b39f, liftmath.lailarallc.com 200. Migration session re-ran ci.yml green (promo read 6399990 via org PAT; CF deploy on org token). Deploy pipeline healthy under the org. Doctrine: never create repo-level Actions secrets — if a secret is missing the repo is not in the org yet.
+
+**Next:** Nothing blocking. Resume project work — two more ICP timed passes (bar 1/3), then upstream v0.5.0 (calendar density) before Option B dip/transfer.
