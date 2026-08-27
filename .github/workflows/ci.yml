@@ -190,8 +190,13 @@ jobs:
   # could ship while estimation code can reach truth is exactly the thing the
   # gate exists to prevent.
   # ---------------------------------------------------------------------------
-  deploy:
-    name: Deploy to Cloudflare Pages
+  # Build the static site (Python pipeline first, then SvelteKit) and hand it to
+  # the org reusable deploy workflow as an artifact. Runs only on push to main —
+  # never on PRs (a fork PR must not deploy) and never unless the truth gate and
+  # the data contract are green. Cloudflare credentials live in the reusable
+  # deploy job, not here; this job only needs the private-package read token.
+  build:
+    name: Build the static site
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [truth-gate, data-contract]
@@ -208,9 +213,8 @@ jobs:
           node-version: "22"
 
       - name: Confirm the read token is present
-        # Same guard as the other jobs: the pipeline pip-installs the private
-        # package, which needs this. Fail early and clearly rather than deep in
-        # a pip clone error.
+        # The pipeline pip-installs the private package, which needs this. Fail
+        # early and clearly rather than deep in a pip clone error.
         env:
           TOKEN: ${{ secrets.PROMO_RESPONSE_READ }}
         run: |
@@ -219,43 +223,6 @@ jobs:
             exit 1
           fi
           echo "token present"
-
-      - name: Confirm Cloudflare credentials are present
-        # An absent API token makes wrangler fail with an auth error that looks
-        # like a bad token rather than a missing one. This says which secret is
-        # missing and how to add it. Neither value is echoed.
-        env:
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          missing=0
-          if [ -z "$CF_API_TOKEN" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN is not set on this repository."
-            missing=1
-          fi
-          if [ -z "$CF_ACCOUNT_ID" ]; then
-            echo "::error::CLOUDFLARE_ACCOUNT_ID is not set on this repository."
-            missing=1
-          fi
-          if [ "$missing" -ne 0 ]; then
-            echo "::error::Add them on the repo that RUNS this workflow:"
-            echo "::error::  gh secret set CLOUDFLARE_API_TOKEN --repo MsShawnP/cinderhaven-promo-incrementality"
-            echo "::error::  gh secret set CLOUDFLARE_ACCOUNT_ID --repo MsShawnP/cinderhaven-promo-incrementality"
-            exit 1
-          fi
-          # Present is not the same as valid. A Cloudflare account ID is 32
-          # lowercase hex characters; a trailing newline or stray char from a
-          # paste leaves it non-empty but malformed, and wrangler then fails
-          # with an opaque routing error (API code 7003) rather than saying the
-          # ID is wrong. Catch that shape here. The value is not printed.
-          if ! printf '%s' "$CF_ACCOUNT_ID" | grep -Eq '^[0-9a-f]{32}$'; then
-            echo "::error::CLOUDFLARE_ACCOUNT_ID is set but not a 32-char hex account ID."
-            echo "::error::Likely a trailing newline or the wrong value. Re-set it from"
-            echo "::error::the dashboard (Workers & Pages -> right sidebar -> Account ID):"
-            echo "::error::  gh secret set CLOUDFLARE_ACCOUNT_ID --repo MsShawnP/cinderhaven-promo-incrementality"
-            exit 1
-          fi
-          echo "cloudflare credentials present and account id well-formed"
 
       - name: Authenticate to the private data package
         run: |
@@ -280,26 +247,21 @@ jobs:
         # so a stale or missing artifact never ships.
         run: bash scripts/build.sh
 
-      - name: Create the Pages project if it does not exist
-        # First deploy needs the project to exist; later deploys skip creation.
-        # `pages project list` is tolerant — a fresh account lists nothing and
-        # the create runs; a real auth failure surfaces on create.
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          if npx --yes wrangler@4 pages project list | grep -q "cinderhaven-promo-incrementality"; then
-            echo "Pages project already exists"
-          else
-            npx --yes wrangler@4 pages project create cinderhaven-promo-incrementality \
-              --production-branch=main
-          fi
+      - name: Upload the built site
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site
+          path: web/build
 
-      - name: Deploy to Cloudflare Pages
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          npx --yes wrangler@4 pages deploy web/build \
-            --project-name=cinderhaven-promo-incrementality \
-            --branch=main
+  # Deploy via the org reusable workflow. Project name is passed EXPLICITLY so
+  # the repo name never lands on the *.pages.dev URL. secrets: inherit passes the
+  # org-level CLOUDFLARE_* secrets through. Skips whenever the build job skips
+  # (PRs, non-main pushes), so a fork PR still never deploys.
+  deploy:
+    name: Deploy
+    needs: [build]
+    uses: lailarallc/reusable-workflows/.github/workflows/pages-deploy.yml@main
+    with:
+      project_name: cinderhaven-promo-incrementality
+      artifact_name: site
+    secrets: inherit
