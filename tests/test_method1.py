@@ -52,29 +52,31 @@ def test_money_is_integer_cents(result):
 
 def test_all_131_present_and_129_estimable(result):
     ev = result.events
-    assert len(ev) == 131
-    assert result.portfolio["n_estimable"] == 129
+    assert len(ev) == 5897
+    assert result.portfolio["n_estimable"] == 5122
 
 
 def test_non_estimable_events_carry_the_comparable_pool_reason(result):
     ev = result.events
     non = ev[~ev["estimable"]]
-    # Pinned to this generation at MIN_POOL=5, band [v/2, 2v]: the two events whose
-    # comparable pool stays under the floor even at the relaxed stratum.
-    assert set(non["promo_id"]) == {"PRE-0048", "PRE-0097"}
+    # The specific excluded set moves with the generation (v0.6.1 density thins the
+    # comparable pools — DECISIONS 2026-08-27); the invariant is that every exclusion
+    # carries the reason and no fabricated number, so the denominator stays honest.
+    assert len(non) > 0
     assert (non["exclusion_reason"] == "insufficient_comparable_pool").all()
     assert non["net_margin_cents"].isna().all()
     assert non["roi"].isna().all()
 
 
-def test_method1_rescues_a_series_start_event_method0_cannot(result, method0_result):
-    # The concrete "a better baseline rescues some of these" contrast (spec §3.6):
-    # PRE-0054 starts three weeks into the series, so Method 0 has no pre-period for
-    # it — but comparable stores do, so Method 1 estimates it.
+def test_method1_estimates_some_events_method0_cannot(result, method0_result):
+    # The "a better baseline rescues some of these" contrast (spec 3.6): comparable
+    # stores have during-week velocity where a series-start test store has no pre-period,
+    # so Method 1 estimates events Method 0 must exclude. The specific ids move with the
+    # generation; a non-empty rescue set is the invariant.
     m1 = result.events.set_index("promo_id")
     m0 = method0_result.events.set_index("promo_id")
-    assert not m0.loc["PRE-0054", "estimable"]
-    assert m1.loc["PRE-0054", "estimable"]
+    rescued = [p for p in m1.index if m1.loc[p, "estimable"] and not m0.loc[p, "estimable"]]
+    assert len(rescued) > 0
 
 
 def test_the_two_methods_exclude_for_different_reasons(result, method0_result):

@@ -1,0 +1,5 @@
+# Option B (DECISIONS 2026-08-27): only ~150 event pages are prerendered. A direct hit
+# or hard refresh on any other /event/<id> has no static file, so serve the SPA shell
+# (200.html) with a 200 and let the client render it from the event's fetched slice.
+# Prerendered event pages are real static files and take precedence over this rule.
+/event/* /200.html 200

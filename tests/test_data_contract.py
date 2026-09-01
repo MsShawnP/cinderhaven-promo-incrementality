@@ -19,7 +19,7 @@ import pytest
 # the dependency, not an output of this repo's code, so a golden value is the
 # point. A change here means the upstream data changed under a pinned SHA,
 # which should be impossible.
-EXPECTED_EVENTS = 131
+EXPECTED_EVENTS = 5897
 EXPECTED_SCAN_ROWS = 1_340_462
 OBSERVED_COLUMNS = [
     "sku",
@@ -40,7 +40,7 @@ def loaded():
 
 
 def test_package_is_the_pinned_version(loaded):
-    assert pr.__version__ == "0.4.0"
+    assert pr.__version__ == "0.6.1"
 
 
 def test_event_count_matches_the_contract(loaded):

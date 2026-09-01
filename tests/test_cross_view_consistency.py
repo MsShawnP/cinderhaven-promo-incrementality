@@ -17,8 +17,6 @@ decimal, so 0.5500704 rendered as 0.55× on the Scorecard and 0.60× in anatomy.
 For every event × method × shared stat: anatomy value ≡ scorecard value, exact.
 """
 
-import json
-
 import pytest
 
 from incrementality import build_anatomy, build_scorecard
@@ -30,17 +28,16 @@ SHARED_EVENT_FIELD = "accrued_cost_cents"
 
 
 @pytest.fixture(scope="module")
-def scorecard(tmp_path_factory):
-    path = build_scorecard.build(tmp_path_factory.mktemp("sc") / "scorecard.json")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return {e["promo_id"]: e for e in payload["events"]}
+def scorecard():
+    # Full per-event records. Option B split the scorecard artifact (summary imported,
+    # events fetched), so read the records from compute() — the source both writers use.
+    return {e["promo_id"]: e for e in build_scorecard.compute()["events"]}
 
 
 @pytest.fixture(scope="module")
-def anatomy(tmp_path_factory):
-    path = build_anatomy.build(tmp_path_factory.mktemp("an") / "anatomy.json")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return {e["promo_id"]: e for e in payload["events"]}
+def anatomy():
+    # Anatomy is now per-event slices; compute() is the source for the full record set.
+    return {e["promo_id"]: e for e in build_anatomy.compute()["events"]}
 
 
 def _shared_method_stats(scorecard, anatomy):

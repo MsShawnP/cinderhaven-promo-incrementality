@@ -1,17 +1,20 @@
-// Deep-linkable per-event anatomy. Prerendered for all 131 events via entries();
-// the anatomy artifact is read at build time and sliced to this event.
+// Deep-linkable per-event anatomy. Option B (DECISIONS 2026-08-27): only the ~150
+// events in the prerender manifest are baked to HTML; any other event renders
+// client-side from the adapter-static fallback. Either way, load() fetches only this
+// event's slice, so the ~5,900-event artifact never ships whole to the browser.
 import { error } from '@sveltejs/kit';
 
-import anatomy from '$lib/data/anatomy.json';
+import manifest from '$lib/data/anatomy-manifest.json';
 
 export const prerender = true;
 
 export function entries() {
-	return anatomy.events.map((e) => ({ promo_id: e.promo_id }));
+	return manifest.prerender.map((promo_id) => ({ promo_id }));
 }
 
-export function load({ params }) {
-	const event = anatomy.events.find((e) => e.promo_id === params.promo_id);
-	if (!event) throw error(404, `Unknown event ${params.promo_id}`);
+export async function load({ params, fetch }) {
+	const res = await fetch(`/anatomy/${params.promo_id}.json`);
+	if (!res.ok) throw error(404, `Unknown event ${params.promo_id}`);
+	const { event } = await res.json();
 	return { event };
 }

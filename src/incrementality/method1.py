@@ -23,6 +23,7 @@ Blind: consumes only ``pr.load()``, ``pr.economics()`` and ``pr.store_card()``. 
 """
 
 import cinderhaven_promo_response as pr
+import numpy as np
 import pandas as pd
 
 from incrementality.common import (
@@ -69,8 +70,16 @@ def _store_attributes(store_card):
     )
 
 
-def _comparable_rows(events, delta, store_card):
-    """Estimable promoted rows with a per-week comparable-median ``baseline_units``.
+def _comparable_rows_loop(events, delta, store_card):
+    """Reference (oracle) implementation — the straightforward per-event/per-store loop.
+
+    Kept as the correctness oracle for the vectorized path: they must produce
+    bit-identical output, asserted by tests/test_method1_equivalence.py. Not used in
+    production scoring (``estimate`` calls the vectorized path) because it is
+    O(events x stores) and takes ~9.5 min on the v0.6.1 event universe (~5,900
+    events). See DECISIONS.md (v0.6.1 re-run).
+
+    Estimable promoted rows with a per-week comparable-median ``baseline_units``.
 
     Matches each store-event by the §3.3 two-stratum hierarchy — the tightest
     stratum that clears ``MIN_POOL``: full (region + format class + volume band),
@@ -185,17 +194,193 @@ def _comparable_rows(events, delta, store_card):
     )
 
 
+def _comparable_rows_vectorized(events, delta, store_card):
+    """Bulk-pandas equivalent of :func:`_comparable_rows_loop` — no Python loop.
+
+    Same semantics exactly (proven bit-identical by tests/test_method1_equivalence.py,
+    with the loop as the reference oracle). The per-store-event comparable pool, the
+    §3.3 hierarchical stratum choice, and the per-week median baseline are computed as
+    a handful of vectorized joins/group-bys instead of a per-event/per-store loop.
+    Adopted for the v0.6.1 event universe (~5,900 events), where the loop is ~9.5 min.
+
+    Simplification that makes the vectorization exact and cheap: the loop's ``base``
+    filters ``c != test_store`` and ``c not in promoted_stores`` are redundant — a
+    store running any promo in the event weeks is already absent from ``clean`` (it
+    has ``has_promo``), and every promoted store, the test store included, runs this
+    event's promo in those weeks. So ``base`` is exactly the clean same-region controls.
+    """
+    region, fmt = _store_attributes(store_card)
+    window = PRE_PERIOD_WEEKS * pd.Timedelta(weeks=1)
+
+    # Event weeks: one row per (promo_id, sku, week_ending) Saturday in [start, end].
+    ev = events[["promo_id", "sku", "start_week", "end_week"]].copy()
+    ev["week_ending"] = [
+        pd.date_range(s, e, freq="7D") for s, e in zip(ev["start_week"], ev["end_week"])
+    ]
+    event_weeks = ev[["promo_id", "sku", "week_ending"]].explode("week_ending", ignore_index=True)
+    event_weeks["week_ending"] = pd.to_datetime(event_weeks["week_ending"])
+
+    d = delta[["sku", "store_id", "week_ending", "observed_units", "promo_id", "complied"]]
+
+    # "During" rows: sku rows inside each event's weeks. A store running ANY promo in
+    # those weeks (this event's or another's) is not a clean control.
+    during = event_weeks.merge(
+        d.rename(columns={"promo_id": "row_promo_id"}), on=["sku", "week_ending"], how="inner"
+    )
+    has_promo = (
+        during.assign(_hp=during["row_promo_id"].notna())
+        .groupby(["promo_id", "store_id"])["_hp"]
+        .transform("any")
+    )
+    clean = during.loc[~has_promo, ["promo_id", "store_id", "week_ending", "observed_units"]]
+
+    # Promoted store-week rows are the candidate output rows: every row whose promo_id
+    # is set is a (test_store, week) for its own event.
+    promo_rows = d.loc[
+        d["promo_id"].notna(),
+        ["promo_id", "store_id", "sku", "week_ending", "observed_units", "complied"],
+    ]
+
+    # Per (event, store) pre-period velocity over non-promo weeks in [start - 8wk, start).
+    hist = delta.loc[delta["promo_id"].isna(), ["sku", "store_id", "week_ending", "observed_units"]]
+    cand = events[["promo_id", "sku", "start_week"]].merge(hist, on="sku", how="left")
+    in_window = (cand["week_ending"] < cand["start_week"]) & (
+        cand["week_ending"] >= cand["start_week"] - window
+    )
+    velo = (
+        cand[in_window]
+        .groupby(["promo_id", "store_id"])["observed_units"]
+        .agg(velocity="mean", pre_weeks="size")
+        .reset_index()
+    )
+
+    # Store identity (region, format class) as a frame.
+    sid = pd.DataFrame({"store_id": list(region.keys())})
+    sid["region"] = sid["store_id"].map(region)
+    sid["format_class"] = sid["store_id"].map(fmt)
+
+    # Test stores: distinct (event, promoted store) with attributes + own velocity.
+    test = promo_rows[["promo_id", "store_id"]].drop_duplicates()
+    test = test.merge(
+        sid.rename(columns={"region": "region_t", "format_class": "format_t"}),
+        on="store_id",
+        how="left",
+    )
+    test = test.merge(
+        velo.rename(columns={"velocity": "vel_t", "pre_weeks": "pw_t"}),
+        on=["promo_id", "store_id"],
+        how="left",
+    )
+    test["pw_t"] = test["pw_t"].fillna(0)
+    test["has_volume"] = test["pw_t"] >= MIN_PRE_PERIOD_WEEKS
+    # The loop skips a test store with no region/format (never happens with the current
+    # store master, but kept exact).
+    test = test[test["region_t"].notna() & test["format_t"].notna()]
+    test = test.rename(columns={"store_id": "test_store"})
+
+    # Control candidates: distinct (event, clean control) with attributes + velocity.
+    ctrl = clean[["promo_id", "store_id"]].drop_duplicates()
+    ctrl = ctrl.merge(
+        sid.rename(columns={"region": "region_c", "format_class": "format_c"}),
+        on="store_id",
+        how="left",
+    )
+    ctrl = ctrl.merge(
+        velo.rename(columns={"velocity": "vel_c", "pre_weeks": "pw_c"}),
+        on=["promo_id", "store_id"],
+        how="left",
+    )
+    ctrl["pw_c"] = ctrl["pw_c"].fillna(0)
+    ctrl = ctrl.rename(columns={"store_id": "control"})
+
+    # Candidate (test, control) pairs: same event, same region. base = clean same-region
+    # controls (test/promoted stores already absent from clean, per the docstring).
+    pairs = test.merge(
+        ctrl, left_on=["promo_id", "region_t"], right_on=["promo_id", "region_c"], how="inner"
+    )
+
+    # Eligibility (spec §3.3/§3.6). With a usable test pre-period, a control needs its
+    # own usable pre-period and a velocity inside the band [v_t / f, v_t * f]; without
+    # one, no band applies and every same-region clean control counts.
+    band_ok = (
+        (pairs["pw_c"] >= MIN_PRE_PERIOD_WEEKS)
+        & (pairs["vel_c"] >= pairs["vel_t"] / VOLUME_BAND_FACTOR)
+        & (pairs["vel_c"] <= pairs["vel_t"] * VOLUME_BAND_FACTOR)
+    )
+    pairs["region_eligible"] = pairs["has_volume"].to_numpy() & band_ok.to_numpy() | (
+        ~pairs["has_volume"].to_numpy()
+    )
+    pairs["full_eligible"] = pairs["region_eligible"] & (pairs["format_c"] == pairs["format_t"])
+
+    # Tightest stratum clearing MIN_POOL, per (event, test store): full (region + format
+    # + band), else relaxed (region + band), else the store-event drops out.
+    sizes = (
+        pairs.groupby(["promo_id", "test_store"])
+        .agg(full_n=("full_eligible", "sum"), region_n=("region_eligible", "sum"))
+        .reset_index()
+    )
+    sizes["use_full"] = sizes["full_n"] >= MIN_POOL
+    sizes["use_region"] = (~sizes["use_full"]) & (sizes["region_n"] >= MIN_POOL)
+    sizes["relaxed"] = sizes["use_region"]
+    chosen_se = sizes.loc[
+        sizes["use_full"] | sizes["use_region"], ["promo_id", "test_store", "use_full", "relaxed"]
+    ]
+
+    # Keep the eligible controls of the chosen stratum for each surviving store-event.
+    pairs = pairs.merge(chosen_se, on=["promo_id", "test_store"], how="inner")
+    keep = np.where(pairs["use_full"], pairs["full_eligible"], pairs["region_eligible"])
+    chosen = pairs.loc[keep, ["promo_id", "test_store", "control"]]
+
+    # Per-week baseline = median of the chosen controls' clean observed_units that week.
+    control_weeks = chosen.merge(
+        clean.rename(columns={"store_id": "control", "observed_units": "control_units"}),
+        on=["promo_id", "control"],
+        how="inner",
+    )
+    baseline = (
+        control_weeks.groupby(["promo_id", "test_store", "week_ending"])["control_units"]
+        .median()
+        .reset_index(name="baseline_units")
+    )
+
+    # Attach the baseline to the test store's own promoted rows. The inner join drops a
+    # week with no comparable control (the loop's ``if baseline is None: continue``).
+    out = promo_rows.merge(
+        baseline.rename(columns={"test_store": "store_id"}),
+        on=["promo_id", "store_id", "week_ending"],
+        how="inner",
+    )
+    out = out.merge(
+        chosen_se[["promo_id", "test_store", "relaxed"]].rename(columns={"test_store": "store_id"}),
+        on=["promo_id", "store_id"],
+        how="left",
+    )
+    return out[
+        [
+            "promo_id",
+            "store_id",
+            "sku",
+            "week_ending",
+            "observed_units",
+            "baseline_units",
+            "complied",
+            "relaxed",
+        ]
+    ].reset_index(drop=True)
+
+
 def estimate():
-    """Run Method 1 over all 131 events. Returns an :class:`EstimatorResult`.
+    """Run Method 1 over the full event universe. Returns an :class:`EstimatorResult`.
 
     Blind by construction: only ``pr.load()``, ``pr.economics()`` and
-    ``pr.store_card()`` are read.
+    ``pr.store_card()`` are read. Uses the vectorized comparable-rows path; the loop
+    (:func:`_comparable_rows_loop`) is retained only as its equivalence oracle.
     """
     events, delta = pr.load()
     economics = pr.economics()
     store_card = pr.store_card()
 
-    rows = _comparable_rows(events, delta, store_card)
+    rows = _comparable_rows_vectorized(events, delta, store_card)
 
     # Per-event relaxed share (observed regime dimension, §3.3): of the event's
     # estimable store-events, the fraction matched at the relaxed stratum (format

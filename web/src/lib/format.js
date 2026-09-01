@@ -15,3 +15,7 @@ export const roiText = (roi) => (roi === null ? '—' : `${roi.toFixed(2)}×`);
 
 /** Volume share (0–1+) → "62%", or "—" when undefined (no complied volume). */
 export const pct = (share) => (share === null ? '—' : `${Math.round(share * 100)}%`);
+
+/** Whole count → "5,735". The v0.6.1 event universe is five digits; commas keep the
+ *  verdict and the headline readable. */
+export const count = (n) => (n === null ? '—' : n.toLocaleString('en-US'));

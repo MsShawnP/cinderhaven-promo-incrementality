@@ -1,11 +1,13 @@
-"""ROI Scorecard artifact (scorecard/v2) — schema, NA->null, determinism.
+"""ROI Scorecard artifact (scorecard/v3) — split schema, NA->null, determinism.
 
 The artifact is the seam between the Python pipeline and the front end (PLAN.md
-names it the highest-risk seam). v2 carries both methods: a portfolio header per
-method and one record per event co-locating both methods' estimates, so the
-Scorecard's toggle and the Method 0 -> Method 1 delta are a lookup. These tests pin
-its shape, assert it carries only declared estimation fields (no intermediate
-volumes, no truth), and that missing values become JSON null, not NaN.
+names it the highest-risk seam). Option B (DECISIONS 2026-08-27) splits it: the
+imported scorecard.json carries the summary (a portfolio header per method, the
+precomputed chart tiers, filter options, cross-estimable counts) plus a first page of
+the ranked list; the full per-event array is written separately and fetched on demand.
+These tests pin the summary shape from the file and the per-event records from
+compute(), assert only declared estimation fields (no intermediate volumes, no truth),
+and that missing values become JSON null, not NaN.
 """
 
 import json
@@ -49,11 +51,15 @@ METHOD0_KEYS = {
 }
 METHOD1_KEYS = METHOD0_KEYS | {"match_relaxed_share"}
 
+SUMMARY_KEYS = {"tiers", "filter_options", "cross_estimable", "first_page_size"}
 
-# Building runs both estimators (~14s), so build once for the module and reuse.
+
+# Building runs both estimators, so build once for the module and reuse. Both the
+# summary and the full-events file go to tmp so the test never touches web/static.
 @pytest.fixture(scope="module")
 def artifact_path(tmp_path_factory):
-    return build_scorecard.build(tmp_path_factory.mktemp("scorecard") / "scorecard.json")
+    out = tmp_path_factory.mktemp("scorecard")
+    return build_scorecard.build(out / "scorecard.json", out / "scorecard-events.json")
 
 
 @pytest.fixture(scope="module")
@@ -61,10 +67,28 @@ def payload(artifact_path):
     return json.loads(artifact_path.read_text(encoding="utf-8"))
 
 
+@pytest.fixture(scope="module")
+def records():
+    # The full per-event records (fetched on demand at runtime); compute() is the source.
+    return build_scorecard.compute()["events"]
+
+
 def test_artifact_has_the_declared_schema_and_top_level_keys(payload):
-    assert payload["schema"] == "scorecard/v2"
-    assert set(payload) == {"schema", "package_version", "portfolios", "events"}
+    assert payload["schema"] == "scorecard/v3"
+    assert set(payload) == {"schema", "package_version", "portfolios", "summary", "first_page"}
     assert payload["package_version"] == pr.__version__
+
+
+def test_summary_carries_the_precomputed_front_door_fields(payload):
+    summary = payload["summary"]
+    assert set(summary) == SUMMARY_KEYS
+    for method in ("method0", "method1"):
+        tiers = summary["tiers"][method]
+        assert len(tiers) == 4  # [lost, 1-2x, 2-4x, 4x+]
+        assert all(isinstance(n, int) for n in tiers)
+    assert set(summary["filter_options"]) == {"retailer", "line", "type", "status"}
+    assert set(summary["cross_estimable"]) == {"method0", "method1"}
+    assert isinstance(summary["first_page_size"], int)
 
 
 def test_both_method_portfolios_carry_the_cfo_numbers(payload):
@@ -72,25 +96,36 @@ def test_both_method_portfolios_carry_the_cfo_numbers(payload):
     assert set(portfolios) == {"method0", "method1"}
     for key, portfolio in portfolios.items():
         assert set(portfolio) == PORTFOLIO_KEYS, key
-        assert portfolio["n_events"] == 131
-        assert portfolio["n_estimable"] == 129  # both methods, this generation
+        assert portfolio["n_events"] == 5897
+    # N_estimable is pinned per method: the labelled denominator the tool refuses to
+    # shrink silently. If it moves, the sufficiency logic changed.
+    assert portfolios["method0"]["n_estimable"] == 5735
+    assert portfolios["method1"]["n_estimable"] == 5122
     assert portfolios["method0"]["method_label"].startswith("Method 0")
     assert portfolios["method1"]["method_label"].startswith("Method 1")
 
 
-def test_every_event_co_locates_both_methods_with_declared_fields(payload):
+def test_first_page_is_a_bounded_declared_subset(payload, records):
+    first_page = payload["first_page"]
+    ids = {r["promo_id"] for r in records}
+    assert 0 < len(first_page) < len(records)
+    for record in first_page:
+        assert set(record) == SHARED_EVENT_KEYS
+        assert record["promo_id"] in ids
+
+
+def test_every_event_co_locates_both_methods_with_declared_fields(records):
     # No intermediate columns and no truth leak out — only declared fields, and
     # method1 alone carries the relaxation regime dimension.
-    events = payload["events"]
-    assert len(events) == 131
-    for record in events:
+    assert len(records) == 5897
+    for record in records:
         assert set(record) == SHARED_EVENT_KEYS
         assert set(record["method0"]) == METHOD0_KEYS
         assert set(record["method1"]) == METHOD1_KEYS
 
 
-def test_money_fields_are_integer_cents_or_null(payload):
-    for record in payload["events"]:
+def test_money_fields_are_integer_cents_or_null(records):
+    for record in records:
         assert isinstance(record["accrued_cost_cents"], int)
         for method in ("method0", "method1"):
             net = record[method]["net_margin_cents"]
@@ -98,20 +133,20 @@ def test_money_fields_are_integer_cents_or_null(payload):
             assert isinstance(record[method]["n_stores_estimable"], int)
 
 
-def test_a_method_that_cannot_estimate_an_event_serializes_nulls(payload):
-    events = {r["promo_id"]: r for r in payload["events"]}
-    # PRE-0097: estimable under Method 0, not under Method 1 (insufficient pool).
-    m1 = events["PRE-0097"]["method1"]
-    assert m1["estimable"] is False
+def test_a_method_that_cannot_estimate_an_event_serializes_nulls(records):
+    # Some event is estimable under Method 0 but not Method 1 (insufficient pool). The
+    # specific id moves with the generation; the null serialization is the invariant.
+    only_m0 = [r for r in records if r["method0"]["estimable"] and not r["method1"]["estimable"]]
+    assert only_m0, "no event estimable under Method 0 but not Method 1"
+    m1 = only_m0[0]["method1"]
     assert m1["exclusion_reason"] == "insufficient_comparable_pool"
     assert m1["net_margin_cents"] is None
     assert m1["roi"] is None
     assert m1["match_relaxed_share"] is None
-    assert events["PRE-0097"]["method0"]["estimable"] is True
 
 
-def test_relaxed_share_is_present_and_bounded_where_method1_estimates(payload):
-    for record in payload["events"]:
+def test_relaxed_share_is_present_and_bounded_where_method1_estimates(records):
+    for record in records:
         share = record["method1"]["match_relaxed_share"]
         if record["method1"]["estimable"]:
             assert share is not None and 0.0 <= share <= 1.0
@@ -131,7 +166,7 @@ def _reject(token):
 
 
 def test_two_builds_are_byte_identical(artifact_path, tmp_path):
-    again = build_scorecard.build(tmp_path / "again.json")
+    again = build_scorecard.build(tmp_path / "again.json", tmp_path / "again-events.json")
     assert artifact_path.read_bytes() == again.read_bytes()
 
 

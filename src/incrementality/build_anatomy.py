@@ -24,10 +24,21 @@ import pandas as pd
 
 from incrementality import method0, method1
 
-SCHEMA = "anatomy/v1"
+SCHEMA = "anatomy/v2"  # v2: per-event slices + manifest (Option B), was monolithic v1
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUT = _REPO_ROOT / "web" / "src" / "lib" / "data" / "anatomy.json"
+# Per-event slices served statically at /anatomy/<promo_id>.json (Option B, DECISIONS
+# 2026-08-27): the event page fetches only its own slice, so the ~5,900-event artifact
+# never ships whole to the browser. Gitignored and regenerated, like every artifact.
+SLICES_DIR = _REPO_ROOT / "web" / "static" / "anatomy"
+# Manifest the event route reads for entries() — which events to statically prerender.
+MANIFEST_OUT = _REPO_ROOT / "web" / "src" / "lib" / "data" / "anatomy-manifest.json"
+
+# Prerender set: every story event (deep-linked publicly) plus the events most worth a
+# crawlable page — largest by |net margin| under either method and by trade spend.
+# ~150–200 pages, not ~5,900 (Option B).
+PRERENDER_BY_MARGIN = 120
+PRERENDER_BY_SPEND = 60
 
 
 def _str(v):
@@ -150,16 +161,62 @@ def serialize(payload):
     return json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n"
 
 
-def build(out_path=DEFAULT_OUT):
-    out_path = Path(out_path)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_bytes(serialize(compute()).encode("utf-8"))
-    return out_path
+def _prerender_ids(records):
+    """promo_ids to statically prerender: story events + top-|net margin| + top-spend."""
+
+    def net(rec, method):
+        value = rec[method]["net_margin_cents"]
+        return abs(value) if value is not None else -1
+
+    def spend(rec):
+        # accrued cost is method-independent; the anatomy record carries it inside each
+        # method block, so read it off method0.
+        value = rec["method0"]["accrued_cost_cents"]
+        return value if value is not None else -1
+
+    ids = {r["promo_id"] for r in records if r["story_tag"] is not None}
+    by_margin = sorted(
+        records, key=lambda r: max(net(r, "method0"), net(r, "method1")), reverse=True
+    )
+    ids.update(r["promo_id"] for r in by_margin[:PRERENDER_BY_MARGIN])
+    by_spend = sorted(records, key=spend, reverse=True)
+    ids.update(r["promo_id"] for r in by_spend[:PRERENDER_BY_SPEND])
+    return sorted(ids)
+
+
+def build(slices_dir=SLICES_DIR, manifest_out=MANIFEST_OUT):
+    """Write one JSON slice per event plus the prerender manifest. Returns the manifest path."""
+    payload = compute()
+    records = payload["events"]
+    version = payload["package_version"]
+
+    slices_dir = Path(slices_dir)
+    slices_dir.mkdir(parents=True, exist_ok=True)
+    # Clear stale slices first: a shrunk universe must never leave orphaned event pages.
+    for stale in slices_dir.glob("*.json"):
+        stale.unlink()
+    for rec in records:
+        slice_payload = {"schema": SCHEMA, "package_version": version, "event": rec}
+        (slices_dir / f"{rec['promo_id']}.json").write_bytes(
+            serialize(slice_payload).encode("utf-8")
+        )
+
+    manifest = {
+        "schema": SCHEMA,
+        "package_version": version,
+        "prerender": _prerender_ids(records),
+        "count": len(records),
+    }
+    manifest_out = Path(manifest_out)
+    manifest_out.parent.mkdir(parents=True, exist_ok=True)
+    manifest_out.write_bytes(serialize(manifest).encode("utf-8"))
+    return manifest_out
 
 
 def main():
     path = build()
-    print(f"wrote {path}")
+    n = len(list(SLICES_DIR.glob("*.json")))
+    print(f"wrote {n} anatomy slices + {path}")
 
 
 if __name__ == "__main__":

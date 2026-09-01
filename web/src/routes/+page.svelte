@@ -11,10 +11,32 @@
 	import { replaceState } from '$app/navigation';
 
 	import scorecard from '$lib/data/scorecard.json';
-	import { dollars, roiText, pct } from '$lib/format.js';
-	import { FILTER_KEYS, parseFilters, matches, anyActive, optionsFor } from '$lib/filters.js';
+	import { dollars, roiText, pct, count } from '$lib/format.js';
+	import { FILTER_KEYS, parseFilters, matches, anyActive } from '$lib/filters.js';
 
-	const { portfolios, events } = scorecard;
+	// Option B (DECISIONS 2026-08-27): the imported artifact carries the summary
+	// (portfolios, precomputed chart tiers, filter options, cross-estimable counts) and
+	// only the first page of the ranked list. The full ~5,900-event array is fetched
+	// once, on the first filter touch or "show all", then cached for the session.
+	const { portfolios, summary, first_page } = scorecard;
+
+	let events = $state(first_page);
+	let fullLoaded = $state(false);
+	let loadingFull = $state(false);
+
+	async function ensureFullEvents() {
+		if (fullLoaded || loadingFull) return;
+		loadingFull = true;
+		try {
+			const res = await fetch('/scorecard-events.json');
+			if (res.ok) {
+				events = (await res.json()).events;
+				fullLoaded = true;
+			}
+		} finally {
+			loadingFull = false;
+		}
+	}
 
 	// Active baseline method — Method 0 leads (naive, shown first); the toggle switches
 	// to Method 1 and everything follows. Declared early: the URL helpers below read it.
@@ -28,7 +50,7 @@
 	// string (the same static file serves every query), so filters default to empty in
 	// the prerendered HTML and are applied from the URL after hydration.
 	let filters = $state({ retailer: '', line: '', type: '', status: '' });
-	const filterOptions = optionsFor(events);
+	const filterOptions = summary.filter_options;
 	const FILTER_LABELS = { retailer: 'Retailer', line: 'Product line', type: 'Promo type', status: 'Plan status' };
 	const retailerLabel = (v) => v.replace('RET-', '');
 
@@ -48,12 +70,15 @@
 		filters = parseFilters(sp);
 		const m = sp.get('method');
 		if (m === 'method0' || m === 'method1') selected = m;
+		// A deep-linked filter must narrow the full set, not just the first page.
+		if (anyActive(filters)) ensureFullEvents();
 	});
 
 	function syncUrl() {
 		replaceState(window.location.pathname + currentQuery(), {});
 	}
 	function setFilter(key, value) {
+		ensureFullEvents();
 		filters = { ...filters, [key]: value };
 		syncUrl();
 	}
@@ -77,18 +102,16 @@
 	// Derived, never written down: the two methods exclude different events
 	// (Method 1 gains one and loses another), so a hardcoded "some" or "one"
 	// goes stale the moment either estimator's coverage shifts.
-	const crossEstimable = $derived(
-		events.filter((e) => !e[selected].estimable && e[otherKey].estimable).length
-	);
+	const crossEstimable = $derived(summary.cross_estimable[selected]);
 	const active = $derived(portfolios[selected]);
 	const other = $derived(portfolios[otherKey]);
 
 	const ledeText = $derived(
 		selected === 'method0'
 			? 'Method 0 is the most forgiving measure available — each promotion judged against the eight weeks before it. Even so, ' +
-					active.n_lost_money +
+					count(active.n_lost_money) +
 					' of ' +
-					active.n_estimable +
+					count(active.n_estimable) +
 					' didn’t pay back. The portfolio clears ' +
 					roiText(active.portfolio_roi) +
 					' on the dollar, and the return is uneven — most of the net margin comes from a small number of events.'
@@ -97,26 +120,14 @@
 					' on the dollar. Toggle to Method 0 to see how much the naive pre-period read flatters the same promotions.'
 	);
 
-	// Distribution for the header chart: the estimable events grouped by return on
-	// trade spend, for the active method. A display grouping of the artifact's own
-	// per-event roi / lost_money — not a new portfolio figure (DECISIONS.md).
-	function tiersFor(method) {
-		const est = events.filter((e) => e[method].estimable);
-		const made = est.filter((e) => !e[method].lost_money);
-		const inRange = (e, lo, hi) => e[method].roi !== null && e[method].roi >= lo && e[method].roi < hi;
-		return [
-			{ label: 'Lost money', n: est.filter((e) => e[method].lost_money).length, color: 'var(--ll-tokyo-40)' },
-			{ label: 'Returned 1–2×', n: made.filter((e) => inRange(e, 1, 2)).length, color: 'var(--ll-hk-70)' },
-			{ label: 'Returned 2–4×', n: made.filter((e) => inRange(e, 2, 4)).length, color: 'var(--ll-hk-55)' },
-			{
-				label: 'Returned 4×+',
-				// roi >= 4, plus any zero-cost winner (roi null but made money).
-				n: made.filter((e) => e[method].roi === null || e[method].roi >= 4).length,
-				color: 'var(--ll-hk-20)'
-			}
-		];
-	}
-	const tiers = $derived(tiersFor(selected));
+	// Chart tiers: counts precomputed in the artifact (Option B); labels + colors here.
+	const TIER_META = [
+		{ label: 'Lost money', color: 'var(--ll-tokyo-40)' },
+		{ label: 'Returned 1–2×', color: 'var(--ll-hk-70)' },
+		{ label: 'Returned 2–4×', color: 'var(--ll-hk-55)' },
+		{ label: 'Returned 4×+', color: 'var(--ll-hk-20)' }
+	];
+	const tiers = $derived(summary.tiers[selected].map((n, i) => ({ ...TIER_META[i], n })));
 	const maxTier = $derived(Math.max(...tiers.map((t) => t.n)));
 
 	// Ranked event list, for the active method: estimable events by net margin; the
@@ -129,14 +140,17 @@
 		pantry_trap: 'Pantry trap',
 		clean_winner: 'Clean winner'
 	};
-	const ranked = $derived(
+	const rankedAll = $derived(
 		events
 			.filter((e) => e[selected].estimable && matches(e, filters))
 			.slice()
 			.sort((a, b) => b[selected].net_margin_cents - a[selected].net_margin_cents)
 	);
+	// Before the full fetch, the union first_page is capped to the true top-N under the
+	// active method, so the list never shows a mid-rank event out of order.
+	const ranked = $derived(fullLoaded ? rankedAll : rankedAll.slice(0, summary.first_page_size));
 	const unranked = $derived(events.filter((e) => !e[selected].estimable && matches(e, filters)));
-	const totalEstimable = $derived(events.filter((e) => e[selected].estimable).length);
+	const totalEstimable = $derived(active.n_estimable);
 	const filtersActive = $derived(anyActive(filters));
 
 	// Table annotations, for the active method. Net-dip (spec 2.4): a giveaway share
@@ -183,7 +197,7 @@
 		</div>
 
 		<div class="ll-column">
-			<h1 class="verdict">{active.n_lost_money} of {active.n_estimable} promotions lost money.</h1>
+			<h1 class="verdict">{count(active.n_lost_money)} of {count(active.n_estimable)} promotions lost money.</h1>
 
 			<p class="lede">{ledeText}</p>
 		</div>
@@ -224,16 +238,16 @@
 
 		<p class="scope-note ll-measure">
 			Trade spend here is the scan-promoted event slice of the trade book — accrued cost on promo
-			events only, not all-in trade spend. It excludes slotting, off-invoice allowances and
-			deductions, and it covers a dataset where roughly one percent of volume runs on promotion,
-			so the portfolio total is small by construction. Read the per-event economics, not the
-			portfolio dollars.
+			events only. It excludes slotting, off-invoice allowances and deductions. About a third of
+			volume runs on promotion, so the portfolio totals hold up: trade spend is about 2.3% of total
+			revenue, and about 8% of promoted revenue — the event-level promotion allowance, not the
+			all-in trade figure that folds in slotting and deductions this dataset does not carry.
 		</p>
 
 		<!-- One chart: where the estimable promotions landed under the active method. -->
 		<figure class="chart">
 			<figcaption>
-				<h2>Where the {active.n_estimable} estimable promotions landed</h2>
+				<h2>Where the {count(active.n_estimable)} estimable promotions landed</h2>
 				<p class="chart-sub">Grouped by return on trade spend · {METHOD_TAG[selected]}</p>
 			</figcaption>
 
@@ -250,7 +264,7 @@
 			</div>
 
 			<p class="footnote">
-				{active.n_events - active.n_estimable} of {active.n_events} events not estimable by
+				{count(active.n_events - active.n_estimable)} of {count(active.n_events)} events not estimable by
 				{METHOD_SHORT[selected]}, shown unranked below and excluded from these totals. Method 0
 				(naive pre-period) and Method 1 (comparable-store) are the two baselines on this site.
 				Neither is the verdict — toggle to compare.
@@ -271,9 +285,17 @@
 		<section class="ranked">
 			<h2 class="ranked-title">Every promotion, ranked by net margin</h2>
 			<p class="ranked-sub">
-				{active.n_estimable} estimable events under {METHOD_SHORT[selected]}. Rows below
+				{count(active.n_estimable)} estimable events under {METHOD_SHORT[selected]}. Rows below
 				break-even — margin under spend — are marked in the ROI column.
 			</p>
+			{#if !fullLoaded}
+				<p class="page-note">
+					Showing the top {ranked.length} by net margin.
+					<button class="show-all" onclick={ensureFullEvents} disabled={loadingFull}>
+						{loadingFull ? 'Loading…' : `Show all ${count(active.n_estimable)} estimable events`}
+					</button>
+				</p>
+			{/if}
 
 			<!-- Cross-view filters (URL state). Narrow the list; the verdict stays whole. -->
 			<div class="filters" role="group" aria-label="Filter promotions">
@@ -294,7 +316,7 @@
 			</div>
 			{#if filtersActive}
 				<p class="filter-count">
-					Showing {ranked.length} of {totalEstimable} estimable{unranked.length
+					Showing {count(ranked.length)} of {count(totalEstimable)} estimable{unranked.length
 						? ` · ${unranked.length} unranked`
 						: ''}.
 				</p>
@@ -883,5 +905,25 @@
 		.toggle-btn {
 			flex: 1;
 		}
+	}
+	.page-note {
+		font-size: 14px;
+		color: var(--ll-london-35);
+		margin: 0 0 var(--ll-space-base);
+	}
+	.show-all {
+		font-family: var(--ll-sans);
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--ll-chicago-20);
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		text-decoration: underline;
+	}
+	.show-all:disabled {
+		color: var(--ll-london-40);
+		cursor: default;
 	}
 </style>

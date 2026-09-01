@@ -51,20 +51,23 @@ def test_net_margin_and_cost_are_integer_cents(result):
 
 def test_all_131_events_present_with_129_estimable(result):
     ev = result.events
-    assert len(ev) == 131
-    assert result.portfolio["n_events"] == 131
+    assert len(ev) == 5897
+    assert result.portfolio["n_events"] == 5897
     # N_estimable is pinned: it is the labelled denominator the tool refuses to
     # shrink silently. If it moves, the pre-period sufficiency logic changed.
-    assert result.portfolio["n_estimable"] == 129
-    assert int(ev["estimable"].sum()) == 129
+    assert result.portfolio["n_estimable"] == 5735
+    assert int(ev["estimable"].sum()) == 5735
 
 
-def test_the_two_non_estimable_events_are_the_series_start_pair(result):
+def test_non_estimable_events_all_carry_the_pre_period_reason(result):
     ev = result.events
-    non_estimable = set(ev.loc[~ev["estimable"], "promo_id"])
-    # PRE-0048 and PRE-0054 both start 2023-01-28 — three weeks after the series
-    # begins, so no store has the four pre-period weeks Method 0 requires.
-    assert non_estimable == {"PRE-0048", "PRE-0054"}
+    non_estimable = ev[~ev["estimable"]]
+    # Method 0 excludes an event when no store has the four pre-period weeks it needs
+    # (series-start and sparse-authorization events). The specific set moves with the
+    # generation; the invariant is that every exclusion carries the reason, so the
+    # labelled denominator is never silently shrunk (spec 2.2).
+    assert len(non_estimable) > 0
+    assert (non_estimable["exclusion_reason"] == "insufficient_pre_period").all()
 
 
 def test_non_estimable_events_carry_no_fabricated_numbers(result):

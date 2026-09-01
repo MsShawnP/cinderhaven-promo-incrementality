@@ -95,7 +95,7 @@
 		},
 		pure_subsidy: {
 			title: 'Pure subsidy — design intent',
-			body: 'A promotion built so that a large share of the discounted volume needed no discount by design — trade dollars spent to move volume that was already moving. It is the profitable-but-wasteful exhibit: it clears its cost, and a vendor scorecard would call it a winner, while much of the spend bought nothing incremental. Return on trade spend alone hides that; giveaway share is what exposes it. Both figures above are what the selected method estimates.'
+			body: 'A promotion built so that a large share of the discounted volume needed no discount by design — trade dollars spent to move volume that was already moving. Its point is the gap between return on trade spend and incrementality: an event like this can clear its cost while much of the spend bought nothing incremental, and giveaway share is what exposes the gap that return alone hides. Whether it clears here is what the figures above show for the selected method.'
 		},
 		pantry_trap: {
 			title: 'Pantry trap — design intent',

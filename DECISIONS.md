@@ -393,7 +393,87 @@ custom composite charts, which is precisely the waterfall.
   (new relaxed-share field).
 - **Do not:** restore the flat format-as-hard-filter match. Do not tune `MIN_POOL`
   or the band against measured error. Do not drop the per-event relaxed share from
-  the artifact — it is the accuracy view's regime handle.
+  the artifact — ### 2026-08-27 — v0.6.1 re-pin: VOLUME_BAND_FACTOR frozen at 2 (its derivation target is unreachable in the density world). Logged before any truth is scored.
+
+- **Decision:** On the two-epoch re-pin to v0.6.1, hold `VOLUME_BAND_FACTOR = 2` frozen,
+  alongside the already-constant `MIN_POOL = 5`. Both are pre-truth constants: the doubling
+  band predates this generation and encodes nothing about its truth — exactly the property
+  pre-registration wants. This resolves the band question the v0.6.1 re-pin raised, recorded
+  **before any truth is scored on v0.6.1.**
+- **Why the derivation rule could not be re-run:** the original rule (r2, above) set the band
+  from the observed matched-pool distribution so the region+volume stratum clears `MIN_POOL`
+  for ~95% of store-events. On v0.6.1 that target is **structurally unreachable** — measured
+  on observed data, before truth:
+
+  | band factor | region+volume clears MIN_POOL |
+  | --- | --- |
+  | 2.0 (held) | 78.8% |
+  | 2.5 | 84.8% |
+  | 3.0 | 87.3% |
+  | 4.0 | 89.5% |
+
+  (171,846 store-events.) Clearance plateaus near ~90%: v0.6.1 puts ~25% of rows on promotion,
+  so over a 4-week event window most stores are "dirty" and excluded as controls, and ~10% of
+  store-events have no 5 clean same-region controls at any band width. **No factor reaches 95%.**
+- **Why freeze, not re-derive to a new target:** every achievable target (a knee, a lower
+  coverage number) is a value **chosen after seeing v0.6.1** — tuning a blind estimator's knob
+  post-repin, which pre-registration exists to forbid. Freezing the pre-truth doubling band is the
+  least-tuning choice; the 95% -> 78.8% clearance drop is a **measured consequence of the density
+  epoch, reported as a data fact, not a knob.**
+- **What the thinner pools mean, honestly:** more store-events fall to the relaxed stratum or to
+  `insufficient_comparable_pool` exclusion, and error is expected to be larger where the matched
+  pool is thin. That flows into the relaxed-share regime cut, the exclusion counts, and
+  error-by-regime on the Accuracy view — the honest story the denser world tells, not a defect.
+- **Scope:** `method1.py` (`VOLUME_BAND_FACTOR`, `MIN_POOL` unchanged); the v0.6.1 re-run.
+- **Do not:** re-derive either constant against the v0.6.1 pool distribution or its error — after
+  the re-pin that is tuning. ### 2026-08-27 — v0.6.1 two-epoch re-pin (calendar density + commercial dynamics): the logged re-run. Every headline moves.
+
+- **Decision:** Re-pin cinderhaven-promo-response v0.4.0 (6399990) → v0.6.1 (bdb08c6), a
+  two-epoch jump: v0.5.0 (calendar density, ~1% to ~34% of volume on promotion, 131 to 5,897
+  events on the same 1,340,462-row spine) and v0.6.0 (commercial dynamics). Logged as one
+  large re-run. Estimators unchanged and blind; the band-freeze (above) and the metric
+  definitions were fixed BEFORE this scoring.
+
+- **Before -> after (v0.4.0 M0/M1 -> v0.6.1 M0/M1):**
+
+  | figure | v0.4.0 | v0.6.1 |
+  | --- | --- | --- |
+  | events | 131 | 5,897 |
+  | estimable | 129 / 129 | 5,735 / 5,122 |
+  | lost money | 45 / 48 | 2,170 / 2,470 |
+  | portfolio trade spend | $80,449 (M0) | $2,930,338 / $2,728,644 |
+  | net incremental margin | $118,200 (M0) | $4,052,667 / $3,221,594 |
+  | portfolio ROI | 1.47 (M0) | 1.38 / 1.18 |
+  | accuracy median abs error | 26% / 26% | 32.8% / 42.0% |
+  | accuracy signed bias | +12% / +22% | +17.5% / +27.2% |
+
+  Unit truth moved in both epochs, so accuracy re-scored for the FIRST time since launch.
+  Method 1 error rose to 42% exactly as the band-freeze finding predicted — the density
+  epoch thins the comparable pools, so the concurrent baseline is noisier.
+
+- **Method 1 vectorized (equivalence-gated).** The loop is O(events x stores) and took ~9.5
+  min at 5,897 events; vectorized it scores in ~47s. Proven bit-identical to the loop on the
+  v0.4.0 world (7,440 rows), a v0.6.1 sample + the full portfolio, and a synthetic edge-case
+  world — tests/test_method1_equivalence.py, loop kept as the oracle. A refactor that moves
+  no number.
+
+- **Option B artifact/prerender split.** Measured build implication: the monolithic build
+  would prerender 5,897 pages and ship ~3.75MB (scorecard) + ~5.5MB (anatomy) to the browser.
+  So anatomy -> per-event slices + a ~150-event prerender manifest (stories + top |net margin|
+  + top spend); scorecard -> summary + first page imported, full events fetched on demand and
+  cached; adapter-static fallback for non-prerendered events. Front door 128KB, ~141
+  prerendered pages, build 15s.
+
+- **The no-portfolio-% constraint (2026-08-24) is LIFTED** — its own lapse condition (v0.5.0
+  calendar density) is met. Portfolio economics are realistic: trade spend ~2.3% of total
+  revenue, ~7.7% of promoted revenue (the event-level promotion allowance, not all-in trade).
+  Both quotable. tests/test_no_portfolio_spend_ratio.py removed; the scope note states the
+  ratios instead of warning them off.
+
+- **Scope:** the whole pipeline + front end; the v0.6.1 generation only.
+- **Do not:** present the v0.6.0 price->volume dynamics as a FINDING — it is the generator's
+  authored knob (owner, 2026-08-27), presentable only as mechanics, never a discovery. Do not
+  re-derive the frozen estimator constants against v0.6.1 (see band-freeze).
 
 ### 2026-08-21 — Scorecard re-scored with both methods (artifact scorecard/v2). Logged re-run.
 
@@ -660,6 +740,8 @@ as the headline. The mediocre middle is the honest denominator.
   would invite a re-run that manufactures the appearance of a changed result.
 
 ### 2026-08-24 — No portfolio trade-spend-to-revenue ratio on any published surface, enforced by a test.
+
+**SUPERSEDED 2026-08-27** — lifted by the v0.6.1 two-epoch re-run (its own lapse condition, the v0.5.0 calendar-density fix, is met). The test is removed; trade spend is now ~2.3% of total revenue and ~7.7% of promoted revenue, both quotable. Original entry kept below for the history.
 
 - **Decision:** the tool carries no trade-spend-as-percentage-of-revenue claim.
   Upstream pins spend ÷ total revenue at **0.0693%** as a locked figure explicitly
