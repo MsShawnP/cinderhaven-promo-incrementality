@@ -9,8 +9,8 @@ a dataset where the counterfactual is known and quarantined, so every estimate
 it produces is scored against the truth it was blind to.
 
 Three linked views on one promo-event spine. **ROI Scorecard** is the
-verdict — portfolio spend, net incremental margin, ROI, and how many of 131
-promotions lost money. **Event Anatomy** is the explanation — the full
+verdict — portfolio spend, net incremental margin, ROI, and how many of 5,735
+estimable promotions lost money. **Event Anatomy** is the explanation — the full
 decomposition of any single event, gross promoted through subsidized baseline
 to net incremental. **Accuracy** is the proof — how wrong the estimator
 actually was, by regime, including where the error is large.
@@ -19,13 +19,14 @@ Measured error describes this estimator under a realistic, fully-known
 world. It is not a prediction of error on any other dataset.
 
 **Status:** launched. Three views built, audited and deployed; upstream data
-package pinned at v0.4.0. The repository keeps its original name,
+package pinned at v0.6.1. The repository keeps its original name,
 `cinderhaven-promo-incrementality`; **Lift Math** is the tool's public name.
 
-Roadmap, in order: upstream v0.5.0 (calendar density — raises promoted volume
-from ~1% toward a real brand's 20–40%, which changes unit truth and so is its own
-re-validation release), then observed-only dip and transfer estimators, which add
-the waterfall's fourth and fifth bars. See PLAN.md.
+Roadmap: upstream v0.5.0 calendar density — raising promoted volume from ~1%
+to about a third of the book, which moved unit truth and forced a full
+re-validation — is done, shipped and re-scored in v0.6.1. Next: observed-only
+dip and transfer estimators, which add the waterfall's fourth and fifth bars.
+See PLAN.md.
 
 ## Cinderhaven context
 
@@ -33,7 +34,7 @@ Built on the Cinderhaven synthetic dataset — a ~$25M specialty food brand,
 50 SKUs across 5 product lines and 6 contracted retailers. Data is synthetic;
 methodology and deliverables are real.
 
-The promo signal comes from `cinderhaven-promo-response` v0.4.0, an additive,
+The promo signal comes from `cinderhaven-promo-response` v0.6.1, an additive,
 seed-locked overlay: a curated promo-event calendar, a promo-responsive scan
 series, and a quarantined ground-truth table. It never alters canonical.
 
@@ -48,8 +49,8 @@ series, and a quarantined ground-truth table. It never alters canonical.
 - **Accuracy** — the estimator's own error against quarantined ground truth,
   by regime, including where the error is large.
 
-Figures are rendered from artifacts the pipeline computes; no number in this
-README or in the views is hand-entered.
+Figures in the views are rendered from artifacts the pipeline computes; no number
+the tool displays is hand-entered.
 
 ## Stack
 
@@ -57,7 +58,7 @@ README or in the views is hand-entered.
   `cinderhaven_promo_response.testing.assert_no_truth_access` parses source
   with `ast` and can only audit `.py` files, so estimation code in another
   language would make the blindness claim unenforceable.
-- **`cinderhaven-promo-response` v0.4.0**, pinned by commit SHA, consumed
+- **`cinderhaven-promo-response` v0.6.1** (`bdb08c69`), pinned by commit SHA, consumed
   through its public API only.
 - **SvelteKit + D3**, static via `adapter-static`, on **Cloudflare Pages**.
 
@@ -77,7 +78,7 @@ never regenerates, modifies, or reads the SSOT scan table.
 
 Observed layer, via `pr.load()`:
 
-- `promo_events` — 131 rows
+- `promo_events` — 5,897 rows
 - `promo_scan_delta` — 1,340,462 rows × 8 observed columns
 
 Ground truth reaches one module only — the accuracy view — through
@@ -129,7 +130,7 @@ no stale artifact ships. Output lands in `web/build/`.
 `tests/test_data_contract.py` calls `pr.load()` (~8.5s cold, ~0.6s warm) and
 asserts the consumer contract against the pinned upstream version. It has passed
 cold since v0.1.1 fixed the v0.1.0 first-call crash (see FAILURES.md); the pin has
-since moved to v0.4.0. The truth gate is pure AST parsing over `src/` and needs no
+since moved to v0.6.1. The truth gate is pure AST parsing over `src/` and needs no
 data.
 
 ---
