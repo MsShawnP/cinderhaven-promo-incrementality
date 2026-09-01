@@ -37,6 +37,32 @@ quarto" or "scope, scrollytelling, decoration"]
 
 ## Entries
 
+### 2026-09-01 — Cloudflare Pages `_redirects` SPA fallback shadowed the prerendered pages
+
+**Attempted:** For Option B's partial prerender (~150 of 5,897 event pages), a
+`web/static/_redirects` rule `/event/* /200.html 200` to serve the SPA shell for
+non-prerendered events, with adapter-static `fallback: '200.html'`.
+
+**Why it didn't work:** On Cloudflare Pages the catch-all `/event/*` rewrite fired
+BEFORE the static-asset lookup, so it shadowed the prerendered files — a direct hit on a
+PRERENDERED story page (`/event/PRE-0100`, whose `PRE-0100.html` existed with the correct
+title/meta) 308-redirected to `/200` and served the generic shell. Humans got the client
+render; crawlers and link previews got an empty shell — on exactly the deep-linked pages.
+Static assets do NOT reliably win over a wildcard `_redirects` rewrite here.
+
+**What we did instead:** Removed `_redirects` entirely and set adapter-static
+`fallback: '404.html'`. Prerendered events then serve their own HTML (200); non-prerendered
+events get the fallback shell, which Cloudflare serves with a 200 and the client router
+renders from the event's fetched slice. Verified live: story page, a top-150 page, and a
+non-prerendered page all correct.
+
+**Status:** Resolved (Max's audit #2).
+
+**Tags:** cloudflare-pages, adapter-static, prerender, spa-fallback, _redirects, seo,
+option-b
+
+---
+
 ### 2026-08-26 — PowerShell string-building mangled CRLF Svelte edits
 
 **Attempted:** Insert multi-line markup/CSS into the CRLF `.svelte` files via

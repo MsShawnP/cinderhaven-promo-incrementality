@@ -726,3 +726,13 @@ X's card validator once — they cache hard on first fetch.
 **State:** PLAN updated — ICP item + arc cross-ref closed; v0.5.0 dependency marked active with this repo's task list; Arc history re-sequenced to v0.5.0 re-validation then Option B. No code touched. The prior HANDOFF "two more ICP passes" Next line is superseded by this.
 
 **Next (this repo, after the data-repo v0.5.0 release):** re-pin → full re-score as a logged re-run (before/after error in DECISIONS; every headline number moves) → copy re-audit → revisit the no-portfolio-% constraint once spend-to-revenue is realistic → then Option B.
+
+## 2026-09-01 15:04 — /wrap
+
+**Started from:** Owner decisions logged (ICP owner-closed, v0.5.0 roadmap active); the v0.6.1 re-validation arc queued.
+
+**Did:** Executed the **v0.6.1 two-epoch re-pin** (calendar density + commercial dynamics) as one logged re-run — every headline moved (estimable 5,735/5,122, lost 2,170/2,470, spend $2.93M/$2.73M, ROI 1.38/1.18, accuracy 32.8%/42.0% median, +17.5%/+27.2% bias; accuracy re-scored for the first time since launch). Vectorized Method 1 (equivalence-gated, ~9.5min → ~47s, loop kept as the oracle). Band-freeze pre-registered before any truth (VOLUME_BAND_FACTOR=2 held; its 95%-clearance derivation target is unreachable in the density world). Option B split: anatomy → per-event slices + a 141-event prerender manifest; scorecard → summary+first-page imported, full events fetched-on-touch; adapter fallback. Front door 3.75MB → 128KB. Copy consequences + Max's five audit fixes, all live-verified. Fixed a real Cloudflare defect: the /event/* _redirects rewrite shadowed the prerendered files (direct hits 308'd to /200); dropped it, fallback → 404.html.
+
+**State:** v0.6.1 live on liftmath.lailarallc.com, CI green (truth-gate / data-contract / build / Cloudflare deploy), 84 tests green, ruff clean, tree clean, all pushed (10cf2d0). DECISIONS carries the band-freeze entry + the full before/after re-run table. Untouched: Option B dip/transfer estimators; two more ICP passes were owner-waived.
+
+**Next:** **Option B — observed-only dip + transfer estimators (tools 1c/1d)**, each pre-registered with its own tag and accuracy-scored; the anatomy waterfall then gains its 4th/5th bars and the headline moves net → net-of-dip as a logged re-run. Nothing blocking or broken.

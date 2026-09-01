@@ -497,7 +497,9 @@ Scorecard ↔ Anatomy. Two copy audits; the dip/transfer blindness boundary reso
 Option A (three bars a blind estimator can defend), with Option B logged as the next
 arc. Open, non-blocking: the human ICP timed check against the finished tool.
 
-### Next arc — v0.5.0 calendar-density re-validation epoch (active roadmap, owner 2026-08-27)
+### Arc 3 — v0.6.1 two-epoch re-validation (COMPLETE 2026-09-01)
+
+**Outcome:** Re-pinned to v0.6.1 (v0.5.0 calendar density + v0.6.0 commercial dynamics); Method 1 vectorized (equivalence-gated); Option B prerender/payload split (141 prerendered pages, front door 128KB); full re-score + Max's five audit fixes, all live on liftmath.lailarallc.com. Every headline moved (DECISIONS 2026-08-27). Plan as executed:
 
 Upstream v0.5.0 raises promoted volume ~30–45x, which changes unit truth and invalidates
 every accuracy number scored against the current generation — so it is a re-validation
@@ -507,7 +509,7 @@ moves) — **copy re-audit** (each on-screen figure re-checked against the new a
 — **revisit the no-portfolio-% / trade-spend-to-revenue constraint** now that
 spend-to-revenue is realistic (DECISIONS 2026-08-24). **Then Option B.**
 
-### Then — Option B estimators: observed-only dip + transfer (tools 1c/1d)
+### Next arc — Option B estimators: observed-only dip + transfer (tools 1c/1d)
 
 Post-event pantry-load **dip** and sibling-delta **transfer**, estimable from
 observed data, each with its own pre-registration tag and accuracy scoring; the
