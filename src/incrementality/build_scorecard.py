@@ -153,11 +153,32 @@ def _cross_estimable(records):
     }
 
 
+def _concentration(records):
+    """Top-decile share of net margin per method (%), feeding the "return is uneven"
+    claim on the front door — computed, not asserted (Max's audit). The 30-second
+    surface has only the summary, not the full events, so it is precomputed here."""
+    out = {}
+    for method in ("method0", "method1"):
+        nets = sorted(
+            (
+                r[method]["net_margin_cents"]
+                for r in records
+                if r[method]["estimable"] and r[method]["net_margin_cents"] is not None
+            ),
+            reverse=True,
+        )
+        total = sum(nets)
+        top_decile = max(1, round(len(nets) * 0.10))
+        out[method] = round(100 * sum(nets[:top_decile]) / total) if total else None
+    return out
+
+
 def _summary(records):
     return {
         "tiers": {"method0": _tiers(records, "method0"), "method1": _tiers(records, "method1")},
         "filter_options": _filter_options(records),
         "cross_estimable": _cross_estimable(records),
+        "net_margin_top_decile_share": _concentration(records),
         # How many rows the first page shows per method before the full fetch, so the
         # view can cap the union first_page to the true top-N under the active method.
         "first_page_size": FIRST_PAGE_PER_METHOD,

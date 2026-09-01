@@ -51,7 +51,13 @@ METHOD0_KEYS = {
 }
 METHOD1_KEYS = METHOD0_KEYS | {"match_relaxed_share"}
 
-SUMMARY_KEYS = {"tiers", "filter_options", "cross_estimable", "first_page_size"}
+SUMMARY_KEYS = {
+    "tiers",
+    "filter_options",
+    "cross_estimable",
+    "net_margin_top_decile_share",
+    "first_page_size",
+}
 
 
 # Building runs both estimators, so build once for the module and reuse. Both the

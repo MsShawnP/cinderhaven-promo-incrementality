@@ -16,6 +16,7 @@
 	// everywhere is the rule on a measurement page (copy-audit).
 	const pct = (x) => (x === null || x === undefined ? '—' : `${x.toFixed(1)}%`);
 	const signed = (x) => (x === null || x === undefined ? '—' : `${x > 0 ? '+' : ''}${x.toFixed(1)}%`);
+	const count = (n) => (n === null || n === undefined ? '—' : n.toLocaleString('en-US'));
 
 	const STORY_LABELS = {
 		pure_subsidy: 'Pure subsidy',
@@ -96,18 +97,18 @@
 				<p class="method-name">Method 0 · pre-period</p>
 				<p class="big">{pct(m0.median_abs_pct_error)}</p>
 				<p class="big-note">median absolute error on incremental units</p>
-				<p class="bias">Bias {signed(m0.median_signed_pct_error)} · {m0.n_scored} events scored</p>
+				<p class="bias">Bias {signed(m0.median_signed_pct_error)} · {count(m0.n_scored)} events scored</p>
 			</div>
 			<div class="method-card">
 				<p class="method-name">Method 1 · comparable-store</p>
 				<p class="big">{pct(m1.median_abs_pct_error)}</p>
 				<p class="big-note">median absolute error on incremental units</p>
-				<p class="bias">Bias {signed(m1.median_signed_pct_error)} · {m1.n_scored} events scored</p>
+				<p class="bias">Bias {signed(m1.median_signed_pct_error)} · {count(m1.n_scored)} events scored</p>
 			</div>
 		</div>
 		<p class="excluded ll-measure">
-			Scored covers the estimable events with a measurable true lift — {m0.n_scored} of
-			{estimable0} for Method&nbsp;0, {m1.n_scored} of {estimable1} for Method&nbsp;1. The
+			Scored covers the estimable events with a measurable true lift — {count(m0.n_scored)} of
+			{count(estimable0)} for Method&nbsp;0, {count(m1.n_scored)} of {count(estimable1)} for Method&nbsp;1. The
 			rest have true incremental below one unit — phantom and negligible-effect promotions,
 			where a percentage of almost nothing is undefined — so they are set aside from the
 			median, not hidden. The four seeded stories are included in these figures and also
@@ -199,11 +200,12 @@
 				<h3>Match relaxation — Method 1 only</h3>
 				<p class="section-sub ll-measure">
 					Method 1 matches comparable stores by region, format class and volume; where the
-					in-format pool is too thin it relaxes to region and volume alone. This cut asks
-					whether the relaxation costs accuracy — and it does, though not where you'd look
-					first: median error holds, but fully-relaxed events run
-					{signed(relaxFully?.median_signed_pct_error)} hot against
-					{signed(relaxMixed?.median_signed_pct_error)} for mixed.
+						in-format pool is too thin it relaxes to region and volume alone. This cut asks
+						whether the relaxation costs accuracy — and it does, on both axes: median error
+						rises to {pct(relaxFully?.median_abs_pct_error)} for fully-relaxed matches against
+						{pct(relaxMixed?.median_abs_pct_error)} for mixed, and the bias runs
+						{signed(relaxFully?.median_signed_pct_error)} hot against
+						{signed(relaxMixed?.median_signed_pct_error)}.
 				</p>
 				<div class="lailara-table-wrap">
 					<table class="acc-table">
@@ -221,7 +223,7 @@
 									<td>{b.label}</td>
 									<td class="col-num">{pct(b.median_abs_pct_error)}</td>
 									<td class="col-num">{signed(b.median_signed_pct_error)}</td>
-									<td class="col-num">{b.n_events}</td>
+									<td class="col-num">{count(b.n_events)}</td>
 								</tr>
 							{/each}
 						</tbody>

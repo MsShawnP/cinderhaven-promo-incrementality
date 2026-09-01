@@ -23,6 +23,7 @@
 	let events = $state(first_page);
 	let fullLoaded = $state(false);
 	let loadingFull = $state(false);
+	let loserMode = $state(false);
 
 	async function ensureFullEvents() {
 		if (fullLoaded || loadingFull) return;
@@ -36,6 +37,14 @@
 		} finally {
 			loadingFull = false;
 		}
+	}
+	function showAll() {
+		ensureFullEvents();
+		loserMode = false;
+	}
+	function showLosers() {
+		ensureFullEvents();
+		loserMode = true;
 	}
 
 	// Active baseline method — Method 0 leads (naive, shown first); the toggle switches
@@ -114,7 +123,7 @@
 					count(active.n_estimable) +
 					' didn’t pay back. The portfolio clears ' +
 					roiText(active.portfolio_roi) +
-					' on the dollar, and the return is uneven — most of the net margin comes from a small number of events.'
+					' on the dollar, and the return is uneven — the top tenth of events produce ' + summary.net_margin_top_decile_share.method0 + '% of the net margin.'
 			: 'Method 1 judges each promotion against comparable stores that didn’t run it — the stricter, concurrent test Method 0 is blind to. It clears ' +
 					roiText(active.portfolio_roi) +
 					' on the dollar. Toggle to Method 0 to see how much the naive pre-period read flatters the same promotions.'
@@ -142,13 +151,19 @@
 	};
 	const rankedAll = $derived(
 		events
-			.filter((e) => e[selected].estimable && matches(e, filters))
+			.filter((e) => e[selected].estimable && matches(e, filters) && (!loserMode || e[selected].lost_money))
 			.slice()
-			.sort((a, b) => b[selected].net_margin_cents - a[selected].net_margin_cents)
+			.sort((a, b) =>
+				loserMode
+					? a[selected].net_margin_cents - b[selected].net_margin_cents
+					: b[selected].net_margin_cents - a[selected].net_margin_cents
+			)
 	);
-	// Before the full fetch, the union first_page is capped to the true top-N under the
-	// active method, so the list never shows a mid-rank event out of order.
-	const ranked = $derived(fullLoaded ? rankedAll : rankedAll.slice(0, summary.first_page_size));
+	// Before the full fetch, cap the union first_page to the true top-N under the active
+	// method; the loser view and any full view show everything fetched.
+	const ranked = $derived(
+		loserMode || fullLoaded ? rankedAll : rankedAll.slice(0, summary.first_page_size)
+	);
 	const unranked = $derived(events.filter((e) => !e[selected].estimable && matches(e, filters)));
 	const totalEstimable = $derived(active.n_estimable);
 	const filtersActive = $derived(anyActive(filters));
@@ -170,7 +185,7 @@
 	     count is exactly what went stale in this page's own lede. -->
 	<meta
 		property="og:description"
-		content="Trade-promotion incrementality, scored against known truth. {active.n_lost_money} of {active.n_estimable} promotions lost money under {METHOD_SHORT[selected]} — and the estimator's own error is on the page."
+		content="Trade-promotion incrementality, scored against known truth. {count(active.n_lost_money)} of {count(active.n_estimable)} promotions lost money under {METHOD_SHORT[selected]} — and the estimator's own error is on the page."
 	/>
 	<meta
 		name="description"
@@ -208,7 +223,7 @@
 			<div class="stat">
 				<dt>Trade spend</dt>
 				<dd>{dollars(active.total_accrued_spend_cents)}</dd>
-				<p class="stat-note">what these promotions actually cost, across the {active.n_estimable} estimable events</p>
+				<p class="stat-note">what these promotions actually cost, across the {count(active.n_estimable)} estimable events</p>
 				<p class="stat-delta">{METHOD_SHORT[otherKey]}: {dollars(other.total_accrued_spend_cents)}</p>
 			</div>
 			<div class="stat">
@@ -239,8 +254,8 @@
 		<p class="scope-note ll-measure">
 			Trade spend here is the scan-promoted event slice of the trade book — accrued cost on promo
 			events only. It excludes slotting, off-invoice allowances and deductions. About a third of
-			volume runs on promotion, so the portfolio totals hold up: trade spend is about 2.3% of total
-			revenue, and about 8% of promoted revenue — the event-level promotion allowance, not the
+			volume runs on promotion, so the portfolio totals hold up: trade spend is about 2.4% of total
+			revenue, and just under 8% of promoted revenue — the event-level promotion allowance, not the
 			all-in trade figure that folds in slotting and deductions this dataset does not carry.
 		</p>
 
@@ -288,14 +303,24 @@
 				{count(active.n_estimable)} estimable events under {METHOD_SHORT[selected]}. Rows below
 				break-even — margin under spend — are marked in the ROI column.
 			</p>
-			{#if !fullLoaded}
-				<p class="page-note">
-					Showing the top {ranked.length} by net margin.
-					<button class="show-all" onclick={ensureFullEvents} disabled={loadingFull}>
+						<p class="page-note">
+				{#if loserMode}
+					Showing the {count(active.n_lost_money)} promotions that lost money, worst first.
+					<button class="show-all" onclick={showAll} disabled={loadingFull}>
 						{loadingFull ? 'Loading…' : `Show all ${count(active.n_estimable)} estimable events`}
 					</button>
-				</p>
-			{/if}
+				{:else if !fullLoaded}
+					Showing the top {ranked.length} by net margin.
+					<button class="show-all" onclick={showAll} disabled={loadingFull}>
+						{loadingFull ? 'Loading…' : `Show all ${count(active.n_estimable)} estimable events`}
+					</button>
+					·
+					<button class="show-all" onclick={showLosers} disabled={loadingFull}>Show the {count(active.n_lost_money)} that lost money</button>
+				{:else}
+					Showing all {count(active.n_estimable)} estimable events.
+					<button class="show-all" onclick={showLosers} disabled={loadingFull}>Show the {count(active.n_lost_money)} that lost money</button>
+				{/if}
+			</p>
 
 			<!-- Cross-view filters (URL state). Narrow the list; the verdict stays whole. -->
 			<div class="filters" role="group" aria-label="Filter promotions">
