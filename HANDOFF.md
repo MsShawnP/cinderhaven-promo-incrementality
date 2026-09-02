@@ -736,3 +736,13 @@ X's card validator once — they cache hard on first fetch.
 **State:** v0.6.1 live on liftmath.lailarallc.com, CI green (truth-gate / data-contract / build / Cloudflare deploy), 84 tests green, ruff clean, tree clean, all pushed (10cf2d0). DECISIONS carries the band-freeze entry + the full before/after re-run table. Untouched: Option B dip/transfer estimators; two more ICP passes were owner-waived.
 
 **Next:** **Option B — observed-only dip + transfer estimators (tools 1c/1d)**, each pre-registered with its own tag and accuracy-scored; the anatomy waterfall then gains its 4th/5th bars and the headline moves net → net-of-dip as a logged re-run. Nothing blocking or broken.
+
+## 2026-09-02 — /wrap (README refresh)
+
+**Started from:** v0.6.1 live and audited; Max flagged one last stale surface — README.md still read v0.4.0.
+
+**Did:** Refreshed README.md to v0.6.1 reality (0b650f3): intro "5,735 estimable promotions" (was 131), Status/Stack pinned v0.6.1 (`bdb08c69`, both places), `promo_events` 5,897 rows, roadmap entry marked done ("~1%" → "about a third of the book"; next = dip/transfer estimators), and scoped the README's own "no number is hand-entered" promise to **the views** (the README carries hand-entered figures from the artifacts; the tool's displayed numbers don't). Zero v0.4.0 references remain.
+
+**State:** Tree clean, 0 unpushed, CI green through 0b650f3 (redeploys an identical site — README isn't in `web/`, so no user-visible change). Tool is closed for this arc per Max's audit. 84 tests / ruff / blindness guards unchanged (no code touched). Nothing broken.
+
+**Next:** Unchanged — **Option B: observed-only dip + transfer estimators (tools 1c/1d)**, pre-registered + accuracy-scored, when the next arc opens. Nothing blocking.
